@@ -1,0 +1,56 @@
+{
+  "name": "Linka",
+  "short_name": "Linka",
+  "description": "share,learn,educate",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "gcm_sender_id": "412783922087",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/qR4TC1NW/IMG-20250518-122228.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "education"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Feed",
+      "short_name": "Feed",
+      "description": "View your feed",
+      "url": "/index.html#feed",
+      "icons": [
+        {
+          "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Discover",
+      "short_name": "Discover",
+      "description": "Discover new skills",
+      "url": "/index.html#home",
+      "icons": [
+        {
+          "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

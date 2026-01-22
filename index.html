@@ -1,0 +1,4116 @@
+<!DOCTYPE html>
+<html lang="sw" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Biashara Yako Automation</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CMBWJH2ER1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CMBWJH2ER1');
+</script>
+
+<!-- Amplitude Analytics Setup -->
+<script src="https://cdn.amplitude.com/libs/amplitude-8.18.4-min.gz.js"></script>
+<script>
+  // Initialize Amplitude with your project API key
+  const amp = amplitude.getInstance();
+  amp.init("3ddef487e0f6c35a57bebd55e4c9b7e3");
+
+  // Keep same user across sessions
+  let userId = localStorage.getItem("user_id");
+  if (!userId) {
+    userId = "user_" + Math.random().toString(36).slice(2);
+    localStorage.setItem("user_id", userId);
+  }
+  amp.setUserId(userId);
+
+  // Track when user opens your app
+  amp.logEvent("App Opened");
+
+  // Track start time for session duration
+  const sessionStart = Date.now();
+
+  // Track session end when user leaves page
+  window.addEventListener("beforeunload", function () {
+    const durationSeconds = Math.floor((Date.now() - sessionStart) / 1000);
+    amp.logEvent("Session Ended", { duration_seconds: durationSeconds });
+  });
+</script>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#fafafa">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Linka">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/qR4TC1NW/IMG-20250518-122228.png">
+
+    <!-- SUPABASE SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <!-- Added Spline Sans for AI Page -->
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+
+<style>
+    /* =========================================
+       GLOBAL STYLES 
+       ========================================= */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        font-family: 'Nunito', sans-serif;
+        background-color: #f0fdf4; 
+        color: #4b5563;
+        height: 100vh;
+        overflow-x: hidden; 
+    }
+
+    /* Layout Structure */
+    .screen-wrapper {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto; 
+        position: relative;
+        padding-bottom: 100px;
+        background-color: white; 
+    }
+
+    /* FIXED: Mauzo Bottom Navigation Layout */
+    #step-analytics.screen-wrapper {
+        background-color: #f8f7f6;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
+        height: 100vh;    
+        padding-bottom: 0;
+    }
+
+    .content-area {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    /* Media Cards */
+    .media-card {
+        background: white;
+        padding: 15px;
+        border-radius: 24px;
+        box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08);
+        margin: 20px 24px 10px 24px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid #e5e7eb;
+        max-width: 500px;
+        align-self: center;
+        width: calc(100% - 48px);
+    }
+
+    .video-container {
+        width: 100%;
+        height: 240px;
+        background-color: #1e293b;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid #fff;
+    }
+
+    .hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .avatar-container {
+        position: relative;
+        width: 120px; 
+        height: 120px;
+    }
+
+    .agent-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #f0fdf4;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    /* Typography */
+    h1 {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-top: 10px;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+
+    p {
+        color: #64748b;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    .sub-header {
+        color: #94a3b8;
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    /* Inputs & Grid */
+    .input-group { width: 100%; text-align: left; margin-top: 10px; }
+    .input-wrapper { position: relative; margin-top: 8px; }
+    
+    .custom-input {
+        width: 100%;
+        padding: 16px 16px 16px 50px;
+        font-size: 18px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #4b5563;
+        background-color: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        outline: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 0 #e5e7eb;
+    }
+    .custom-input:focus { border-color: #58cc02; box-shadow: 0 4px 0 #58cc02; }
+    
+    .input-icon {
+        position: absolute;
+        left: 16px; top: 45%; transform: translateY(-50%);
+        color: #58cc02; pointer-events: none;
+    }
+
+    .category-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        width: 100%; margin-bottom: 20px;
+    }
+
+    .cat-card {
+        background: white; border: 2px solid #e5e7eb; border-radius: 16px;
+        padding: 15px 10px; cursor: pointer; transition: all 0.15s ease;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; box-shadow: 0 4px 0 #e5e7eb;
+    }
+    .cat-card:active { transform: translateY(4px); box-shadow: 0 0px 0 #e5e7eb; }
+    .cat-card.selected { border-color: #58cc02; background-color: #f0fdf4; box-shadow: 0 4px 0 #46a302; }
+    .cat-card.selected:active { box-shadow: 0 0px 0 #46a302; }
+    
+    .cat-icon { font-size: 28px; margin-bottom: 8px; }
+    .cat-name { font-weight: 700; font-size: 15px; color: #4b5563; }
+
+    .helper-text {
+        font-size: 13px; color: #64748b; margin-top: 15px;
+        line-height: 1.4; text-align: left; display: flex;
+        align-items: start; gap: 8px; background: rgba(255,255,255,0.5);
+        padding: 10px; border-radius: 10px;
+    }
+
+    #other-input-container {
+        width: 100%; overflow: hidden; max-height: 0; opacity: 0;
+        transition: all 0.3s ease; margin-top: 0;
+    }
+    #other-input-container.open { max-height: 100px; opacity: 1; margin-top: 10px; }
+
+    /* Shop Rules Cards */
+    .setting-card {
+        background: white; border-radius: 20px; padding: 16px;
+        margin-bottom: 16px; width: 100%; text-align: left;
+        box-shadow: 0 4px 0 #e5e7eb; border: 2px solid #e5e7eb;
+    }
+    
+    .setting-header { display: flex; align-items: center; margin-bottom: 12px; }
+    .setting-icon-bg {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 12px; font-size: 20px;
+    }
+    .icon-bg-blue { background-color: #e0f2fe; color: #0284c7; }
+    .icon-bg-orange { background-color: #ffedd5; color: #c2410c; }
+    .setting-title { font-weight: 800; font-size: 16px; color: #1e293b; }
+    .setting-subtitle { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+    .setting-input {
+        width: 100%; padding: 12px; font-size: 16px;
+        border: 2px solid #f1f5f9; background-color: #f8fafc;
+        border-radius: 12px; outline: none; font-family: 'Nunito', sans-serif;
+        font-weight: 700; color: #334155; transition: all 0.2s;
+    }
+    .setting-input:focus { border-color: #58cc02; background-color: white; }
+
+    /* Utilities */
+    .bottom-footer {
+        position: fixed; bottom: 0; left: 0; width: 100%;
+        background: white; border-top: 2px solid #e5e7eb;
+        padding: 16px 24px 24px 24px; z-index: 100;
+        display: flex; flex-direction: column; align-items: center;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .btn-start {
+        display: block; width: 100%; max-width: 500px;
+        background-color: #58cc02; color: white;
+        font-size: 17px; font-weight: 800; text-transform: uppercase;
+        text-decoration: none; padding: 16px 0; border-radius: 16px;
+        border: none; cursor: pointer; box-shadow: 0 5px 0 #46a302;
+        transition: transform 0.1s, box-shadow 0.1s; 
+    }
+    .btn-start:active, .btn-start.pressed { transform: translateY(4px); box-shadow: 0 0px 0 #46a302; }
+    
+    .btn-disabled {
+        background-color: #e5e7eb; color: #9ca3af; box-shadow: none; pointer-events: none;
+    }
+
+    .footer-badge {
+        margin-top: 15px; font-size: 12px; font-weight: 700; color: #cbd5e1;
+        display: flex; align-items: center;
+    }
+
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .close-btn {
+        position: absolute; top: 20px; right: 20px; background: none;
+        border: none; cursor: pointer; color: #9ca3af; z-index: 10;
+    }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       NEW ADD PRODUCT SINGLE PAGE STYLES (FIXED)
+       ========================================= */
+    #step-add-product.screen-wrapper {
+        background-color: #f8f8f6;
+        padding-bottom: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .ap-container { 
+        padding: 20px; 
+        max-width: 500px; 
+        margin: 0 auto; 
+        width: 100%; 
+        padding-bottom: 40px; /* Reduced padding since button is now inline */
+    }
+    .ap-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 10px; }
+    .ap-back-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: none; cursor: pointer; color: #0f1a14; }
+    .ap-title-col { display: flex; flex-direction: column; align-items: center; }
+    .ap-title { font-size: 18px; font-weight: 800; color: #0f1a14; }
+    .ap-pro-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #25d078; }
+    .ap-star-icon { width: 40px; height: 40px; background: rgba(37, 208, 120, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #25d078; }
+
+    /* Updated Photo Card for Gallery Support */
+    .ap-photo-card {
+        position: relative; width: 100%; aspect-ratio: 1/1; max-height: 320px;
+        background: linear-gradient(135deg, rgba(255, 192, 110, 0.1), white);
+        border: 2px dashed rgba(255, 192, 110, 0.4);
+        border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        box-shadow: 0 10px 25px -5px rgba(255, 192, 110, 0.15);
+        overflow: hidden; 
+        margin-bottom: 24px;
+    }
+    .ap-photo-content { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; }
+    
+    .ap-photo-actions {
+        display: flex; gap: 24px; margin-top: 20px;
+    }
+    .ap-action-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 8px;
+        cursor: pointer; transition: transform 0.1s;
+    }
+    .ap-action-btn:active { transform: scale(0.95); }
+    .ap-icon-circle {
+        width: 60px; height: 60px; border-radius: 50%; background: white;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid #fff;
+    }
+    .ap-icon-circle.cam { color: #25d078; background: #ecfdf5; }
+    .ap-icon-circle.gal { color: #ec7f13; background: #fff7ed; }
+    .ap-action-btn span { font-size: 12px; font-weight: 700; color: #4b5563; }
+
+    .ap-important-badge { position: absolute; top: -8px; right: -8px; background: #25d078; color: white; font-size: 10px; font-weight: 900; padding: 4px 12px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-transform: uppercase; z-index: 10; }
+    
+    /* Clean Preview */
+    .ap-preview-container { position: absolute; inset: 0; width: 100%; height: 100%; background: white; z-index: 20; display: flex; align-items: center; justify-content: center; }
+    .ap-preview-img { width: 100%; height: 100%; object-fit: cover; }
+    .ap-remove-photo-btn { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: white; border-radius: 50%; color: #ef4444; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); border: none; cursor: pointer; z-index: 25; }
+    .ap-change-photo-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; z-index: 25; display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px); }
+
+    .ap-input-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(255, 192, 110, 0.15); margin-bottom: 16px; transition: transform 0.2s, border-color 0.2s; border: 1px solid transparent; }
+    .ap-input-card:focus-within { transform: scale(1.02); border-color: #FFC06E; }
+    .ap-label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .ap-label-text { font-size: 14px; font-weight: 800; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.5px; }
+    .ap-text-input { width: 100%; border: none; outline: none; font-size: 20px; font-weight: 700; color: #0f1a14; background: transparent; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .ap-text-input::placeholder { color: #d1d5db; }
+
+    .ap-cat-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 0 4px; }
+    .ap-cat-title { font-size: 14px; font-weight: 800; text-transform: uppercase; opacity: 0.6; }
+    .ap-cat-link { font-size: 12px; font-weight: 800; color: #25d078; cursor: pointer;}
+    .ap-cat-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; margin-bottom: 12px; }
+    .ap-cat-scroll::-webkit-scrollbar { display: none; }
+    .ap-cat-chip { flex-shrink: 0; padding: 12px 24px; border-radius: 50px; background: white; border: 1px solid #f3f4f6; color: #0f1a14; font-weight: 800; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; }
+    .ap-cat-chip.active { background: #25d078; color: white; border-color: #25d078; box-shadow: 0 0 20px rgba(37, 208, 120, 0.4); }
+
+    .ap-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .ap-small-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; color: #9ca3af; }
+    .ap-small-label.primary { color: #25d078; }
+    .ap-price-row { display: flex; align-items: center; }
+    .ap-currency { color: #25d078; font-weight: 800; margin-right: 4px; font-size: 18px; }
+
+    .ap-stock-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(255, 192, 110, 0.15); display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .ap-stock-val { font-size: 24px; font-weight: 900; color: #25d078; }
+    .ap-stock-ctrls { display: flex; gap: 16px; }
+    .ap-stock-btn { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s; border-bottom-width: 4px; border-style: solid; }
+    .ap-btn-minus { background: #f9fafb; border-color: #e5e7eb; color: #0f1a14; }
+    .ap-btn-plus { background: rgba(37, 208, 120, 0.1); border-color: rgba(37, 208, 120, 0.4); color: #25d078; }
+    .ap-stock-btn:active { transform: translateY(2px); border-bottom-width: 0; }
+
+    .ap-remind-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(255, 192, 110, 0.15); display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .ap-remind-left { display: flex; items-center: center; gap: 12px; }
+    .ap-remind-icon { width: 40px; height: 40px; background: rgba(255, 192, 110, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #FFC06E; }
+    .ap-toggle { width: 56px; height: 32px; background: #25d078; border-radius: 50px; position: relative; padding: 4px; cursor: pointer; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); transition: background 0.3s; }
+    .ap-toggle.off { background: #e5e7eb; }
+    .ap-toggle-dot { width: 24px; height: 24px; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: absolute; right: 4px; transition: right 0.3s; }
+    .ap-toggle.off .ap-toggle-dot { right: 28px; }
+
+    /* Fixed Bottom Bar - MOVED TO FLOW STYLES */
+    .ap-bottom-bar { 
+        position: static; /* Was fixed */
+        width: 100%;
+        max-width: 100%;
+        padding: 24px 0 40px 0; /* Add space at bottom */
+        background: transparent; /* Remove white background */
+        border: none;
+        box-shadow: none;
+        z-index: 1;
+        margin-top: 10px;
+    }
+    .ap-save-btn-wrapper { max-width: 100%; margin: 0 auto; height: 64px; position: relative; }
+    .ap-save-btn { width: 100%; height: 100%; background: #25d078; color: white; border-radius: 16px; border: none; font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 208, 120, 0.3); transition: transform 0.2s; position: absolute; inset: 0; }
+    .ap-save-btn:active { transform: scale(0.96); }
+
+    .ap-loading-state, .ap-success-state { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; border-radius: 16px; position: absolute; inset: 0; }
+    .ap-loading-state { background: rgba(37, 208, 120, 0.9); color: white; }
+    .ap-success-state { background: #10b981; color: white; box-shadow: 0 0 30px rgba(16, 185, 129, 0.5); animation: bounceSuccess 0.5s ease-in-out infinite alternate; }
+
+    .magic-spin { animation: spinMagic 1.5s linear infinite; font-size: 32px; }
+    .confetti-particle { position: absolute; width: 6px; height: 6px; background: #FFC06E; border-radius: 2px; animation: confetti-fall 1s ease-out forwards; }
+    .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); transform: scale(0); animation: ripple 0.6s linear; pointer-events: none; }
+
+    @keyframes pulseSlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(0.98); } }
+    @keyframes spinMagic { from { transform: rotate(0deg) scale(1.2); } to { transform: rotate(360deg) scale(1.2); } }
+    @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+    @keyframes bounceSuccess { from { transform: scale(1); } to { transform: scale(1.02); } }
+    @keyframes confetti-fall { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(360deg); opacity: 0; } }
+
+    /* =========================================
+       DASHBOARD & RECORD SALE STYLES
+       ========================================= */
+    :root {
+        --primary: #ec7f13;
+        --primary-dark: #c2410c;
+        --bg-body-dash: #f8f7f6;
+        --bg-surface: #ffffff;
+        --text-main: #1b140d;
+        --text-muted: #6b7280;
+        --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+        
+        /* Screenshot Colors */
+        --color-money-bg: #fff7ed;
+        --color-money-text: #ea580c;
+        --color-gray-bg: #f9fafb;
+        --color-dark-card: #1f2937;
+        --color-lime-green: #4ade80; /* Brighter Green for POS */
+        
+        --radius-large: 24px;
+        --radius-med: 16px;
+        --radius-small: 12px;
+    }
+
+    /* --- Layout & Reset for Dashboard --- */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    #step-5.screen-wrapper {
+        background-color: var(--bg-body-dash);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100vh;
+        padding-bottom: 0;
+        font-family: 'Lexend', sans-serif;
+        color: var(--text-main);
+    }
+
+    .app-container {
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column; 
+        background-color: var(--bg-body-dash);
+        padding-bottom: 0;
+        position: relative;
+    }
+
+    /* The Scrollable Area */
+    .main-content {
+        flex: 1; 
+        overflow-y: auto; 
+        padding-bottom: 20px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* --- HEADER --- */
+    .dash-header {
+        flex-shrink: 0; 
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--bg-body-dash);
+    }
+
+    .profile-section { display: flex; align-items: center; gap: 12px; }
+    
+    .profile-img {
+        width: 45px; height: 45px; border-radius: 50%;
+        border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAFUuJrp124qYqq0Io7WaZ4ABuro2Z8bdYheGQAqoQCQgn54DA3JrgrLuirh3ENsDZTMiwU3i5F3-OcW0SRkmzpV_GNLBXubeLwZPLPIld-SHAAz9pLuyAxO6fm-p7mED9F9Z613bSRAziucdsiWvFXu8UR2Vcs-OHajkdwi5jgJu6OnaeQ6g5hi5P0bhtrmgpd70Terj8ASaz4bqwNCaLkhj7qA9Gm3UFTj_LGElY0l2qxMd_SfelEswxn94uR21snmlP2_VihrSbh");
+        background-size: cover; background-position: center;
+        position: relative;
+    }
+    .profile-status {
+        position: absolute; bottom: 0; right: 0;
+        width: 12px; height: 12px; background: #22c55e;
+        border: 2px solid white; border-radius: 50%;
+    }
+
+    .profile-info h2 { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 2px; }
+    .profile-info p { font-size: 13px; color: #6b7280; }
+
+    .close-icon-btn {
+        width: 36px; height: 36px; border-radius: 50%;
+        background-color: #6b7280; color: white; 
+        display: flex; align-items: center; justify-content: center;
+        border: none; cursor: pointer; opacity: 0.8;
+    }
+
+    /* --- SECTION HEADERS --- */
+    .section-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0 20px; margin-top: 24px; margin-bottom: 12px;
+    }
+    .section-title { font-size: 18px; font-weight: 800; color: #111827; }
+    .leo-badge {
+        background: #ffedd5; color: #c2410c; font-size: 12px;
+        padding: 4px 10px; border-radius: 20px; font-weight: 700;
+    }
+    .link-text { color: #ec7f13; font-size: 14px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+
+    /* --- HEALTH CARDS (SCROLL) --- */
+    .h-scroll {
+        display: flex; gap: 12px; overflow-x: auto;
+        padding: 0 20px 10px 20px;
+    }
+    
+    .status-card {
+        min-width: 260px; padding: 16px;
+        border-radius: var(--radius-large);
+        display: flex; align-items: center; gap: 14px;
+    }
+    .sc-green { background-color: #f0fdf4; }
+    .sc-orange { background-color: #fff7ed; }
+
+    .sc-icon {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; flex-shrink: 0;
+    }
+    .sc-green .sc-icon { background: #dcfce7; color: #16a34a; }
+    .sc-orange .sc-icon { background: #ffedd5; color: #ea580c; }
+
+    .sc-text h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: #111827; }
+    .sc-text p { font-size: 13px; font-weight: 500; }
+    .sc-green p { color: #15803d; }
+    .sc-orange p { color: #c2410c; }
+
+    /* --- MONEY CARD --- */
+    .money-wrapper { padding: 0 20px; }
+    .big-white-card {
+        background: white; border-radius: var(--radius-large);
+        padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .sold-box {
+        background-color: var(--color-money-bg);
+        border-radius: var(--radius-med);
+        padding: 20px; margin-bottom: 12px;
+    }
+    .stat-label {
+        display: flex; align-items: center; gap: 6px;
+        color: #4b5563; font-size: 13px; font-weight: 600; margin-bottom: 8px;
+    }
+    .stat-label span { font-size: 18px; color: #d97706; }
+    .big-price { font-size: 28px; font-weight: 800; color: #111827; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .small-stat-box {
+        background-color: var(--color-gray-bg);
+        border-radius: var(--radius-med);
+        padding: 16px;
+    }
+    .small-price { font-size: 18px; font-weight: 800; color: #111827; }
+
+    /* --- ASSISTANT CARD --- */
+    .ai-wrapper { padding: 0 20px; margin-top: 24px; }
+    .ai-dark-card {
+        background-color: var(--color-dark-card);
+        border-radius: var(--radius-large);
+        padding: 24px; color: white;
+        position: relative; overflow: hidden;
+    }
+    .ai-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .ai-title-group { display: flex; align-items: center; gap: 12px; }
+    .ai-icon-bg {
+        width: 40px; height: 40px; background: rgba(255,255,255,0.15);
+        border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    }
+    .ai-name { font-size: 16px; font-weight: 700; }
+    .active-pill {
+        background: rgba(34, 197, 94, 0.2); color: #4ade80;
+        font-size: 10px; font-weight: 700; padding: 4px 8px;
+        border-radius: 10px; border: 1px solid rgba(34, 197, 94, 0.4); text-transform: uppercase;
+    }
+    .ai-desc { color: #d1d5db; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+    .ai-btn {
+        background: white; color: #111827; border: none;
+        padding: 10px 16px; border-radius: 50px;
+        font-size: 14px; font-weight: 700; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    /* --- PRODUCT GRID --- */
+    .products-wrapper { padding: 0 20px; }
+    .prod-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .prod-card {
+        background: white; border-radius: 20px; padding: 10px;
+        display: flex; flex-direction: column; gap: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative;
+        cursor: pointer; transition: transform 0.1s;
+    }
+    .prod-card:active { transform: scale(0.98); }
+    .prod-img-box {
+        width: 100%; aspect-ratio: 1 / 0.9; position: relative;
+        border-radius: 16px; overflow: hidden;
+    }
+    .prod-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .prod-badge {
+        position: absolute; top: 8px; right: 8px;
+        padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+    .badge-grey { background: #e5e7eb; color: #4b5563; }
+
+    .prod-name { font-size: 15px; font-weight: 700; color: #111827; margin-top: 4px; line-height: 1.2; }
+    .prod-price { font-size: 13px; color: #6b7280; font-weight: 500; }
+    .prod-sub { font-size: 11px; color: #9ca3af; margin-top: -4px; }
+    .prod-sub.urgent { color: #c2410c; }
+
+    .agiza-btn {
+        width: 100%; background: #fff7ed; color: #ea580c;
+        padding: 8px 0; border-radius: 10px; border: none;
+        font-size: 13px; font-weight: 700; margin-top: 4px;
+    }
+    .gray-overlay {
+        position: absolute; inset: 0; background: rgba(255,255,255,0.6);
+        z-index: 10;
+    }
+
+    /* --- DEBTORS LIST --- */
+    .debtor-wrapper { padding: 0 20px; }
+    .debtor-card {
+        background: white; border-radius: 20px; padding: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .debtor-left { display: flex; align-items: center; gap: 12px; }
+    .avatar-circle {
+        width: 48px; height: 48px; border-radius: 50%;
+        background: #dbeafe; color: #2563eb;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 16px;
+    }
+    .debtor-info h4 { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 2px; }
+    .debtor-info p { font-size: 13px; color: #ef4444; font-weight: 600; }
+    
+    .debtor-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .time-text { font-size: 11px; color: #9ca3af; }
+    .remind-btn {
+        background: #fff7ed; color: #ea580c; padding: 6px 14px;
+        border-radius: 20px; font-size: 12px; font-weight: 700; border: none;
+    }
+
+    /* --- BOTTOM NAV --- */
+    .bottom-nav {
+        flex-shrink: 0; 
+        width: 100%;
+        background: white;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-end;
+        padding-bottom: env(safe-area-inset-bottom);
+        height: 75px; 
+        z-index: 200;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+        position: relative; 
+    }
+
+    .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding-bottom: 8px;
+        color: #9ca3af;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .nav-item.active { color: #16a34a; }
+    .nav-icon { font-size: 26px; margin-bottom: 4px; }
+    .nav-label { font-size: 11px; font-weight: 700; }
+
+    /* CENTER "ONGEZA" BUTTON */
+    .nav-item.center-action { position: relative; overflow: visible; }
+
+    .floating-add-btn {
+        position: absolute;
+        top: -25px; 
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        background-color: #58cc02;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 6px 15px rgba(88, 204, 2, 0.4);
+        border: 4px solid #f8f7f6; 
+        transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .nav-item.center-action:active .floating-add-btn {
+        transform: translateX(-50%) scale(0.95);
+        box-shadow: 0 2px 8px rgba(88, 204, 2, 0.4);
+    }
+
+    .add-label { margin-top: 32px; color: #16a34a; font-weight: 800; }
+
+    /* ADDED: PWA Install Card Styles */
+    .pwa-install-card {
+        background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+        border: 2px solid #22c55e;
+        border-radius: 16px;
+        padding: 12px 16px;
+        margin: 0 auto 20px auto;
+        max-width: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    /* ADDED: Sales Analytics Styles */
+    .ana-tabs {
+        display: flex;
+        background: white;
+        border-radius: 50px;
+        padding: 4px;
+        margin: 0 24px 20px 24px;
+        border: 1px solid #e5e7eb;
+    }
+    .ana-tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #6b7280;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .ana-tab.active {
+        background: #22c55e;
+        color: white;
+        box-shadow: 0 2px 5px rgba(34, 197, 94, 0.2);
+    }
+    
+    .ana-card-green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 32px;
+        padding: 24px;
+        margin: 0 24px 24px 24px;
+        color: white;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+    }
+    .ana-cg-label {
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0.9;
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 8px;
+    }
+    .ana-cg-amount {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .ana-cg-sub {
+        font-size: 12px;
+        background: rgba(255,255,255,0.2);
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 700;
+    }
+    
+    .ana-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 0 24px;
+        margin-bottom: 32px;
+    }
+    .ana-small-card {
+        background: white;
+        border-radius: 24px;
+        padding: 20px;
+        text-align: left;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        border: 1px solid #f3f4f6;
+    }
+    .asc-icon {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 12px;
+    }
+    .asc-icon.green { background: #dcfce7; color: #16a34a; }
+    .asc-icon.orange { background: #ffedd5; color: #ea580c; }
+    
+    .asc-label { font-size: 13px; color: #6b7280; font-weight: 600; margin-bottom: 4px; }
+    .asc-val { font-size: 18px; font-weight: 800; color: #1f2937; }
+    
+    .ana-list-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0 24px; margin-bottom: 16px;
+    }
+    .ana-lh-title { font-size: 18px; font-weight: 800; color: #111827; }
+    .ana-lh-link { font-size: 13px; color: #16a34a; font-weight: 700; cursor: pointer; }
+    
+    .ana-list-container {
+        padding: 0 24px 100px 24px;
+    }
+    .ana-list-item {
+        background: white;
+        border-radius: 20px;
+        padding: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .ali-left { display: flex; align-items: center; gap: 12px; }
+    .ali-icon-circle {
+        width: 44px; height: 44px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700;
+    }
+    .ali-ic-green { background: #f0fdf4; color: #16a34a; }
+    .ali-ic-orange { background: #fff7ed; color: #ea580c; }
+    .ali-ic-blue { background: #eff6ff; color: #2563eb; }
+    
+    .ali-info h4 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 2px; }
+    .ali-info p { font-size: 12px; color: #9ca3af; }
+    
+    .ali-right { text-align: right; }
+    .ali-amount { font-size: 15px; font-weight: 800; display: block; margin-bottom: 2px; }
+    .ali-amount.pos { color: #16a34a; }
+    .ali-amount.neg { color: #ea580c; }
+    .ali-badge { font-size: 10px; font-weight: 700; color: #9ca3af; }
+    .ali-badge.debt { background: #fff7ed; color: #c2410c; padding: 2px 6px; border-radius: 4px; }
+
+
+    /* =========================================
+       RECORD SALE (STEP 11) STYLES
+       ========================================= */
+    #step-11 {
+        background-color: #f8fafc;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 500; /* Above everything */
+        overflow-y: auto;
+        display: flex; flex-direction: column;
+    }
+
+    /* Top Header Card */
+    .sale-header-card {
+        background: white;
+        border-radius: 0 0 32px 32px;
+        padding: 24px 24px 32px 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        display: flex; gap: 16px; align-items: flex-start;
+        position: relative;
+    }
+    
+    .sale-prod-img {
+        width: 80px; height: 80px;
+        border-radius: 16px;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
+    
+    .sale-info { flex: 1; }
+    .sale-title { font-size: 20px; font-weight: 800; color: #1f2937; line-height: 1.2; margin-bottom: 4px; }
+    .sale-variant { font-size: 14px; color: #6b7280; margin-bottom: 8px; }
+    .sale-price-label { font-size: 11px; font-weight: 800; color: #9ca3af; text-transform: uppercase; margin-bottom: 2px; }
+    .sale-price-val { font-size: 18px; font-weight: 800; color: #1f2937; }
+    
+    .stock-pill {
+        background-color: #dcfce7; color: #166534;
+        padding: 6px 12px; border-radius: 20px;
+        font-size: 12px; font-weight: 800;
+        display: inline-block; margin-top: 4px;
+    }
+    
+    /* Close Button absolute top right */
+    .close-sale-btn {
+        position: absolute; top: 20px; right: 20px;
+        background: rgba(0,0,0,0.5); color: white;
+        border-radius: 50%; width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        border: none; cursor: pointer;
+    }
+
+    /* Toggle */
+    .sale-toggle-container {
+        margin: 24px 24px 16px 24px;
+        background: white; border-radius: 50px;
+        padding: 4px; display: flex;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        border: 1px solid #e5e7eb;
+    }
+    .st-btn {
+        flex: 1; text-align: center; padding: 12px 0;
+        font-size: 14px; font-weight: 700; border-radius: 40px;
+        color: #6b7280; transition: all 0.2s;
+    }
+    .st-btn.active {
+        background-color: #3be32b; /* Lime Green from Screenshot */
+        color: #052e16; /* Dark Green Text */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Quantity Card */
+    .sale-card-box {
+        background: white; border-radius: 24px;
+        margin: 0 24px 16px 24px; padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .sc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .sc-title { font-size: 12px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sc-stock-light { font-size: 12px; color: #3be32b; background: #f0fdf4; padding: 4px 8px; border-radius: 8px; font-weight: 700; }
+    
+    .qty-control-row { display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
+    .qty-circle {
+        width: 56px; height: 56px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; font-weight: 400; cursor: pointer; border: none;
+    }
+    .qc-minus { background: #f3f4f6; color: #1f2937; }
+    .qc-plus { background: #3be32b; color: #000; box-shadow: 0 4px 12px rgba(59, 227, 43, 0.4); }
+    .qc-val { font-size: 32px; font-weight: 800; color: #111827; }
+
+    /* Price Grid */
+    .price-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        padding: 0 24px 24px 24px;
+    }
+    .pg-card {
+        background: white; border-radius: 24px; padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .pg-label { font-size: 11px; font-weight: 800; color: #6b7280; text-transform: uppercase; margin-bottom: 8px; }
+    .pg-val { font-size: 22px; font-weight: 800; color: #1f2937; }
+    .pg-val.green { color: #15803d; }
+    .pg-input-line { width: 100%; height: 2px; background: #e5e7eb; margin-top: 4px; }
+
+    /* Footer */
+    .sale-footer {
+        margin-top: auto;
+        background: white;
+        padding: 16px 24px 32px 24px;
+        border-radius: 32px 32px 0 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
+    }
+    .sf-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .sf-label { font-size: 15px; color: #4b5563; font-weight: 600; }
+    .sf-total { font-size: 20px; font-weight: 800; color: #111827; }
+    
+    .confirm-sale-btn {
+        width: 100%;
+        background-color: #3be32b; /* Lime */
+        color: black;
+        font-size: 16px; font-weight: 800;
+        padding: 18px 0; border-radius: 50px;
+        border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        box-shadow: 0 4px 15px rgba(59, 227, 43, 0.3);
+    }
+
+    /* AUTH STYLES */
+    .auth-bg {
+        background-image: radial-gradient(circle at 10% 20%, rgba(220, 252, 231, 0.4) 0%, rgba(255, 255, 255, 0.1) 90%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 24px;
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    
+    .typewriter-text {
+        font-size: 32px;
+        font-weight: 800;
+        color: #58cc02; /* Duolingo Green */
+        margin-bottom: 8px;
+        min-height: 42px;
+        letter-spacing: -1px;
+    }
+    
+    .auth-subtitle {
+        color: #6b7280;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 32px;
+        padding: 24px;
+        box-shadow: 0 8px 0 #e5e7eb, 0 8px 20px rgba(0,0,0,0.05); /* Chunky shadow */
+        border: 2px solid #e5e7eb;
+        position: relative;
+    }
+
+    /* Animated Google Card */
+    .google-card-anim {
+        margin-bottom: 20px;
+        animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    @keyframes popIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .google-btn {
+        width: 100%;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 16px;
+        font-weight: 800;
+        color: #374151;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #e5e7eb;
+        transition: all 0.1s;
+    }
+
+    .google-btn:active {
+        box-shadow: 0 0 0 #e5e7eb;
+        transform: translateY(4px);
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 13px;
+        font-weight: 700;
+        margin: 20px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    .divider:not(:empty)::before { margin-right: 12px; }
+    .divider:not(:empty)::after { margin-left: 12px; }
+
+    .auth-tabs {
+        background: white;
+        border-radius: 50px;
+        padding: 0;
+        display: flex;
+        margin-bottom: 20px;
+        position: relative;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .auth-tab {
+        flex: 1;
+        text-align: center;
+        padding: 12px 0;
+        font-size: 15px;
+        font-weight: 800;
+        color: #9ca3af;
+        cursor: pointer;
+        z-index: 2;
+        transition: color 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .auth-tab.active {
+        color: #58cc02;
+        border-bottom: 3px solid #58cc02;
+    }
+
+    .auth-input-group {
+        margin-bottom: 16px;
+    }
+    
+    .auth-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 800;
+        color: #374151;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .email-field-wrapper, .password-wrapper {
+        position: relative;
+        background: #f8fafc;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    
+    .email-field-wrapper:focus-within, .password-wrapper:focus-within {
+        border-color: #58cc02;
+        background: white;
+    }
+
+    .field-icon {
+        padding-left: 16px;
+        color: #9ca3af;
+        font-size: 22px;
+    }
+
+    .auth-input-field {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 16px;
+        font-size: 17px;
+        font-weight: 700;
+        color: #1f2937;
+        outline: none;
+        font-family: 'Nunito', sans-serif;
+    }
+    
+    .password-toggle {
+        padding-right: 16px;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 22px;
+    }
+
+    .forgot-link {
+        text-align: right;
+        margin-bottom: 24px;
+    }
+    
+    .forgot-link a {
+        color: #9ca3af;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+
+    .auth-submit-btn {
+        width: 100%;
+        background-color: #58cc02;
+        color: white;
+        padding: 16px;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 0 #46a302;
+        transition: all 0.1s;
+    }
+
+    .auth-submit-btn:active {
+        box-shadow: 0 0 0 #46a302;
+        transform: translateY(4px);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+    }
+    
+    .auth-switch-text {
+        color: #6b7280;
+        font-size: 15px;
+        font-weight: 700;
+    }
+    
+    .auth-link {
+        color: #58cc02;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .help-float {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #4b5563;
+        border: 2px solid #e5e7eb;
+        cursor: pointer;
+    }
+
+    /* =========================================
+       NEW AI SCREEN STYLES (VANILLA CSS)
+       ========================================= */
+    
+    :root {
+        --ai-primary: #25d078;
+        --ai-accent: #f78c26;
+        --ai-bg-light: #fafafa;
+        --ai-bg-dark: #1a1c1e;
+        --ai-chat-bubble-ai: #e8f2ed;
+        --ai-chat-bubble-user: #ffffff;
+    }
+
+    #step-ai.screen-wrapper {
+        background-color: var(--ai-bg-light);
+        font-family: 'Spline Sans', sans-serif;
+        color: #0f1a14;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Sticky Header */
+    #ai-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background-color: rgba(250, 250, 250, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid #f3f4f6;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ai-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ai-avatar-container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+    }
+
+    .ai-avatar-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgqC1QMUD3bSxA-Tq3dw3g7fsCE4yvk_C0QYPqBbYq7l5cKgVNuPqGQep-tvPuzsotm6MEm-Ea2nkYTN9IiRPw3mApXi0moEZE6S73lyZr_f37U93AEDekxiuzP1WKXM97vyonP--8o86-eAZnOwIIlNE7ykI-aH9T6AzrOJinJOuD6-KUYM88lWoXt5-vPaepQjcaMgZTXqPKtDbuUbXj4O1R4j46AGyfVBvHGMgQocYn7_KVwYc_siRYa8W11RM8shSAbb1_22BJ');
+        background-size: cover;
+        background-position: center;
+        border: 2px solid var(--ai-primary);
+        box-shadow: 0 0 0 0 rgba(37, 208, 120, 0.4);
+        animation: aiPulse 2s infinite;
+    }
+
+    .ai-status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        background-color: var(--ai-primary);
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .ai-header-text h1 {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1;
+        margin: 0;
+        color: #0f1a14;
+    }
+
+    .ai-header-status {
+        font-size: 11px;
+        color: var(--ai-primary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .ai-header-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .ai-icon-btn {
+        padding: 8px;
+        border-radius: 50%;
+        background-color: #f3f4f6;
+        border: none;
+        cursor: pointer;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Main Chat Area */
+    #ai-chat-stream {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 16px;
+        padding-bottom: 200px; /* Space for fixed bottom input */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .date-divider {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+
+    .date-pill {
+        padding: 4px 12px;
+        background-color: #f3f4f6;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* Chat Bubbles */
+    .chat-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        max-width: 85%;
+    }
+
+    .chat-row.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .chat-avatar-small {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        border: 1px solid rgba(37, 208, 120, 0.2);
+    }
+
+    .chat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .chat-name {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--ai-primary);
+        margin-left: 4px;
+    }
+    
+    .chat-row.user .chat-name {
+        color: #6b7280;
+        margin-right: 4px;
+        text-align: right;
+    }
+
+    .chat-bubble {
+        padding: 12px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+        box-shadow: 0 4px 15px rgba(37, 208, 120, 0.1);
+    }
+
+    /* UPDATED: Clean AI Response Bubble */
+    .chat-bubble.ai-response {
+        background-color: white !important;
+        color: #0f1a14 !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        border-radius: 12px;
+        border-bottom-left-radius: 0;
+        padding: 12px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* Keep user bubble white */
+    .chat-bubble.user {
+        background-color: #f3f4f6 !important;
+        color: #0f1a14 !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px;
+        border-bottom-right-radius: 0;
+        padding: 12px 16px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* Empty State / Loading Animation */
+    .ai-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 0;
+        gap: 16px;
+    }
+
+    .sparkle-container {
+        position: relative;
+        height: 60px;
+        width: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sparkle-wrapper {
+        position: relative;
+        width: 100%;
+        animation: floatWave 6s ease-in-out infinite;
+    }
+
+    .star {
+        position: absolute;
+        background: radial-gradient(circle, #f78c26 20%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0;
+        animation: sparkleFade 2s linear infinite;
+    }
+
+    .ai-thinking-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ai-primary);
+        font-style: italic;
+        opacity: 0.8;
+        animation: softPulse 2s ease-in-out infinite;
+    }
+
+    /* Bottom Input Area */
+    #ai-bottom-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 16px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        background: linear-gradient(to top, rgba(250,250,250,1) 80%, rgba(250,250,250,0.95) 95%, transparent);
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .suggestion-chips {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .suggestion-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chip-btn {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    
+    .chip-btn:active {
+        transform: scale(0.95);
+    }
+
+    .chip-default {
+        background: white;
+        border: 1px solid rgba(247, 140, 38, 0.3);
+        color: #374151;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .chip-accent {
+        background: linear-gradient(135deg, #f78c26, #ea580c);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 10px rgba(247, 140, 38, 0.2);
+    }
+
+    .input-bar-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+    }
+
+    .ai-input-field-container {
+        flex: 1;
+        position: relative;
+    }
+
+    .ai-chat-input-styled {
+        width: 100%;
+        background: white;
+        border: 2px solid #f3f4f6;
+        border-radius: 50px;
+        padding: 16px 48px 16px 24px;
+        font-size: 14px;
+        outline: none;
+        font-family: 'Spline Sans', sans-serif;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        transition: all 0.2s;
+    }
+
+    .ai-chat-input-styled:focus {
+        border-color: var(--ai-primary);
+        box-shadow: 0 0 0 4px rgba(37, 208, 120, 0.1);
+    }
+
+    .attach-btn {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .magic-send-btn {
+        width: 56px;
+        height: 56px;
+        background: var(--ai-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(37, 208, 120, 0.3);
+        transition: transform 0.1s;
+    }
+
+    .magic-send-btn:active {
+        transform: scale(0.9);
+    }
+
+    /* Animations */
+    @keyframes aiPulse {
+        0% { box-shadow: 0 0 0 0 rgba(37, 208, 120, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(37, 208, 120, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(37, 208, 120, 0); }
+    }
+
+    @keyframes floatWave {
+        0%, 100% { transform: translateY(0) translateX(0); }
+        25% { transform: translateY(-10px) translateX(10px); }
+        50% { transform: translateY(5px) translateX(20px); }
+        75% { transform: translateY(-5px) translateX(10px); }
+    }
+
+    @keyframes sparkleFade {
+        0%, 100% { opacity: 0; transform: scale(0.5); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    @keyframes softPulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    /* Typewriter Cursor Animation */
+    .cursor {
+        display: inline-block;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+        font-weight: 400;
+    }
+
+    @keyframes blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
+    }
+
+    /* Smooth scroll for chat */
+    #ai-chat-stream {
+        scroll-behavior: smooth;
+    }
+    
+</style>
+</head>
+<body>
+
+<!-- STEP 0: AUTHENTICATION SCREEN -->
+<div id="step-auth" class="screen-wrapper hidden auth-bg">
+    
+    <div class="auth-header">
+        <h1 class="typewriter-text" id="typewriter">Karibu.</h1>
+        <p class="auth-subtitle">Let's manage your shop today.</p>
+    </div>
+
+    <!-- REPLACED: PWA Install Button (Auth Page) -->
+    <div class="pwa-install-card hidden" onclick="handlePWAClick()" style="
+        margin: 0 auto 20px auto;
+        max-width: 500px;
+        background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+        border: 2px solid #22c55e;
+        border-radius: 20px;
+        padding: 16px 20px;
+        display: none; /* Will show via JS when ready */
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        transition: transform 0.2s;
+    ">
+        <span class="material-symbols-outlined" style="color:#16a34a; font-size: 32px;">download_for_offline</span>
+        <div style="text-align: left; flex: 1;">
+            <div style="color:#166534; font-weight:800; font-size:16px;">Pakua App</div>
+            <div style="color:#166534; font-size:13px; opacity:0.8;">Tumia bila mtandao</div>
+        </div>
+        <span class="material-symbols-outlined" style="color:#16a34a; font-size:24px;">chevron_right</span>
+    </div>
+
+    <div class="auth-card">
+        
+        <!-- Google Card Animation -->
+        <div class="google-card-anim">
+            <button class="google-btn" onclick="handleGoogleAuth()">
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+            </button>
+        </div>
+
+        <div class="divider">or email</div>
+
+        <div class="auth-tabs">
+            <div class="auth-tab active" id="tab-login" onclick="toggleAuthMode('login')">LOGIN</div>
+            <div class="auth-tab" id="tab-signup" onclick="toggleAuthMode('signup')">SIGN UP</div>
+        </div>
+
+        <div class="auth-input-group">
+            <label class="auth-label">Email Address</label>
+            <div class="email-field-wrapper">
+                <span class="material-symbols-outlined field-icon">mail</span>
+                <input type="email" id="auth-email" class="auth-input-field" placeholder="name@email.com">
+            </div>
+        </div>
+
+        <div class="auth-input-group">
+            <label class="auth-label">Password</label>
+            <div class="password-wrapper">
+                <span class="material-symbols-outlined field-icon">lock</span>
+                <input type="password" id="auth-pass" class="auth-input-field" placeholder="6+ characters">
+                <span class="material-symbols-outlined password-toggle" onclick="togglePassVisibility()">visibility_off</span>
+            </div>
+        </div>
+
+        <div class="forgot-link">
+            <a href="#">Forgot Password?</a>
+        </div>
+
+        <button class="auth-submit-btn" onclick="handleAuth()">
+            <span id="auth-btn-text">Ingia (Login)</span>
+        </button>
+    </div>
+
+    <div class="auth-footer">
+        <span class="auth-switch-text" id="auth-footer-text">Don't have an account? </span>
+        <a href="#" class="auth-link" id="auth-footer-link" onclick="toggleAuthMode('signup')">CREATE ONE</a>
+    </div>
+
+    <div class="help-float">
+        <span class="material-symbols-outlined" style="color: #58cc02;">support_agent</span>
+        Need Help?
+    </div>
+</div>
+
+<!-- STEPS 1-4 -->
+
+<div id="step-1" class="screen-wrapper hidden">
+    <div class="media-card"><div class="video-container"><video class="hero-video" src="https://vqgnxqabvmmpfoiceass.supabase.co/storage/v1/object/public/post-images/grok_video_2026-01-01-15-58-00.mp4" autoplay loop muted playsinline></video></div></div>
+    <div class="content-area"><h1>Biashara yako iendelee hata ukiwa umelala</h1><p>Weka bidhaa zako mara moja, AI itahudumia wateja wako</p></div>
+    <div class="bottom-footer"><button id="btn-step-1" class="btn-start" onclick="handleStep1Click()">Anza <span class="arrow-icon">&rarr;</span></button><div class="footer-badge">🔒 Secured by WhatsApp</div></div>
+</div>
+<div id="step-2" class="screen-wrapper hidden">
+    <button class="close-btn" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    <div class="media-card"><div class="avatar-container"><img src="https://vqgnxqabvmmpfoiceass.supabase.co/storage/v1/object/public/post-images/file_00000000f48c71fda7ebace03538d6f8.png" alt="Agent Hiba" class="agent-avatar"><div class="speech-bubble">👋</div></div></div>
+    <div class="content-area"><h1>Let's get started! What is your business called?</h1><div class="sub-header">Jina la duka lako</div><div class="input-group"><div class="input-wrapper"><svg class="input-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8H20V21H4V8Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 8L7.33333 3H16.6667L20 8" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><input type="text" id="shop-name-input" class="custom-input" placeholder="e.g., Duka la Asha"></div><div class="helper-text"><span style="color:#58cc02; font-weight:bold; font-size: 16px;">i</span><div>Customers will see this name on WhatsApp.<br><span style="font-style: italic; opacity: 0.8;">Wateja wataona jina hili kwenye WhatsApp.</span></div></div></div></div>
+    <div class="bottom-footer"><button id="btn-step-2" class="btn-start" onclick="handleStep2Click()">Continue <span class="arrow-icon">&rarr;</span></button><div class="footer-badge">🔒 Safe & Secure • Salama</div></div>
+</div>
+<div id="step-3" class="screen-wrapper hidden">
+    <button class="close-btn" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    <div class="media-card"><div class="avatar-container"><img src="https://vqgnxqabvmmpfoiceass.supabase.co/storage/v1/object/public/post-images/file_00000000f48c71fda7ebace03538d6f8.png" alt="Agent Hiba" class="agent-avatar"></div></div>
+    <div class="content-area"><h1>What do you sell?</h1><div class="sub-header">Pick the category that fits best.</div><div class="category-grid"><div class="cat-card" onclick="selectCategory(this, 'Clothes')"><span class="cat-icon">👕</span><span class="cat-name">Clothes</span></div><div class="cat-card" onclick="selectCategory(this, 'Food')"><span class="cat-icon">🍔</span><span class="cat-name">Food</span></div><div class="cat-card" onclick="selectCategory(this, 'Electronics')"><span class="cat-icon">📱</span><span class="cat-name">Electronics</span></div><div class="cat-card" onclick="selectCategory(this, 'Beauty')"><span class="cat-icon">💄</span><span class="cat-name">Beauty</span></div><div class="cat-card" onclick="selectCategory(this, 'Home')"><span class="cat-icon">🛋️</span><span class="cat-name">Home</span></div><div class="cat-card" onclick="selectCategory(this, 'Other')"><span class="cat-icon">•••</span><span class="cat-name">Other</span></div></div><div id="other-input-container"><div class="input-wrapper"><input type="text" id="cat-other-input" class="custom-input" placeholder="Type your category..."></div></div></div>
+    <div class="bottom-footer"><button id="btn-step-3" class="btn-start" onclick="handleStep3Click()">Continue <span class="arrow-icon">&rarr;</span></button><div class="footer-badge">🔒 Safe & Secure • Salama</div></div>
+</div>
+<div id="step-4" class="screen-wrapper hidden">
+    <button class="close-btn" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    <div class="media-card"><div class="avatar-container"><img src="https://vqgnxqabvmmpfoiceass.supabase.co/storage/v1/object/public/post-images/file_00000000f48c71fda7ebace03538d6f8.png" alt="Agent Hiba" class="agent-avatar"><div class="speech-bubble">Karibu! 👋</div></div></div>
+    <div class="content-area"><h1>Let's set your shop rules, Rafiki</h1><div class="sub-header">Choose how you want to handle orders and alerts.</div><div class="setting-card"><div class="setting-header"><div class="setting-icon-bg icon-bg-blue"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.04-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div><div><div class="setting-title">WhatsApp Business</div><div class="setting-subtitle">Used for notifications</div></div></div><input type="tel" id="whatsapp-input" class="setting-input" placeholder="e.g. 0712 345 678"></div><div class="setting-card"><div class="setting-header"><div class="setting-icon-bg icon-bg-orange"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div><div><div class="setting-title">Lipa Namba</div><div class="setting-subtitle">Voda / Airtel / Tigo / M-Pesa</div></div></div><input type="number" id="lipa-input" class="setting-input" placeholder="e.g. 5566778"></div></div>
+    <div class="bottom-footer"><button id="btn-step-4" class="btn-start" onclick="handleStep4Click()">Sawa, Endelea <span class="arrow-icon">&rarr;</span></button><div class="footer-badge">🔒 Safe & Secure • Salama</div></div>
+</div>
+
+<!-- STEP 5: STORE DASHBOARD -->
+
+<div id="step-5" class="screen-wrapper hidden">
+    <div class="app-container">
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="profile-section">
+                <div class="profile-img" id="profile-avatar"><div class="profile-status"></div></div>
+                <div class="profile-info"><h2 id="dash-business-name">Loading...</h2><p id="dash-greeting">Welcome!</p></div>
+            </div>
+
+            <!-- ADDED: PWA Install Button (Dashboard) -->
+            <button class="pwa-install-card pwa-dash-compact" onclick="handlePWAClick()" style="
+                margin: 0 0 0 10px;
+                padding: 8px 14px;
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+                border: 2px solid #22c55e;
+                border-radius: 50px;
+                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+                cursor: pointer;
+            ">
+                <span class="material-symbols-outlined" style="font-size:18px; color:#16a34a;">download</span>
+                <span style="color:#166534; font-weight:800;">Pakua</span>
+            </button>
+
+            <button class="close-icon-btn"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <!-- Main Scrollable Content -->
+        <div class="main-content">
+            <!-- Shop Status -->
+            <div class="section-head"><div class="section-title">Hali ya Duka</div><span class="leo-badge">Leo</span></div>
+            <div class="h-scroll hide-scrollbar"><div class="status-card sc-green"><div class="sc-icon"><span class="material-symbols-outlined">check</span></div><div class="sc-text"><h4>Biashara iko sawa</h4><p>Hongera, mauzo mazuri!</p></div></div><div class="status-card sc-orange"><div class="sc-icon"><span class="material-symbols-outlined">inventory_2</span></div><div class="sc-text"><h4>Bidhaa zinaisha</h4><p>Agiza mpya mapema</p></div></div></div>
+            <!-- Money Today -->
+            <div class="section-head"><div class="section-title">Fedha Leo (Money Today)</div></div>
+            <div class="money-wrapper"><div class="big-white-card"><div class="sold-box"><div class="stat-label"><span class="material-symbols-outlined">payments</span>Leo umeuza</div><div class="big-price" id="dash-total-sales">Tsh 0</div></div><div class="stats-grid"><div class="small-stat-box"><div class="stat-label"><span class="material-symbols-outlined" style="color:#6b7280">wallet</span>Mkononi</div><div class="small-price" id="dash-cash">Tsh 0</div></div><div class="small-stat-box"><div class="stat-label"><span class="material-symbols-outlined" style="color:#6b7280">pending</span>Madeni</div><div class="small-price" id="dash-debt">Tsh 0</div></div></div></div></div>
+            <!-- AI Assistant -->
+            <div class="ai-wrapper"><div class="ai-dark-card"><div class="ai-header-row"><div class="ai-title-group"><div class="ai-icon-bg"><span class="material-symbols-outlined">smart_toy</span></div><span class="ai-name">Msaidizi wa Duka</span></div><div class="active-pill">ACTIVE</div></div><p class="ai-desc">"Nimejibu wateja 8 leo na kuhifadhi oda 2. Nitakukumbusha bidhaa zikikaribia kuisha."</p><button class="ai-btn" onclick="goToAI()"><span class="material-symbols-outlined" style="font-size:18px;">chat_bubble</span>Ongea nae</button></div></div>
+            
+            <!-- Product Grid (Bidhaa Zako) -->
+            <div class="section-head" style="margin-top: 30px;"><div class="section-title">Bidhaa Zako</div><a href="#" class="link-text">Zote</a></div>
+            <div class="products-wrapper">
+                <div class="prod-grid" id="products-container">
+                    <!-- Products will be injected here via Supabase -->
+                </div>
+            </div>
+            
+            <!-- Debtors -->
+            <div class="section-head"><div class="section-title">Wadaiwa</div><a href="#" class="link-text">Orodha</a></div>
+            <div class="debtor-wrapper" id="debtors-container">
+               <!-- Debtors injected here -->
+            </div>
+        </div>
+    
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="loadDashboard()">
+                <span class="material-symbols-outlined nav-icon">home</span>
+                <span class="nav-label">Nyumbani</span>
+            </div>
+            <!-- ADDED: Mauzo Nav Item -->
+            <div class="nav-item" onclick="goToAnalytics()">
+                <span class="material-symbols-outlined nav-icon">bar_chart</span>
+                <span class="nav-label">Mauzo</span>
+            </div>
+            <div class="nav-item center-action" onclick="goToAddProduct()">
+                <div class="floating-add-btn">
+                    <span class="material-symbols-outlined" style="font-size:32px;">add</span>
+                </div>
+                <span class="nav-label add-label">Ongeza</span>
+            </div>
+            <div class="nav-item" onclick="goToAI()">
+                <span class="material-symbols-outlined nav-icon">auto_awesome</span>
+                <span class="nav-label">AI</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =======================================================
+     ADDED: SALES ANALYTICS PAGE (New Screen)
+     ======================================================= -->
+<div id="step-analytics" class="screen-wrapper hidden">
+    <div class="app-container">
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="profile-section">
+                <div class="profile-img" id="ana-profile-avatar"></div>
+                <div class="profile-info">
+                    <p style="font-size: 11px; text-transform: uppercase; font-weight: 800; color: #9ca3af;">HABARI,</p>
+                    <h2 id="ana-business-name" style="font-size: 20px;">User!</h2>
+                </div>
+            </div>
+            <button class="close-icon-btn" onclick="loadDashboard()"><span class="material-symbols-outlined">close</span></button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="ana-tabs">
+            <div class="ana-tab active" onclick="loadAnalytics('today', this)">Leo</div>
+            <div class="ana-tab" onclick="loadAnalytics('week', this)">Wiki</div>
+            <div class="ana-tab" onclick="loadAnalytics('month', this)">Mwezi</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Big Green Card -->
+            <div class="ana-card-green">
+                <div class="ana-cg-label">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">account_balance_wallet</span>
+                    Faida Yako (Sales)
+                </div>
+                <div class="ana-cg-amount" id="ana-total-profit">0 TZS</div>
+                <div class="ana-cg-sub">+12% Kulinganisha na jana</div>
+            </div>
+
+            <!-- Small Cards Grid -->
+            <div class="ana-grid">
+                <div class="ana-small-card">
+                    <div class="asc-icon green"><span class="material-symbols-outlined">payments</span></div>
+                    <div class="asc-label">Mauzo</div>
+                    <div class="asc-val" id="ana-sales-val">0 TZS</div>
+                </div>
+                <div class="ana-small-card">
+                    <div class="asc-icon orange"><span class="material-symbols-outlined">warning</span></div>
+                    <div class="asc-label">Madeni</div>
+                    <div class="asc-val" id="ana-debt-val">0 TZS</div>
+                </div>
+            </div>
+
+            <!-- Recent List -->
+            <div class="ana-list-header">
+                <div class="ana-lh-title">Hivi Karibuni</div>
+                <div class="ana-lh-link">Ona Zote</div>
+            </div>
+
+            <div class="ana-list-container" id="ana-list-container">
+                <!-- Items injected here -->
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="loadDashboard()">
+                <span class="material-symbols-outlined nav-icon">home</span>
+                <span class="nav-label">Nyumbani</span>
+            </div>
+            <div class="nav-item active" onclick="goToAnalytics()">
+                <span class="material-symbols-outlined nav-icon">bar_chart</span>
+                <span class="nav-label">Mauzo</span>
+            </div>
+            <div class="nav-item center-action" onclick="goToAddProduct()">
+                <div class="floating-add-btn">
+                    <span class="material-symbols-outlined" style="font-size:32px;">add</span>
+                </div>
+                <span class="nav-label add-label">Ongeza</span>
+            </div>
+            <div class="nav-item" onclick="goToAI()">
+                <span class="material-symbols-outlined nav-icon">auto_awesome</span>
+                <span class="nav-label">AI</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =======================================================
+     REPLACED: SINGLE PAGE ADD PRODUCT
+     ======================================================= -->
+<div id="step-add-product" class="screen-wrapper hidden">
+    <!-- Hidden File Inputs -->
+    <input type="file" id="camera-input" capture="environment" accept="image/*" hidden onchange="handleImageUpload(this)">
+    <input type="file" id="gallery-input" accept="image/*" hidden onchange="handleImageUpload(this)">
+
+    <div class="ap-container">
+        <!-- Navigation -->
+        <nav class="ap-nav">
+            <button class="ap-back-btn" onclick="closeAddProduct()">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="ap-title-col">
+                <h1 class="ap-title">Ongeza Bidhaa</h1>
+                <span class="ap-pro-badge">Kwa Ustadi (Pro)</span>
+            </div>
+            <div class="ap-star-icon">
+                <span class="material-symbols-outlined" style="font-weight: 700;">star</span>
+            </div>
+        </nav>
+
+        <!-- UPDATED: Photo Card with Gallery Support -->
+        <div class="ap-photo-card" id="ap-photo-card-container">
+            <!-- Empty State -->
+            <div id="ap-photo-empty" class="ap-photo-content">
+                <div class="ap-important-badge">MUHIMU</div>
+                <div style="text-align:center; margin-bottom:16px;">
+                    <div style="font-weight:800; color:#0f1a14; margin-bottom:4px;">Picha ya Bidhaa</div>
+                    <div style="font-size:12px; color:#9ca3af;">Chagua picha au piga mpya</div>
+                </div>
+                
+                <div class="ap-photo-actions">
+                    <!-- Camera -->
+                    <div class="ap-action-btn" onclick="triggerCamera()">
+                        <div class="ap-icon-circle cam">
+                            <span class="material-symbols-outlined">photo_camera</span>
+                        </div>
+                        <span>Camera</span>
+                    </div>
+                    <!-- Gallery -->
+                    <div class="ap-action-btn" onclick="triggerGallery()">
+                        <div class="ap-icon-circle gal">
+                            <span class="material-symbols-outlined">image</span>
+                        </div>
+                        <span>Gallery</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview State (Clean Review) -->
+            <div id="ap-photo-preview" class="ap-preview-container hidden">
+                <img id="ap-preview-img" class="ap-preview-img" src="">
+                <button class="ap-remove-photo-btn" onclick="resetPhoto()">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+                <button class="ap-change-photo-btn" onclick="triggerGallery()">
+                    <span class="material-symbols-outlined">edit</span> Change
+                </button>
+            </div>
+        </div>
+
+        <!-- Product Name Input -->
+        <div class="ap-input-card">
+            <div class="ap-label-row">
+                <span class="material-symbols-outlined" style="color:#25d078; font-size: 20px;">label</span>
+                <span class="ap-label-text">Jina la Bidhaa</span>
+            </div>
+            <input id="new-prod-name" class="ap-text-input" placeholder="Mf: Sabuni ya Miche 5" type="text" />
+        </div>
+
+        <!-- ADDED: Usage Instructions (for medicine/dosage) -->
+        <div class="ap-input-card">
+            <div class="ap-label-row">
+                <span class="material-symbols-outlined" style="color:#f78c26; font-size: 20px;">medication</span>
+                <span class="ap-label-text">Maelezo ya Matumizi (Optional)</span>
+            </div>
+            <input id="new-prod-usage" class="ap-text-input" placeholder="Mf: Mara 2 kwa siku, Max 3 vidonge" type="text" style="font-size: 16px;" />
+            <p style="font-size: 11px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
+                Kwa dawa: Andika jinsi ya kutumia na kiwango cha juu (For medicine: dosage & max amount)
+            </p>
+        </div>
+
+        <!-- Category Section -->
+        <div>
+            <div class="ap-cat-row">
+                <span class="ap-cat-title">Aina ya Bidhaa</span>
+                <span class="ap-cat-link">Ona Zote</span>
+            </div>
+            <div class="ap-cat-scroll">
+                <button class="ap-cat-chip" onclick="selectNewCategory(this, 'Chakula')">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">inventory_2</span> Chakula
+                </button>
+                <button class="ap-cat-chip" onclick="selectNewCategory(this, 'Nguo')">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">checkroom</span> Nguo
+                </button>
+                <button class="ap-cat-chip" onclick="selectNewCategory(this, 'Vifaa')">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">home_repair_service</span> Vifaa
+                </button>
+                <button class="ap-cat-chip" onclick="selectNewCategory(this, 'Nyingine')">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">category</span> Nyingine
+                </button>
+            </div>
+        </div>
+
+        <!-- Price Grid -->
+        <div class="ap-grid-2">
+            <div class="ap-input-card">
+                <p class="ap-small-label">Bei ya Kununua</p>
+                <div class="ap-price-row">
+                    <span class="ap-currency">TSh</span>
+                    <input id="new-prod-cost" class="ap-text-input" placeholder="0" type="number" />
+                </div>
+            </div>
+            <div class="ap-input-card">
+                <p class="ap-small-label primary">Bei ya Kuuza</p>
+                <div class="ap-price-row">
+                    <span class="ap-currency">TSh</span>
+                    <input id="new-prod-price" class="ap-text-input" placeholder="0" type="number" />
+                </div>
+            </div>
+        </div>
+
+        <!-- FIXED: Stock Input - Now Editable -->
+        <div class="ap-input-card">
+            <div class="ap-label-row">
+                <span class="material-symbols-outlined" style="color:#25d078; font-size: 20px;">inventory</span>
+                <span class="ap-label-text">Idadi ya Stock</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="ap-stock-btn ap-btn-minus" onclick="updateNewStock(-1)" style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s; border-bottom-width: 4px; border-style: solid; background: #f9fafb; border-color: #e5e7eb; color: #0f1a14;">
+                    <span class="material-symbols-outlined">remove</span>
+                </button>
+                <input id="new-stock-input" class="ap-text-input" type="number" min="0" value="1" style="text-align: center; font-size: 24px; font-weight: 900; color: #25d078; width: 100px; padding: 8px;" oninput="syncStockValue(this.value)" />
+                <button class="ap-stock-btn ap-btn-plus" onclick="updateNewStock(1)" style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s; border-bottom-width: 4px; border-style: solid; background: rgba(37, 208, 120, 0.1); border-color: rgba(37, 208, 120, 0.4); color: #25d078;">
+                    <span class="material-symbols-outlined">add</span>
+                </button>
+            </div>
+            <p style="font-size: 11px; color: #9ca3af; margin-top: 8px; font-weight: 600;">
+                Unaweza kuandika moja kwa moja au bonyeza +/- (You can type directly or use +/-)
+            </p>
+        </div>
+
+        <!-- Reminder Toggle -->
+        <div class="ap-remind-card">
+            <div class="ap-remind-left">
+                <div class="ap-remind-icon">
+                    <span class="material-symbols-outlined">notifications_active</span>
+                </div>
+                <div>
+                    <p class="font-bold text-sm" style="font-weight:700;">Nikumbushe ikiisha</p>
+                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-tighter" style="font-size:10px; color:#9ca3af; font-weight:800;">Low stock reminder</p>
+                </div>
+            </div>
+            <div class="ap-toggle" onclick="toggleNewReminder(this)">
+                <div class="ap-toggle-dot"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Action Bar (Now inside container and static) -->
+        <div class="ap-bottom-bar">
+            <div class="ap-save-btn-wrapper">
+                <button id="save-btn-idle" class="ap-save-btn" onclick="triggerMagicSave()">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>Hifadhi Bidhaa</span>
+                </button>
+                
+                <div id="save-btn-loading" class="ap-loading-state">
+                    <span class="material-symbols-outlined magic-spin">auto_fix_high</span>
+                </div>
+
+                <div id="save-btn-success" class="ap-success-state">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:24px;">check_circle</span>
+                        <span style="font-weight:900; letter-spacing:1px;">IMEFANIKIWA!</span>
+                    </div>
+                    <div class="confetti-particle" style="--tx: -40px; --ty: -60px; left: 20%; top: 40%;"></div>
+                    <div class="confetti-particle" style="--tx: 50px; --ty: -80px; left: 70%; top: 30%;"></div>
+                    <div class="confetti-particle" style="--tx: -80px; --ty: -40px; left: 10%; top: 60%;"></div>
+                    <div class="confetti-particle" style="--tx: 90px; --ty: -20px; left: 85%; top: 50%;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- =========================================
+     REPLACED: STEP AI ASSISTANT (NEW DESIGN)
+     ========================================= -->
+<div id="step-ai" class="screen-wrapper hidden">
+    <!-- Header -->
+    <header id="ai-header">
+        <div class="ai-header-left">
+            <div class="ai-avatar-container">
+                <div class="ai-avatar-img"></div>
+                <div class="ai-status-dot"></div>
+            </div>
+            <div class="ai-header-text">
+                <h1>Msaidizi wa AI</h1>
+                <span class="ai-header-status">Yuko Tayari</span>
+            </div>
+        </div>
+        <div class="ai-header-actions">
+            <button class="ai-icon-btn">
+                <span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+            </button>
+            <button class="ai-icon-btn">
+                <span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Chat Content -->
+    <main id="ai-chat-stream">
+        <div class="date-divider">
+            <span class="date-pill">Leo</span>
+        </div>
+
+        <!-- CENTERED WELCOME STATE (Initially shown) -->
+        <!-- Will be populated by JS -->
+    </main>
+
+    <!-- Bottom Fixed Input Area -->
+    <div id="ai-bottom-container">
+        <!-- Suggestion Chips -->
+        <div class="suggestion-chips" id="ai-dashboard-view">
+            <!-- Chips populated by JS -->
+        </div>
+
+        <!-- Input Bar -->
+        <div class="input-bar-wrapper">
+            <div class="ai-input-field-container">
+                <input type="text" id="ai-chat-input" class="ai-chat-input-styled" placeholder="Andika hapa...">
+                <button class="attach-btn">
+                    <span class="material-symbols-outlined">attach_file</span>
+                </button>
+            </div>
+            <button class="magic-send-btn" onclick="handleChatSubmit()">
+                <span class="material-symbols-outlined" style="font-size: 24px;">magic_button</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================
+     RECORD SALE (STEP 11)
+     ========================================= -->
+
+<div id="step-11" class="hidden">
+    <!-- Header Card with Close Button -->
+    <div class="sale-header-card">
+        <button class="close-sale-btn" onclick="closeRecordSale()">
+            <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+        </button>
+        <img id="rs-img" src="" class="sale-prod-img">
+        <div class="sale-info">
+            <div id="rs-title" class="sale-title">Product Name</div>
+            <div class="sale-variant">Standard Variant</div>
+            <div class="sale-price-label">BEI</div>
+            <div id="rs-price" class="sale-price-val">Tsh 0</div>
+            <div class="stock-pill">Stock: <span id="rs-stock">0</span></div>
+        </div>
+    </div>
+
+    <!-- Toggle Switch -->
+    <div class="sale-toggle-container">
+        <div class="st-btn active" id="btn-type-cash" onclick="toggleSaleType('cash')">Nauza (Cash)</div>
+        <div class="st-btn" id="btn-type-debt" onclick="toggleSaleType('debt')">Natoa kwa deni</div>
+    </div>
+
+    <!-- Debtor Info Section (Hidden by Default) -->
+    <div id="debt-info-section" class="hidden" style="margin: 0 24px 16px 24px;">
+        <input type="text" id="debtor-name" class="setting-input" placeholder="Jina la Mdaiwa (Debtor Name)" style="margin-bottom: 10px; background: white; border: 2px solid #e5e7eb;">
+        <input type="tel" id="debtor-phone" class="setting-input" placeholder="Namba ya Simu (Phone)" style="background: white; border: 2px solid #e5e7eb;">
+    </div>
+
+    <!-- Quantity Card -->
+    <div class="sale-card-box">
+        <div class="sc-header">
+            <span class="sc-title">IDADI (QUANTITY)</span>
+            <span class="sc-stock-light">In Stock: <span id="rs-stock-sm">45</span></span>
+        </div>
+        <div class="qty-control-row">
+            <button class="qty-circle qc-minus" onclick="updateSaleQty(-1)">
+                <span class="material-symbols-outlined">remove</span>
+            </button>
+            <span id="rs-qty" class="qc-val">1</span>
+            <button class="qty-circle qc-plus" onclick="updateSaleQty(1)">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Price Calculation Grid -->
+    <div class="price-grid">
+        <div class="pg-card">
+            <div class="pg-label">BEI YA MOJA</div>
+            <div class="pg-val">Tsh <span id="rs-unit-price">0</span></div>
+            <div class="pg-input-line"></div>
+        </div>
+        <div class="pg-card">
+            <div class="pg-label">JUMLA KUU</div>
+            <div class="pg-val green">Tsh <span id="rs-total-grid">0</span></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="sale-footer">
+        <div class="sf-row">
+            <span class="sf-label">Jumla ya kulipwa:</span>
+            <span class="sf-total">Tsh <span id="rs-footer-total">0</span> /=</span>
+        </div>
+        <button class="confirm-sale-btn" onclick="confirmTransaction()">
+            <span class="material-symbols-outlined" style="font-weight: 800;">check_circle</span>
+            Thibitisha Mauzo
+        </button>
+    </div>
+</div>
+
+<script>
+    // --- SUPABASE CONFIG ---
+    const SUPABASE_URL = 'https://vqgnxqabvmmpfoiceass.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZ254cWFidm1tcGZvaWNlYXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODE5NDMsImV4cCI6MjA3NDk1Nzk0M30.ZkOlMsqmfv4gCl3YG5CLe7te5DoIbZad8Y2mIpKTleA';
+    
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // --- STATE MANAGEMENT ---
+    let CURRENT_BUSINESS_ID = localStorage.getItem('biashara_business_id');
+    let GLOBAL_PRODUCTS = []; // To store products for AI context
+    
+    // Auth State
+    let isSignup = false;
+    const authTexts = ["Karibu. Tulikumiss sana 😂", "Karibu. Piga kazi leo 🚀", "Karibu. maokoto yaendelee 💰"];
+    let textIdx = 0;
+    
+    // Add Product Draft State
+    let draftProduct = {
+        name: '',
+        category: '',
+        imageFile: null,
+        description: '',
+        price: 0,
+        stock: 0,
+        cost: 0,
+        customCat: '',
+        customColors: '',
+        keywords: '',
+        reminderEnabled: true,
+        reminderCount: 5,
+        usage: '' // ADDED: usage field
+    };
+
+    // Sale State
+    let currentSaleItem = {
+        id: null,
+        price: 0,
+        qty: 1,
+        type: 'cash',
+        stock: 0
+    };
+
+    // --- TRACKING HELPERS ---
+    function trackSignup() {
+      if(window.amp) amp.logEvent("Signup Completed");
+    }
+
+    function trackAddProduct(productName, price) {
+      if(window.amp) {
+          amp.logEvent("Product Added", {
+            product_name: productName,
+            price: price
+          });
+      }
+    }
+
+    function trackSale(productName, quantity, total) {
+      if(window.amp) {
+          amp.logEvent("Sale Recorded", {
+            product_name: productName,
+            quantity: quantity,
+            total: total
+          });
+      }
+    }
+
+    function trackAIChat() {
+      if(window.amp) amp.logEvent("AI Chat Used");
+    }
+
+    function trackSection(tabName) {
+      if(window.amp) amp.logEvent("Section Opened", { section: tabName });
+    }
+
+    // --- INIT ---
+    window.addEventListener('load', async () => {
+        // Start Typewriter
+        typewriterEffect();
+
+        // Check Auth
+        const { data: { session } } = await sb.auth.getSession();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const step = urlParams.get('step');
+
+        if(session) {
+            // Logged in
+            if (step) {
+                if (step === 'add-product') showScreen('step-add-product', false);
+                else if (step === 'ai') showScreen('step-ai', false);
+                else showScreen('step-' + step, false);
+                if(step == 5 || step == 'ai') loadDashboard();
+            } else {
+                if(session) {
+                    history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                    showScreen('step-5', false);
+                    loadDashboard();
+                } else {
+                    // Logged in but no business setup? Go to onboarding
+                    showScreen('step-1', true);
+                }
+            }
+        } else {
+            // Not logged in -> Show Auth
+            showScreen('step-auth', true);
+        }
+    });
+
+    // --- FIXED PWA INSTALL LOGIC ---
+    let deferredPrompt;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install button on all relevant pages
+        document.querySelectorAll(".pwa-install-card").forEach(el => {
+            el.classList.remove("hidden");
+            el.style.display = "flex";
+        });
+        
+        console.log("✅ PWA install prompt ready");
+    });
+
+    // iOS Detection
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+    const isInStandaloneMode = () => 
+        ('standalone' in window.navigator) && (window.navigator.standalone);
+
+    // Show PWA button on iOS if not installed
+    if (isIOS && !isInStandaloneMode()) {
+        document.querySelectorAll(".pwa-install-card").forEach(el => {
+            el.classList.remove("hidden");
+            el.style.display = "flex";
+        });
+    }
+
+    async function handlePWAClick() {
+        console.log("📱 PWA Install clicked");
+        
+        // For Android/Desktop with native prompt
+        if (deferredPrompt) {
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('✅ User accepted PWA install');
+                    // Hide install buttons after installation
+                    document.querySelectorAll(".pwa-install-card").forEach(el => {
+                        el.style.display = "none";
+                    });
+                } else {
+                    console.log('❌ User dismissed PWA install');
+                }
+                
+                deferredPrompt = null;
+            } catch (error) {
+                console.error("PWA install error:", error);
+            }
+            return;
+        }
+        
+        // For iOS - Show manual instructions
+        if (isIOS) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 24px;
+                    padding: 32px 24px;
+                    max-width: 400px;
+                    text-align: center;
+                    animation: slideUp 0.3s ease;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+                    <h3 style="font-size: 20px; font-weight: 800; color: #1f2937; margin-bottom: 16px;">
+                        Pakua App (iOS)
+                    </h3>
+                    <div style="text-align: left; color: #4b5563; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+                        <p style="margin-bottom: 12px;"><strong>Hatua za kupakua:</strong></p>
+                        <p style="margin-bottom: 8px;">1️⃣ Bonyeza alama ya <strong>Share</strong> (⬆️) chini</p>
+                        <p style="margin-bottom: 8px;">2️⃣ Chagua <strong>"Add to Home Screen"</strong></p>
+                        <p style="margin-bottom: 8px;">3️⃣ Bonyeza <strong>"Add"</strong> kumaliza</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        width: 100%;
+                        background: #22c55e;
+                        color: white;
+                        padding: 14px;
+                        border-radius: 50px;
+                        border: none;
+                        font-size: 16px;
+                        font-weight: 800;
+                        cursor: pointer;
+                    ">
+                        Sawa, Nimeelewa
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            return;
+        }
+        
+        // Fallback message for browsers without PWA support
+        alert("Samahani, kivinjari chako hakiwezi kupakua app. Tafadhali tumia Chrome au Safari.");
+    }
+
+    // Show PWA button on page load if installable
+    window.addEventListener('load', () => {
+        const isInstalled = isInStandaloneMode() || window.matchMedia('(display-mode: standalone)').matches;
+        
+        if (!isInstalled) {
+            document.querySelectorAll(".pwa-install-card").forEach(el => {
+                el.classList.remove("hidden");
+                el.style.display = "flex";
+            });
+        }
+    });
+
+    // --- AUTH LOGIC (EMAIL & GOOGLE) ---
+    function toggleAuthMode(mode) {
+        const loginTab = document.getElementById('tab-login');
+        const signupTab = document.getElementById('tab-signup');
+        const btnText = document.getElementById('auth-btn-text');
+        const footerText = document.getElementById('auth-footer-text');
+        const footerLink = document.getElementById('auth-footer-link');
+
+        if(mode === 'signup') {
+            isSignup = true;
+            loginTab.classList.remove('active');
+            signupTab.classList.add('active');
+            btnText.innerText = 'Jisajili (Sign Up)';
+            footerText.innerText = 'Already have an account? ';
+            footerLink.innerText = 'INGIA (LOGIN)';
+            footerLink.setAttribute('onclick', "toggleAuthMode('login')");
+        } else {
+            isSignup = false;
+            signupTab.classList.remove('active');
+            loginTab.classList.add('active');
+            btnText.innerText = 'Ingia (Login)';
+            footerText.innerText = 'Don\'t have an account? ';
+            footerLink.innerText = 'CREATE ONE';
+            footerLink.setAttribute('onclick', "toggleAuthMode('signup')");
+        }
+    }
+
+    function togglePassVisibility() {
+        const input = document.getElementById('auth-pass');
+        const icon = document.querySelector('.password-toggle');
+        if(input.type === 'password') {
+            input.type = 'text';
+            icon.innerText = 'visibility';
+        } else {
+            input.type = 'password';
+            icon.innerText = 'visibility_off';
+        }
+    }
+
+    // Google Auth Handler
+    async function handleGoogleAuth() {
+        try {
+            const { data, error } = await sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: 'https://linkamarket.co.tz',
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                },
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert("Google Login Error: " + error.message);
+        }
+    }
+
+    // Email Auth Handler
+    async function handleAuth() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-pass').value;
+        const btn = document.querySelector('.auth-submit-btn');
+        
+        if(!email || !password) return alert('Please fill in all fields');
+        if(password.length < 6) return alert('Password must be at least 6 characters');
+
+        btn.innerHTML = 'Subiri...';
+        btn.disabled = true;
+
+        let result;
+        if(isSignup) {
+            result = await sb.auth.signUp({ email, password });
+        } else {
+            result = await sb.auth.signInWithPassword({ email, password });
+        }
+
+        const { data, error } = result;
+
+        if(error) {
+            alert(error.message);
+            btn.innerHTML = '<span id="auth-btn-text">' + (isSignup ? 'Jisajili (Sign Up)' : 'Ingia (Login)') + '</span>';
+            btn.disabled = false;
+        } else {
+            if(data.session) {
+                if(isSignup) trackSignup();
+                history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                showScreen('step-5', true);
+                loadDashboard();
+            } else if (isSignup && !data.session) {
+                 trackSignup();
+                 alert('Registration successful! Please check your email to confirm.');
+                 toggleAuthMode('login');
+                 btn.disabled = false;
+                 btn.innerHTML = 'Ingia (Login)';
+            }
+        }
+    }
+
+    function typewriterEffect() {
+        const el = document.getElementById('typewriter');
+        if(!el) return;
+        
+        let text = authTexts[textIdx];
+        let i = 0;
+        let isDeleting = false;
+        
+        function type() {
+            const currentText = authTexts[textIdx];
+            if (isDeleting) {
+                el.innerText = currentText.substring(0, i - 1);
+                i--;
+            } else {
+                el.innerText = currentText.substring(0, i + 1);
+                i++;
+            }
+
+            if (!isDeleting && i === currentText.length) {
+                isDeleting = true;
+                setTimeout(type, 2000); // Pause at end
+            } else if (isDeleting && i === 0) {
+                isDeleting = false;
+                textIdx = (textIdx + 1) % authTexts.length;
+                setTimeout(type, 500); // Pause before new text
+            } else {
+                setTimeout(type, isDeleting ? 50 : 100);
+            }
+        }
+        type();
+    }
+
+
+    // --- NAVIGATION HELPERS ---
+    function navigateTo(stepNum, title) {
+        // Handle step feedback
+        let btnId;
+        if(typeof stepNum === 'string') btnId = 'btn-step-7'; // default guess
+        else btnId = `btn-step-${stepNum-1}`;
+        
+        triggerFeedback(btnId);
+        
+        setTimeout(() => {
+            if(typeof stepNum === 'string') {
+                history.pushState({ step: stepNum }, title, `?step=${stepNum}`);
+                showScreen('step-' + stepNum, true); // Generalize showing screen
+            } else {
+                history.pushState({ step: stepNum }, title, `?step=${stepNum}`);
+                showScreen(`step-${stepNum}`, true);
+            }
+        }, 150);
+    }
+    
+    function showScreen(stepId, animate) {
+        // Hide analytics explicitly too
+        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'step-add-product', 'step-11', 'step-ai', 'step-analytics'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(stepId);
+        if(target) {
+            target.classList.remove('hidden');
+            if (animate) {
+                target.classList.remove('fade-in');
+                void target.offsetWidth; 
+                target.classList.add('fade-in');
+            }
+        }
+    }
+    
+    function triggerFeedback(btnId) {
+        const btn = document.getElementById(btnId);
+        if(btn) {
+            btn.classList.add('pressed');
+            if (navigator.vibrate) navigator.vibrate(50);
+            setTimeout(() => btn.classList.remove('pressed'), 150);
+        }
+    }
+    
+    function goBack() { window.history.back(); }
+    
+    window.addEventListener('popstate', (event) => {
+        const step = event.state ? event.state.step : 5; // Default to dash if authorized
+        // Simple logic for back button handling vs auth
+        sb.auth.getSession().then(({data:{session}}) => {
+             if(!session && step > 0 && step !== 'auth') showScreen('step-auth', true);
+             else {
+                 if (step === 'add-product') showScreen('step-add-product', true);
+                 else if (step === 'ai') showScreen('step-ai', true);
+                 else if (step === 'analytics') showScreen('step-analytics', true);
+                 else showScreen(`step-${step || 5}`, true);
+             }
+        });
+    });
+
+    // --- ONBOARDING LOGIC ---
+    function handleStep1Click() { navigateTo(2, 'Business Name'); }
+    
+    function handleStep2Click() {
+        const name = document.getElementById('shop-name-input').value;
+        if(!name) return alert('Please enter a name');
+        localStorage.setItem('temp_shop_name', name);
+        navigateTo(3, 'Category'); 
+    }
+    
+    function selectCategory(element, name) { 
+        document.querySelectorAll('.cat-card').forEach(card => card.classList.remove('selected')); 
+        element.classList.add('selected'); 
+        
+        localStorage.setItem('temp_shop_cat', name);
+
+        const otherInput = document.getElementById('other-input-container'); 
+        if (name === 'Other') { 
+            otherInput.classList.add('open'); 
+            setTimeout(() => otherInput.querySelector('input').focus(), 100); 
+        } else { 
+            otherInput.classList.remove('open'); 
+        } 
+        if (navigator.vibrate) navigator.vibrate(20); 
+    }
+
+    function handleStep3Click() { 
+        navigateTo(4, 'Shop Rules'); 
+    }
+    
+    async function handleStep4Click() {
+        triggerFeedback('btn-step-4');
+        const shopName = localStorage.getItem('temp_shop_name');
+        const shopCat = localStorage.getItem('temp_shop_cat');
+        const phone = document.getElementById('whatsapp-input').value;
+        const lipa = document.getElementById('lipa-input').value;
+
+        // Simply redirect to dash, assuming auth user is set
+        setTimeout(() => {
+            history.pushState({ step: 5 }, 'Inventory', `?step=5`);
+            showScreen('step-5', true);
+            loadDashboard();
+        }, 150);
+    }
+
+    // --- DASHBOARD LOGIC ---
+    // FIXED: loadDashboard now handles navigation properly
+    async function loadDashboard() {
+        trackSection("Dashboard");
+        // Switch to dashboard screen
+        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+        showScreen('step-5', true);
+        
+        // Update active nav state
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item')[0]?.classList.add('active'); // First item is home
+        
+        // Fetch and display data
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+
+        // 1. Set Profile Initial
+        const name = user.user_metadata?.name || user.email;
+        const initial = name ? name.charAt(0).toUpperCase() : '?';
+        const avatarEl = document.getElementById('profile-avatar');
+        avatarEl.style.backgroundImage = 'none';
+        avatarEl.style.backgroundColor = '#22c55e';
+        avatarEl.style.display = 'flex';
+        avatarEl.style.alignItems = 'center';
+        avatarEl.style.justifyContent = 'center';
+        avatarEl.style.color = 'white';
+        avatarEl.style.fontWeight = '800';
+        avatarEl.innerText = initial;
+        
+        // Also update name on Dashboard
+        document.getElementById('dash-business-name').innerText = name.split('@')[0];
+
+        // 2. Fetch Sales Totals (Cash Only)
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const { data: salesToday } = await sb
+            .from('sales')
+            .select('total_amount')
+            .eq('merchant_id', user.id)
+            .eq('payment_type', 'cash')
+            .gte('created_at', startOfDay.toISOString());
+
+        let totalSales = 0, totalCash = 0;
+        if (salesToday) {
+            salesToday.forEach(s => {
+                totalSales += s.total_amount;
+                totalCash += s.total_amount;
+            });
+        }
+
+        // 3. Fetch Unpaid Debts
+        const { data: unpaidDebts } = await sb
+            .from('debts')
+            .select('total_amount')
+            .eq('merchant_id', user.id)
+            .eq('is_paid', false);
+
+        let totalDebt = 0;
+        if (unpaidDebts) {
+            unpaidDebts.forEach(d => totalDebt += d.total_amount);
+        }
+
+        document.getElementById('dash-total-sales').innerText = 'Tsh ' + totalSales.toLocaleString();
+        document.getElementById('dash-cash').innerText = 'Tsh ' + totalCash.toLocaleString();
+        document.getElementById('dash-debt').innerText = 'Tsh ' + totalDebt.toLocaleString();
+
+        // 4. Fetch Products
+        const { data: products, error } = await sb
+            .from('products')
+            .select(`
+                *,
+                product_images(image_url)
+            `)
+            .eq('merchant_id', user.id)
+            .eq('is_active', true)      
+            .order('created_at', { ascending: false });
+
+        GLOBAL_PRODUCTS = products || []; // Save for AI Context
+
+        const container = document.getElementById('products-container');
+        if(container) {
+            container.innerHTML = '';
+
+            if(products && products.length > 0) {
+                products.forEach(p => {
+                    const img = getProductImage(p);
+                    
+                    let statusText = 'Ipo';
+                    let badgeClass = 'badge-green';
+                    
+                    if (p.total_stock === 0) {
+                        statusText = 'Imeisha';
+                        badgeClass = 'badge-grey';
+                    } else if (p.total_stock <= (p.low_stock_alert || 5)) {
+                        statusText = 'Inakaribia kuisha';
+                        badgeClass = 'badge-orange';
+                    }
+
+                    const html = `
+                    <div class="prod-card" onclick="openRecordSale('${p.id}', '${p.name}', '${p.selling_price}', '${p.total_stock}', '${img}')">
+                        <div class="prod-img-box">
+                            <span class="prod-badge ${badgeClass}">${statusText}</span>
+                            <img src="${img}" class="prod-img">
+                        </div>
+                        <div>
+                            <h4 class="prod-name">${p.name}</h4>
+                            <div class="prod-price">Tsh ${p.selling_price.toLocaleString()}</div>
+                            <div class="prod-sub">${p.total_stock} in stock</div>
+                        </div>
+                    </div>`;
+                    container.innerHTML += html;
+                });
+            } else {
+                container.innerHTML = '<p style="grid-column: 1/-1; padding:20px; text-align:center; color:#9ca3af;">No products yet. Click "Ongeza" to start.</p>';
+            }
+        }
+
+        // 5. Fetch Debtors List
+        const debtorsContainer = document.getElementById('debtors-container');
+        if (debtorsContainer) {
+            const { data: debtorsList } = await sb
+                .from('debts')
+                .select('*')
+                .eq('merchant_id', user.id)
+                .eq('is_paid', false)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            debtorsContainer.innerHTML = '';
+
+            if (debtorsList && debtorsList.length > 0) {
+                debtorsList.forEach(debt => {
+                    const initials = debt.debtor_name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    const timeAgo = getTimeAgo(new Date(debt.created_at));
+                    
+                    const html = `
+                    <div class="debtor-card" style="margin-bottom: 12px;">
+                        <div class="debtor-left">
+                            <div class="avatar-circle">${initials}</div>
+                            <div class="debtor-info">
+                                <h4>${debt.debtor_name}</h4>
+                                <p>Tsh ${debt.total_amount.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="debtor-right">
+                            <span class="time-text">${timeAgo}</span>
+                            <button class="remind-btn" onclick="markDebtAsPaid('${debt.id}')">Paid ✓</button>
+                        </div>
+                    </div>`;
+                    debtorsContainer.innerHTML += html;
+                });
+            } else {
+                debtorsContainer.innerHTML = '<p style="padding:20px; text-align:center; color:#9ca3af;">Hakuna wadeni (No debtors)</p>';
+            }
+        }
+    }
+
+    // ADDED: Navigation to Sales Analytics Page
+    function goToAnalytics() {
+        trackSection("Mauzo");
+        history.pushState({ step: 'analytics' }, 'Sales Analytics', '?step=analytics');
+        showScreen('step-analytics', true);
+        loadAnalytics('today'); // Load default 'today'
+    }
+
+    // ADDED: Load Analytics Data Logic
+    async function loadAnalytics(range, tabElement) {
+        // UI: Tab Switching
+        if(tabElement) {
+            document.querySelectorAll('.ana-tab').forEach(t => t.classList.remove('active'));
+            tabElement.classList.add('active');
+        }
+
+        const { data: { user } } = await sb.auth.getUser();
+        if(!user) return;
+
+        // Populate User Info on Analytics Page
+        const name = user.user_metadata?.name || user.email;
+        const initial = name ? name.charAt(0).toUpperCase() : '?';
+        document.getElementById('ana-business-name').innerText = name.split('@')[0];
+        const ava = document.getElementById('ana-profile-avatar');
+        ava.style.width = '45px'; ava.style.height = '45px'; ava.style.borderRadius = '50%';
+        ava.style.background = '#22c55e'; ava.style.display='flex'; ava.style.alignItems='center';
+        ava.style.justifyContent='center'; ava.style.color='white'; ava.style.fontWeight='800';
+        ava.innerText = initial;
+
+        // Date Logic
+        const now = new Date();
+        let startDate = new Date();
+        
+        if (range === 'week') {
+            const day = now.getDay() || 7; 
+            if(day !== 1) startDate.setHours(-24 * (day - 1));
+            else startDate.setHours(0,0,0,0);
+        } else if (range === 'month') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else {
+            // Today
+            startDate.setHours(0,0,0,0);
+        }
+
+        const startStr = startDate.toISOString();
+
+        // Fetch Sales (Cash)
+        const { data: salesData } = await sb
+            .from('sales')
+            .select('total_amount, created_at, product_id, products(name)')
+            .eq('merchant_id', user.id)
+            .eq('payment_type', 'cash')
+            .gte('created_at', startStr)
+            .order('created_at', { ascending: false });
+
+        // Fetch Debts (All created in range, even if paid later, usually implies credit sales)
+        // Note: Logic says "Madeni" usually implies currently owed, but in sales context, implies credit given in period.
+        // We will show *outstanding* debt created in this period + existing unpaid.
+        // Simplified: Show debts created in this range.
+        const { data: debtData } = await sb
+            .from('debts')
+            .select('total_amount, created_at, debtor_name')
+            .eq('merchant_id', user.id)
+            .gte('created_at', startStr)
+            .order('created_at', { ascending: false });
+
+        let totalSales = 0;
+        let totalDebt = 0;
+
+        const allTransactions = [];
+
+        if (salesData) {
+            salesData.forEach(s => {
+                totalSales += s.total_amount;
+                allTransactions.push({
+                    type: 'sale',
+                    name: s.products?.name || 'Bidhaa',
+                    amount: s.total_amount,
+                    time: new Date(s.created_at),
+                    label: 'Cash'
+                });
+            });
+        }
+
+        if (debtData) {
+            debtData.forEach(d => {
+                totalDebt += d.total_amount;
+                allTransactions.push({
+                    type: 'debt',
+                    name: 'Deni la ' + d.debtor_name.split(' ')[0],
+                    amount: d.total_amount,
+                    time: new Date(d.created_at),
+                    label: 'Inadaiwa'
+                });
+            });
+        }
+
+        // Sort combined list
+        allTransactions.sort((a,b) => b.time - a.time);
+
+        // Update UI
+        // Note: Profit usually = Sales - Cost. Since we don't have cost reliably, we display Revenue as "Faida/Sales" based on screenshot layout.
+        document.getElementById('ana-total-profit').innerText = (totalSales + totalDebt).toLocaleString() + ' TZS'; 
+        document.getElementById('ana-sales-val').innerText = totalSales.toLocaleString() + ' TZS';
+        document.getElementById('ana-debt-val').innerText = totalDebt.toLocaleString() + ' TZS';
+
+        // Render List
+        const listContainer = document.getElementById('ana-list-container');
+        listContainer.innerHTML = '';
+
+        if(allTransactions.length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#9ca3af;">Hakuna data kwa muda huu.</p>';
+        } else {
+            allTransactions.forEach(t => {
+                const isSale = t.type === 'sale';
+                const iconClass = isSale ? 'ali-ic-green' : 'ali-ic-orange';
+                const icon = isSale ? 'checkroom' : 'person';
+                const amountClass = isSale ? 'pos' : 'neg'; // Green for sales, Orange for debt creation
+                const amountSign = '+'; // Both add to "volume"
+                const badgeClass = isSale ? '' : 'debt';
+                
+                // Format time: "Saa 4:30 Asubuhi"
+                const hours = t.time.getHours();
+                const minutes = t.time.getMinutes().toString().padStart(2, '0');
+                const period = hours < 12 ? 'Asubuhi' : (hours < 16 ? 'Mchana' : (hours < 19 ? 'Jioni' : 'Usiku'));
+                const timeStr = `Saa ${hours}:${minutes} ${period}`;
+
+                const html = `
+                <div class="ana-list-item">
+                    <div class="ali-left">
+                        <div class="ali-icon-circle ${iconClass}">
+                            <span class="material-symbols-outlined">${icon}</span>
+                        </div>
+                        <div class="ali-info">
+                            <h4>${t.name}</h4>
+                            <p>${timeStr}</p>
+                        </div>
+                    </div>
+                    <div class="ali-right">
+                        <span class="ali-amount ${amountClass}">${amountSign}${t.amount.toLocaleString()}</span>
+                        <span class="ali-badge ${badgeClass}">${t.label}</span>
+                    </div>
+                </div>`;
+                listContainer.innerHTML += html;
+            });
+        }
+    }
+
+
+    function getProductImage(product) {
+        if (product.image_path) {
+            const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path);
+            return data.publicUrl;
+        }
+        if (product.product_images && product.product_images.length > 0) {
+            return product.product_images[0].image_url;
+        }
+        return 'https://via.placeholder.com/150';
+    }
+
+    // --- ADD PRODUCT LOGIC (NEW SINGLE PAGE) ---
+    function goToAddProduct() {
+        trackSection("Add Product");
+        // Initialize State
+        draftProduct = { 
+            name: '', category: '', imageFile: null, description: '', 
+            price: 0, stock: 1, cost: 0, customCat: '', customColors: '',
+            keywords: '', reminderEnabled: true, reminderCount: 5, usage: '' // ADDED: usage field
+        };
+
+        // Reset UI Inputs
+        document.getElementById('new-prod-name').value = '';
+        document.getElementById('new-prod-usage').value = ''; // ADDED
+        document.getElementById('new-prod-cost').value = '';
+        document.getElementById('new-prod-price').value = '';
+        
+        // FIXED: Reset stock input
+        const stockInput = document.getElementById('new-stock-input');
+        if(stockInput) stockInput.value = '1';
+        
+        // Reset Photo Placeholder
+        const previewImg = document.getElementById('ap-preview-img');
+        const emptyState = document.getElementById('ap-photo-empty');
+        const previewState = document.getElementById('ap-photo-preview');
+        
+        previewImg.src = "";
+        previewState.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+
+        // Reset Category Chips
+        document.querySelectorAll('.ap-cat-chip').forEach(c => c.classList.remove('active'));
+
+        // Reset Toggle
+        document.querySelector('.ap-toggle').classList.remove('off');
+        
+        // Reset Save Button
+        document.getElementById('save-btn-idle').classList.remove('hidden');
+        document.getElementById('save-btn-loading').classList.remove('flex');
+        document.getElementById('save-btn-loading').classList.add('hidden');
+        document.getElementById('save-btn-success').classList.remove('flex');
+        document.getElementById('save-btn-success').classList.add('hidden');
+
+        // Show Screen
+        history.pushState({ step: 'add-product' }, 'Add Product', '?step=add-product');
+        showScreen('step-add-product', true);
+    }
+
+    function closeAddProduct() {
+        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+        showScreen('step-5', true);
+        loadDashboard();
+    }
+
+    function triggerCamera() { document.getElementById('camera-input').click(); }
+    
+    function triggerGallery() { document.getElementById('gallery-input').click(); }
+    
+    function resetPhoto() {
+        draftProduct.imageFile = null;
+        document.getElementById('camera-input').value = "";
+        document.getElementById('gallery-input').value = "";
+        
+        document.getElementById('ap-photo-preview').classList.add('hidden');
+        document.getElementById('ap-photo-empty').classList.remove('hidden');
+    }
+
+    function handleImageUpload(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            // FIXED: Compress image before upload
+            const maxSize = 500 * 1024; // 500KB max
+            
+            if (file.size > maxSize) {
+                // Show compression message
+                const photoCard = document.getElementById('ap-photo-card-container');
+                const badge = photoCard.querySelector('.ap-important-badge');
+                if (badge) {
+                    const originalText = badge.innerText;
+                    badge.innerText = 'INASAFISHA...';
+                    badge.style.background = '#f78c26';
+                    
+                    setTimeout(() => {
+                        badge.innerText = originalText;
+                        badge.style.background = '#25d078';
+                    }, 2000);
+                }
+                
+                // Compress image
+                compressImage(file, (compressedFile) => {
+                    draftProduct.imageFile = compressedFile;
+                    displayImage(compressedFile);
+                });
+            } else {
+                draftProduct.imageFile = file;
+                displayImage(file);
+            }
+        }
+    }
+
+    function compressImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // Max dimensions: 800x800
+                const maxDim = 800;
+                if (width > height && width > maxDim) {
+                    height *= maxDim / width;
+                    width = maxDim;
+                } else if (height > maxDim) {
+                    width *= maxDim / height;
+                    height = maxDim;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    const compressedFile = new File([blob], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    callback(compressedFile);
+                }, 'image/jpeg', 0.7); // 70% quality
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function displayImage(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('ap-preview-img');
+            img.src = e.target.result;
+            
+            document.getElementById('ap-photo-empty').classList.add('hidden');
+            document.getElementById('ap-photo-preview').classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+    }
+    
+    function selectNewCategory(btn, cat) {
+        document.querySelectorAll('.ap-cat-chip').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        draftProduct.category = cat;
+    }
+
+    function updateNewStock(val) {
+        const stockInput = document.getElementById('new-stock-input');
+        if (!stockInput) return;
+        
+        let current = parseInt(stockInput.value) || 0;
+        current += val;
+        if(current < 0) current = 0;
+        
+        stockInput.value = current;
+        draftProduct.stock = current;
+    }
+
+    // ADDED: Sync stock value when user types directly
+    function syncStockValue(value) {
+        const numValue = parseInt(value) || 0;
+        draftProduct.stock = numValue >= 0 ? numValue : 0;
+    }
+
+    function toggleNewReminder(el) {
+        el.classList.toggle('off');
+        draftProduct.reminderEnabled = !el.classList.contains('off');
+    }
+
+    async function triggerMagicSave() {
+        // Collect Data
+        draftProduct.name = document.getElementById('new-prod-name').value.trim();
+        draftProduct.usage = document.getElementById('new-prod-usage').value.trim(); // ADDED
+        draftProduct.cost = parseInt(document.getElementById('new-prod-cost').value) || 0;
+        draftProduct.price = parseInt(document.getElementById('new-prod-price').value) || 0;
+        
+        // FIXED: Get stock from input field
+        const stockInput = document.getElementById('new-stock-input');
+        draftProduct.stock = stockInput ? (parseInt(stockInput.value) || 1) : 1;
+
+        if(!draftProduct.name) return alert("Tafadhali weka jina la bidhaa");
+        if(draftProduct.price <= 0) return alert("Tafadhali weka bei ya kuuza");
+
+        const btnIdle = document.getElementById('save-btn-idle');
+        const btnLoading = document.getElementById('save-btn-loading');
+        const btnSuccess = document.getElementById('save-btn-success');
+
+        // Animation: Loading
+        btnIdle.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        btnLoading.classList.add('flex'); // to center content
+
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) {
+             alert("Login expired");
+             return closeAddProduct();
+        }
+
+        try {
+            // Upload Image if exists
+            let fileName = null;
+            if(draftProduct.imageFile) {
+                fileName = `${Date.now()}_${draftProduct.imageFile.name}`;
+                const { error: imgError } = await sb.storage
+                    .from('post-images')
+                    .upload(fileName, draftProduct.imageFile);
+                if(imgError) throw imgError;
+            }
+
+            // Insert Product with usage instructions
+            const { error: prodError } = await sb
+                .from('products')
+                .insert([{
+                    merchant_id: user.id,
+                    name: draftProduct.name,
+                    description: draftProduct.usage, // ADDED: Store usage in description
+                    selling_price: draftProduct.price,
+                    total_stock: draftProduct.stock,
+                    low_stock_alert: draftProduct.reminderEnabled ? 5 : 0,
+                    image_path: fileName,
+                    is_active: true
+                }]);
+
+            if(prodError) throw prodError;
+
+            // Track Success Event
+            trackAddProduct(draftProduct.name, draftProduct.price);
+
+            // Animation: Success
+            setTimeout(() => {
+                btnLoading.classList.add('hidden');
+                btnLoading.classList.remove('flex');
+                
+                btnSuccess.classList.remove('hidden');
+                btnSuccess.classList.add('flex');
+
+                // Redirect after success animation
+                setTimeout(() => {
+                    closeAddProduct();
+                }, 2000);
+            }, 1000); // Fake delay for smooth animation
+
+        } catch (err) {
+            console.error(err);
+            alert('Error saving product: ' + err.message);
+            // Reset button
+            btnLoading.classList.add('hidden');
+            btnLoading.classList.remove('flex');
+            btnIdle.classList.remove('hidden');
+        }
+    }
+
+    // --- RECORD SALE LOGIC ---
+    function openRecordSale(id, name, price, stock, img) {
+        currentSaleItem.id = id;
+        currentSaleItem.price = Number(price);
+        currentSaleItem.stock = Number(stock);
+        currentSaleItem.qty = 1;
+        currentSaleItem.type = 'cash';
+
+        document.getElementById('rs-title').innerText = name;
+        document.getElementById('rs-price').innerText = 'Tsh ' + currentSaleItem.price.toLocaleString();
+        document.getElementById('rs-stock').innerText = stock;
+        document.getElementById('rs-stock-sm').innerText = stock;
+        document.getElementById('rs-img').src = img;
+        
+        toggleSaleType('cash');
+        updateSaleUI();
+        document.getElementById('step-11').classList.remove('hidden');
+    }
+
+    function closeRecordSale() {
+        document.getElementById('step-11').classList.add('hidden');
+    }
+
+    function updateSaleQty(change) {
+        const newQty = currentSaleItem.qty + change;
+        if(newQty > 0 && newQty <= currentSaleItem.stock) {
+            currentSaleItem.qty = newQty;
+            updateSaleUI();
+        }
+    }
+    
+    function toggleSaleType(type) {
+        currentSaleItem.type = type;
+        document.getElementById('btn-type-cash').classList.toggle('active', type === 'cash');
+        document.getElementById('btn-type-debt').classList.toggle('active', type === 'debt');
+
+        // Added logic for debt input visibility
+        const debtSection = document.getElementById('debt-info-section');
+        if(debtSection) {
+            if(type === 'debt') debtSection.classList.remove('hidden');
+            else debtSection.classList.add('hidden');
+        }
+    }
+
+    function updateSaleUI() {
+        const total = currentSaleItem.price * currentSaleItem.qty;
+        document.getElementById('rs-qty').innerText = currentSaleItem.qty;
+        document.getElementById('rs-unit-price').innerText = currentSaleItem.price.toLocaleString();
+        document.getElementById('rs-total-grid').innerText = total.toLocaleString();
+        document.getElementById('rs-footer-total').innerText = total.toLocaleString();
+    }
+    
+    // =========================================
+    // FIXED: SALES VS DEBTS LOGIC
+    // =========================================
+    async function confirmTransaction() {
+        const btn = document.querySelector('.confirm-sale-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "Processing...";
+        btn.disabled = true;
+
+        try {
+            const { data: { user } } = await sb.auth.getUser();
+            if (!user) throw new Error("Please login again");
+
+            // Common: Update Product Stock First
+            const newStock = currentSaleItem.stock - currentSaleItem.qty;
+            const { error: stockError } = await sb
+                .from('products')
+                .update({ total_stock: newStock })
+                .eq('id', currentSaleItem.id);
+
+            if (stockError) throw stockError;
+
+            // BRANCH: Cash Sale vs Debt
+            if (currentSaleItem.type === 'debt') {
+                // ✅ INSERT INTO DEBTS TABLE
+                const dName = document.getElementById('debtor-name').value.trim();
+                const dPhone = document.getElementById('debtor-phone').value.trim();
+                
+                if (!dName) {
+                    throw new Error("Tafadhali weka jina la mdaiwa (Please enter debtor name)");
+                }
+
+                const { error: debtError } = await sb.from('debts').insert([{
+                    merchant_id: user.id,
+                    product_id: currentSaleItem.id,
+                    debtor_name: dName,
+                    debtor_phone: dPhone || null,
+                    quantity: currentSaleItem.qty,
+                    unit_price: currentSaleItem.price,
+                    total_amount: currentSaleItem.price * currentSaleItem.qty,
+                    is_paid: false
+                }]);
+
+                if (debtError) throw debtError;
+
+            } else {
+                // ✅ INSERT INTO SALES TABLE (CASH)
+                const { error: salesError } = await sb
+                    .from('sales')
+                    .insert([{
+                        merchant_id: user.id,
+                        product_id: currentSaleItem.id,
+                        quantity: currentSaleItem.qty,
+                        unit_price: currentSaleItem.price,
+                        total_amount: currentSaleItem.price * currentSaleItem.qty,
+                        payment_type: 'cash'
+                    }]);
+
+                if (salesError) throw salesError;
+            }
+
+            // Track Sale Event
+            const productName = document.getElementById('rs-title').innerText;
+            const total = currentSaleItem.price * currentSaleItem.qty;
+            trackSale(productName, currentSaleItem.qty, total);
+
+            // Success: Close modal and refresh dashboard
+            closeRecordSale();
+            await loadDashboard();
+            
+            // Show success message
+            alert(currentSaleItem.type === 'debt' ? 
+                'Deni limerekodiwa! (Debt recorded!)' : 
+                'Mauzo yamerekodiwa! (Sale recorded!)'
+            );
+
+        } catch (err) {
+            console.error("Transaction Error:", err);
+            alert("Error: " + err.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // =========================================
+    // NEW: MARK DEBT AS PAID
+    // =========================================
+    async function markDebtAsPaid(debtId) {
+        if (!confirm('Confirm debt has been paid?')) return;
+
+        try {
+            const { error } = await sb
+                .from('debts')
+                .update({ is_paid: true })
+                .eq('id', debtId);
+
+            if (error) throw error;
+
+            await loadDashboard();
+            alert('Debt marked as paid! ✓');
+        } catch (err) {
+            console.error('Error marking debt as paid:', err);
+            alert('Error: ' + err.message);
+        }
+    }
+
+    // =========================================
+    // HELPER: TIME AGO FUNCTION
+    // =========================================
+    function getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            week: 604800,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+        
+        for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+            const interval = Math.floor(seconds / secondsInUnit);
+            if (interval >= 1) {
+                return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+            }
+        }
+        
+        return 'just now';
+    }
+
+    // --- AI ASSISTANT LOGIC ---
+    // Improved AI Logic with Context Building and Better Error Handling
+
+    async function callAIFunction(userMessage) {
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) throw new Error("Tafadhali ingia tena (Please login first)");
+
+            const { data: { user } } = await sb.auth.getUser();
+            const merchantContext = await buildMerchantContext(user.id);
+            
+            const functionUrl = `${SUPABASE_URL}/functions/v1/ai-coach`;
+            
+            const response = await fetch(functionUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session.access_token}`,
+                    "apikey": SUPABASE_KEY
+                },
+                body: JSON.stringify({
+                    message: userMessage,
+                    merchantData: merchantContext
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`AI Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.response || "Samahani, sijapata jibu.";
+
+        } catch (error) {
+            console.error("AI Error:", error);
+            
+            if (error.message.includes("fetch")) {
+                return "Hakuna mtandao. Angalia internet yako.";
+            } else if (error.message.includes("401")) {
+                return "Ingia tena (Session expired)";
+            } else {
+                return `Kuna tatizo: ${error.message}`;
+            }
+        }
+    }
+
+    async function buildMerchantContext(merchantId) {
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayISO = today.toISOString();
+
+            const [productsRes, salesTodayRes, debtsRes] = await Promise.all([
+                sb.from('products')
+                  .select('id, name, selling_price, total_stock, cost_price, low_stock_alert, created_at')
+                  .eq('merchant_id', merchantId)
+                  .eq('is_active', true),
+                
+                sb.from('sales')
+                  .select('total_amount, quantity, unit_price, created_at, product_id, products(name)')
+                  .eq('merchant_id', merchantId)
+                  .eq('payment_type', 'cash')
+                  .gte('created_at', todayISO),
+                
+                sb.from('debts')
+                  .select('debtor_name, total_amount, quantity, created_at')
+                  .eq('merchant_id', merchantId)
+                  .eq('is_paid', false)
+            ]);
+
+            const products = productsRes.data || [];
+            const salesToday = salesTodayRes.data || [];
+            const debts = debtsRes.data || [];
+
+            let totalRevenue = 0;
+            let totalCost = 0;
+            let itemsSold = 0;
+
+            salesToday.forEach(sale => {
+                totalRevenue += sale.total_amount;
+                itemsSold += sale.quantity;
+                
+                const product = products.find(p => p.id === sale.product_id);
+                if (product && product.cost_price) {
+                    totalCost += (product.cost_price * sale.quantity);
+                }
+            });
+
+            const netProfit = totalRevenue - totalCost;
+            const totalDebt = debts.reduce((sum, d) => sum + d.total_amount, 0);
+
+            const lowStock = products.filter(p => 
+                p.total_stock <= (p.low_stock_alert || 5) && p.total_stock > 0
+            );
+
+            const outOfStock = products.filter(p => p.total_stock === 0);
+
+            return {
+                period: {
+                    startDate: todayISO,
+                    endDate: new Date().toISOString()
+                },
+                sales: salesToday.map(s => ({
+                    product: s.products?.name || 'Unknown',
+                    quantity: s.quantity,
+                    price: s.unit_price,
+                    cost: products.find(p => p.id === s.product_id)?.cost_price || 0,
+                    date: s.created_at
+                })),
+                inventory: products.map(p => ({
+                    product: p.name,
+                    quantity: p.total_stock,
+                    cost: p.cost_price || 0,
+                    sellingPrice: p.selling_price
+                })),
+                debts: debts.map(d => ({
+                    customerName: d.debtor_name,
+                    amount: d.total_amount,
+                    daysOverdue: Math.floor((new Date() - new Date(d.created_at)) / (1000 * 60 * 60 * 24)),
+                    date: d.created_at
+                })),
+                summary: {
+                    totalProducts: products.length,
+                    totalRevenue: totalRevenue,
+                    totalCost: totalCost,
+                    netProfit: netProfit,
+                    itemsSoldToday: itemsSold,
+                    totalDebt: totalDebt,
+                    lowStockCount: lowStock.length,
+                    outOfStockCount: outOfStock.length
+                }
+            };
+
+        } catch (error) {
+            console.error("Context building error:", error);
+            return {
+                error: "Failed to fetch merchant data",
+                summary: { totalProducts: 0, totalRevenue: 0 }
+            };
+        }
+    }
+
+    function goToAI() {
+        trackSection("AI");
+        history.pushState({ step: 'ai' }, 'AI Assistant', '?step=ai');
+        showScreen('step-ai', true);
+        
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const navs = document.querySelectorAll('.nav-item');
+        if(navs.length > 3) navs[3].classList.add('active');
+        
+        initializeAIChat();
+    }
+
+    async function initializeAIChat() {
+        const stream = document.getElementById('ai-chat-stream');
+        const { data: { user } } = await sb.auth.getUser();
+        
+        const name = user?.user_metadata?.name || user?.email || "User";
+        
+        stream.innerHTML = `
+            <div class="date-divider">
+                <span class="date-pill">Leo</span>
+            </div>
+            
+            <!-- CENTERED WELCOME STATE -->
+            <div id="welcome-state" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 60px 24px;
+                min-height: 300px;
+            ">
+                <div style="
+                    width: 80px;
+                    height: 80px;
+                    background: linear-gradient(135deg, #25d078, #1ea35e);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 24px;
+                    box-shadow: 0 10px 30px rgba(37, 208, 120, 0.3);
+                ">
+                    <span class="material-symbols-outlined" style="font-size: 40px; color: white;">auto_awesome</span>
+                </div>
+                
+                <h2 style="
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #0f1a14;
+                    margin-bottom: 12px;
+                ">Habari, ${name.split('@')[0]}!</h2>
+                
+                <p style="
+                    font-size: 15px;
+                    color: #6b7280;
+                    line-height: 1.6;
+                    max-width: 300px;
+                ">Nikusaidie nini leo kuhusu biashara yako? Uliza chochote!</p>
+            </div>
+            
+            <div id="ai-loader-container" class="ai-empty-state" style="display: none;">
+                <div class="sparkle-container">
+                    <div class="sparkle-wrapper">
+                        <div class="star" style="width: 6px; height: 6px; top: 0; left: 0; animation-delay: 0.1s"></div>
+                        <div class="star" style="width: 4px; height: 4px; top: 16px; left: 32px; animation-delay: 0.5s"></div>
+                        <div class="star" style="width: 8px; height: 8px; top: 8px; left: 64px; animation-delay: 1.2s"></div>
+                        <div class="star" style="width: 6px; height: 6px; top: 32px; left: 96px; animation-delay: 0.3s"></div>
+                        <div class="star" style="width: 4px; height: 4px; top: 8px; left: 128px; animation-delay: 0.8s"></div>
+                        <div class="star" style="width: 8px; height: 8px; top: 24px; left: 16px; animation-delay: 0.4s"></div>
+                        
+                        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #25d078; opacity: 0.4;">
+                            <span class="material-symbols-outlined" style="font-size: 32px; animation: softPulse 2s infinite;">auto_awesome</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <p class="ai-thinking-text">Msaidizi wako anafikiria...</p>
+                    <p style="font-size: 10px; color: #9ca3af; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.1em;">Inachambua data zako</p>
+                </div>
+            </div>
+        `;
+        
+        updateAISuggestions();
+    }
+
+    function typeWriterEffect(text, elementId, speed = 50) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        let i = 0;
+        element.textContent = "";
+        
+        const cursor = element.nextElementSibling;
+        if (cursor) cursor.style.display = "inline";
+        
+        function type() {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+                scrollToBottomAI();
+            } else {
+                if (cursor) {
+                    setTimeout(() => {
+                        cursor.style.display = "none";
+                    }, 500);
+                }
+            }
+        }
+        
+        type();
+    }
+
+    async function updateAISuggestions() {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+
+        const context = await buildMerchantContext(user.id);
+        const chipsContainer = document.querySelector('.suggestion-chips');
+        
+        if (!chipsContainer) return;
+        
+        let suggestions = [];
+        
+        if (context.summary.netProfit > 0) {
+            suggestions.push({
+                icon: 'trending_up',
+                text: 'Biashara inaendeleaje?',
+                prompt: 'Niambie jinsi biashara yangu inavyoendelea leo. Je, niko na faida au hasara?'
+            });
+        } else if (context.summary.netProfit < 0) {
+            suggestions.push({
+                icon: 'trending_down',
+                text: 'Kwa nini hasara?',
+                prompt: 'Nichambue kwa nini niko na hasara leo na nifanye nini kuboresha?'
+            });
+        } else {
+            suggestions.push({
+                icon: 'monitoring',
+                text: 'Biashara inaendeleaje?',
+                prompt: 'Niambie jinsi biashara yangu inavyoendelea leo.'
+            });
+        }
+        
+        if (context.summary.totalDebt > 0) {
+            suggestions.push({
+                icon: 'message',
+                text: 'WhatsApp kwa wadeni',
+                prompt: 'Nitengenezee ujumbe wa WhatsApp wa kukumbushia wadeni wangu madeni yao.'
+            });
+        }
+        
+        if (context.summary.lowStockCount > 0 || context.summary.outOfStockCount > 0) {
+            suggestions.push({
+                icon: 'inventory_2',
+                text: 'Bidhaa zinazoisha',
+                prompt: 'Ni bidhaa zipi zinakaribia kuisha na nifanye nini?'
+            });
+        }
+
+        suggestions.push({
+            icon: 'lightbulb',
+            text: 'Ushauri wa biashara',
+            prompt: 'Nipe ushauri wa kuboresha biashara yangu kulingana na data yangu.'
+        });
+
+        chipsContainer.innerHTML = suggestions.map(s => `
+            <button class="chip-btn chip-default" onclick="handleSmartChip(\`${s.prompt}\`, \`${s.text}\`, this)">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: #f78c26;">${s.icon}</span>
+                <span>${s.text}</span>
+            </button>
+        `).join('');
+    }
+
+    async function handleSmartChip(prompt, displayText, btnElement) {
+        trackAIChat();
+        const welcomeState = document.getElementById('welcome-state');
+        if (welcomeState) welcomeState.remove();
+        
+        appendUserMessage(displayText);
+        showAILoading();
+        
+        const aiReply = await callAIFunction(prompt);
+        removeAILoading();
+        
+        typewriterAppendAI(aiReply);
+    }
+
+    async function handleChatSubmit() {
+        trackAIChat();
+        const input = document.getElementById('ai-chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+        
+        // Remove welcome state
+        const welcomeState = document.getElementById('welcome-state');
+        if (welcomeState) welcomeState.remove();
+        
+        input.value = "";
+        input.disabled = true;
+        
+        appendUserMessage(text);
+        showAILoading();
+        
+        try {
+            const aiReply = await callAIFunction(text);
+            removeAILoading();
+            
+            typewriterAppendAI(aiReply);
+            
+        } catch (error) {
+            removeAILoading();
+            typewriterAppendAI("Samahani, kuna tatizo. Jaribu tena.");
+        } finally {
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    async function appendUserMessage(text) {
+        const stream = document.getElementById('ai-chat-stream');
+        const { data: { user } } = await sb.auth.getUser();
+        
+        if (!user) return;
+        
+        const name = user.user_metadata?.name || user.email || "User";
+        const userAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=22c55e&color=fff&bold=true`;
+        
+        const row = document.createElement('div');
+        row.className = 'chat-row user';
+        
+        row.innerHTML = `
+            <div class="chat-avatar-small" style="background-image: url('${userAvatarUrl}'); background-size: cover;"></div>
+            <div class="chat-content">
+                <span class="chat-name">Wewe</span>
+                <div class="chat-bubble user">
+                    ${text}
+                </div>
+            </div>
+        `;
+        
+        const loader = document.getElementById('ai-loader-container');
+        stream.insertBefore(row, loader);
+        
+        scrollToBottomAI();
+    }
+
+    function typewriterAppendAI(text) {
+        const stream = document.getElementById('ai-chat-stream');
+        
+        const row = document.createElement('div');
+        row.className = 'chat-row';
+        
+        // Clean text formatting
+        const cleanText = text.replace(/\n/g, '<br>');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = cleanText;
+        const plainText = tempDiv.textContent || tempDiv.innerText || "";
+        
+        row.innerHTML = `
+            <div class="chat-avatar-small" style="
+                background: linear-gradient(135deg, #25d078, #1ea35e);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: white;">smart_toy</span>
+            </div>
+            <div class="chat-content">
+                <span class="chat-name">Msaidizi</span>
+                <div class="chat-bubble ai-response">
+                    <span class="typing-text"></span><span class="cursor">|</span>
+                </div>
+            </div>
+        `;
+        
+        const loader = document.getElementById('ai-loader-container');
+        stream.insertBefore(row, loader);
+        
+        const typingElement = row.querySelector('.typing-text');
+        const cursorElement = row.querySelector('.cursor');
+        
+        let i = 0;
+        const speed = 20;
+        
+        function typeChar() {
+            if (i < plainText.length) {
+                const char = plainText.charAt(i);
+                
+                if (char === '\n') {
+                    typingElement.innerHTML += '<br>';
+                } else {
+                    typingElement.textContent += char;
+                }
+                
+                i++;
+                scrollToBottomAI();
+                setTimeout(typeChar, speed);
+            } else {
+                cursorElement.style.display = 'none';
+                typingElement.innerHTML = cleanText;
+            }
+        }
+        
+        typeChar();
+    }
+
+    function appendAIMessage(htmlContent) {
+        const stream = document.getElementById('ai-chat-stream');
+        
+        const row = document.createElement('div');
+        row.className = 'chat-row';
+        
+        row.innerHTML = `
+            <div class="chat-avatar-small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAFfu5aXy6fVcu0ZGlstBgNMciJj4Iol1n38xmTWgNhpIoJ2vBMEUhVWfbVvhuiUbpVWgrzQ-DFMMnvkd48nZsfUBil8DJ3nzxdxEWN-065zefzzCTIl1FHz91Wpe9BOgrH0mVp4uCKpYwZw_TiHyijPAYC4MppP5dMjLrlwepwMGODPuDwJOrRi3U_D_OfJYhCI_pTNEdDZK0u2ySU-Pdh1QAK-QZQY5lpxYIV0wH3CawFjtRbvwp-XTOAzoBOOa_HRPst3Itmla4m');"></div>
+            <div class="chat-content">
+                <span class="chat-name">Msaidizi</span>
+                <div class="chat-bubble ai">
+                    ${htmlContent}
+                </div>
+            </div>
+        `;
+        
+        const loader = document.getElementById('ai-loader-container');
+        stream.insertBefore(row, loader);
+        
+        scrollToBottomAI();
+    }
+
+    function showAILoading() {
+        const loader = document.getElementById('ai-loader-container');
+        loader.style.display = 'flex';
+        scrollToBottomAI();
+    }
+
+    function removeAILoading() {
+        const loader = document.getElementById('ai-loader-container');
+        loader.style.display = 'none';
+    }
+
+    function scrollToBottomAI() {
+        const stream = document.getElementById('ai-chat-stream');
+        setTimeout(() => {
+            stream.scrollTo({
+                top: stream.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+    
+    // Kept for overlay close button compatibility if overlay is ever used
+    function closeAIResult() {
+        // Function stub kept for backward compatibility
+    }
+    
+    function handleAICardClick(type, btnElement) {
+        // Fallback or backward compatible function
+        const text = btnElement.innerText;
+        handleSmartChip(text, text, btnElement);
+    }
+
+    // --- UI HELPERS ---
+    function toggleChip(btn) { btn.classList.toggle('active'); if (navigator.vibrate) navigator.vibrate(20); }
+    function selectVariantCat(el) { document.querySelectorAll('.cat-square').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+    function toggleSize(el) { el.classList.toggle('selected'); }
+    function toggleColor(el) { el.classList.toggle('selected'); }
+    
+    // ADDED: Service Worker Registration
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then(reg => console.log("SW registered:", reg.scope))
+            .catch(err => console.error("SW registration failed:", err));
+        });
+      }
+
+    // Enable Enter key to send message
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatInput = document.getElementById('ai-chat-input');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleChatSubmit();
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+/* Typewriter Cursor Animation */
+.cursor {
+    display: inline-block;
+    animation: blink 1s infinite;
+    margin-left: 2px;
+    font-weight: 400;
+}
+
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* Smooth scroll for chat */
+#ai-chat-stream {
+    scroll-behavior: smooth;
+}
+
+/* UPDATED: Clean AI Response Bubble */
+.chat-bubble.ai-response {
+    background-color: white !important;
+    color: #0f1a14 !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Keep user bubble white */
+.chat-bubble.user {
+    background-color: #f3f4f6 !important;
+    color: #0f1a14 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+/* AI bubble - green background */
+.chat-bubble.ai {
+    background-color: #25d078 !important;
+    color: white !important;
+}
+</style>
+
+</body>
+</html>
+```
