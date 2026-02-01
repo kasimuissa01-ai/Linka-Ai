@@ -2878,6 +2878,10 @@
     // --- STATE MANAGEMENT ---
     let CURRENT_BUSINESS_ID = localStorage.getItem('biashara_business_id');
     let GLOBAL_PRODUCTS = []; // To store products for AI context
+
+    // ✅ NEW: Track if user is in customer mode
+    let IS_CUSTOMER_MODE = false;
+    let CUSTOMER_MERCHANT_ID = null;
     
     // Auth State
     let isSignup = false;
@@ -3310,29 +3314,42 @@
     function goBack() { window.history.back(); }
     
     window.addEventListener('popstate', (event) => {
-        const step = event.state ? event.state.step : 5; // Default to dash if authorized
+        const step = event.state ? event.state.step : null;
         
-        // ✅ HANDLE PRODUCT DETAIL BACK NAVIGATION
+        // ✅ CRITICAL: Handle customer mode navigation
+        if (IS_CUSTOMER_MODE) {
+            if (step === 'product-detail') {
+                showScreen('product-detail-page', true);
+            } else {
+                // Customer pressing back from product detail → return to storefront
+                loadCustomerStorefrontData(CURRENT_MERCHANT_DATA);
+            }
+            return; // Exit early, don't run merchant logic
+        }
+        
+        // ✅ MERCHANT MODE NAVIGATION (authenticated users only)
         if (step === 'product-detail') {
             const productId = event.state?.productId;
             const from = event.state?.from;
             
-            // Show product detail page (will be handled by existing logic)
-            showScreen('product-detail-page', true);
+            if (from === 'dashboard') {
+                showScreen('product-detail-page', true);
+            } else {
+                showScreen('product-detail-page', true);
+            }
             return;
         }
-
-        // Simple logic for back button handling vs auth
+    
+        // Check authentication for merchant routes
         sb.auth.getSession().then(({data:{session}}) => {
-             if(!session && step > 0 && step !== 'auth') showScreen('step-auth', true);
-             else {
-                 if (step === 'add-product') showScreen('step-add-product', true);
-                 else if (step === 'ai') showScreen('step-ai', true);
-                 else if (step === 'analytics') showScreen('step-analytics', true);
-                 else if (step === 'product-detail-page') showScreen('product-detail-page', true);
-                 else if (step === 'customer-storefront') showScreen('customer-storefront', true);
-                 else showScreen(`step-${step || 5}`, true);
-             }
+            if(!session && step > 0 && step !== 'auth') {
+                showScreen('step-auth', true);
+            } else {
+                if (step === 'add-product') showScreen('step-add-product', true);
+                else if (step === 'ai') showScreen('step-ai', true);
+                else if (step === 'analytics') showScreen('step-analytics', true);
+                else showScreen(`step-${step || 5}`, true);
+            }
         });
     });
 
@@ -5033,23 +5050,28 @@
             price: Number(price),
             stock: Number(stock),
             image: img,
-            description: description
+            description: description,
+            merchantId: CUSTOMER_MERCHANT_ID // ✅ Track merchant ID for customers
         };
         
-        // ✅ ADD BROWSER HISTORY ENTRY
-        const fromStorefront = document.getElementById('customer-storefront').classList.contains('hidden') === false;
+        // ✅ DETERMINE NAVIGATION CONTEXT
+        const isFromCustomerStorefront = IS_CUSTOMER_MODE;
         
-        if (fromStorefront) {
+        if (isFromCustomerStorefront) {
+            // Customer mode: Use clean URL without query params
             history.pushState({ 
                 step: 'product-detail', 
                 productId: id,
-                from: 'storefront'
-            }, `Product: ${name}`, `?product=${id}`);
+                from: 'storefront',
+                isCustomer: true // ✅ Flag for customer mode
+            }, `Product: ${name}`, `#product-${id}`);
         } else {
+            // Merchant mode: Use query params
             history.pushState({ 
                 step: 'product-detail', 
                 productId: id,
-                from: 'dashboard'
+                from: 'dashboard',
+                isCustomer: false
             }, `Product: ${name}`, `?product=${id}`);
         }
         
@@ -5091,14 +5113,7 @@
             usageSection.classList.add('hidden');
         }
 
-        // ✅ Remove existing dynamic elements (variants and discount badges)
-        const existingVariants = document.querySelector('.product-variants-section');
-        if (existingVariants) existingVariants.remove();
-        
-        const existingDiscount = document.querySelector('.discount-badge-dynamic');
-        if (existingDiscount) existingDiscount.remove();
-
-        // ✅ Fetch full product data with variants
+        // ✅ Fetch full product data with variants (existing code continues...)
         sb.from('products')
             .select('*')
             .eq('id', id)
@@ -5106,13 +5121,10 @@
             .then(({ data: product, error }) => {
                 if (error || !product) return;
                 
-                // Update full description
+                // [Rest of your existing variant/discount code remains the same]
                 descEl.textContent = product.full_description || product.description || 'High-quality product available for order.';
                 
-                // ✅ Display variants
                 const variants = product.product_variants || { colors: [], sizes: [], materials: [] };
-                
-                // Add variant section to product detail page
                 const variantsContainer = document.createElement('div');
                 variantsContainer.className = 'product-variants-section';
                 variantsContainer.style.cssText = 'padding: 24px 16px; border-top: 1px solid #f1f5f9;';
@@ -5143,7 +5155,8 @@
                 if (variants.sizes && variants.sizes.length > 0) {
                     variantsHTML += `
                         <div style="margin-bottom: 20px;">
-                            <h3 style="font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 12px; text-transform:uppercase; letter-spacing:0.5px;">Available Sizes</h3>
+                            <h3 style="font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 12px;
+                        text-transform:uppercase; letter-spacing:0.5px;">Available Sizes</h3>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 ${variants.sizes.map(size => `
                                     <div style="
@@ -5200,16 +5213,19 @@
                         z-index: 10;
                     `;
                     discountBadge.innerHTML = `-${product.discount_percent}% OFF`;
-                    document.getElementById('product-detail-image').appendChild(discountBadge);
+                    const imgContainer = document.getElementById('product-detail-image');
+                    if(imgContainer) imgContainer.appendChild(discountBadge);
                     
                     // Update price display
                     const priceEl = document.getElementById('product-detail-price');
-                    priceEl.innerHTML = `
-                        <span style="text-decoration: line-through; color: #9ca3af; font-size: 18px; margin-right: 8px;">
-                            Tsh ${product.original_price.toLocaleString()}
-                        </span>
-                        <span style="color: #ef4444;">Tsh ${product.selling_price.toLocaleString()}</span>
-                    `;
+                    if(priceEl) {
+                        priceEl.innerHTML = `
+                            <span style="text-decoration: line-through; color: #9ca3af; font-size: 18px; margin-right: 8px;">
+                                Tsh ${product.original_price.toLocaleString()}
+                            </span>
+                            <span style="color: #ef4444;">Tsh ${product.selling_price.toLocaleString()}</span>
+                        `;
+                    }
                 }
                 
                 // Inject Variants
@@ -5241,14 +5257,16 @@
         if (CURRENT_PRODUCT_DETAIL.merchantId) {
             // Customer mode: use stored merchant data
             if (!CURRENT_MERCHANT_DATA) {
-                alert('Contact information not available');
+                // Try to find in cache or session
+                alert('Contact information loading...');
                 return;
             }
             phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
         } else {
-            // Merchant mode: get own WhatsApp (shouldn't happen but fallback)
+            // Merchant mode: get own WhatsApp (preview)
             const { data: { user } } = await sb.auth.getUser();
             if (!user) {
+                // If not logged in and no merchant data, ask to login
                 alert('Please login to place an order');
                 return;
             }
@@ -5290,10 +5308,13 @@
     let CURRENT_MERCHANT_DATA = null;
 
     // =======================================================
-    // NEW: LOAD STOREFRONT BY SLUG (e.g., /caceshop)
+    // NEW: LOAD STOREFRONT BY SLUG (FIXED)
     // =======================================================
     async function loadCustomerStorefrontBySlug(slug) {
         console.log('🔍 Looking up merchant by slug:', slug);
+        
+        // ✅ SET CUSTOMER MODE FLAG
+        IS_CUSTOMER_MODE = true;
         
         try {
             // Find merchant by store_slug
@@ -5352,6 +5373,9 @@
                 return;
             }
             
+            // ✅ STORE MERCHANT ID FOR CUSTOMER CONTEXT
+            CUSTOMER_MERCHANT_ID = merchant.id;
+            
             // Merchant found! Load their storefront
             console.log('✅ Found merchant:', merchant.business_name);
             await loadCustomerStorefrontData(merchant);
@@ -5362,9 +5386,13 @@
         }
     }
 
-    // LEGACY: Load by merchant ID (kept for backward compatibility)
+    // LEGACY: Load by merchant ID (FIXED)
     async function loadCustomerStorefront(merchantId) {
         console.log('🛍️ Loading storefront for merchant ID:', merchantId);
+        
+        // ✅ SET CUSTOMER MODE FLAG
+        IS_CUSTOMER_MODE = true;
+        CUSTOMER_MERCHANT_ID = merchantId;
         
         try {
             const { data: merchant, error: merchantError } = await sb
@@ -5424,7 +5452,11 @@
                 selling_price,
                 total_stock,
                 image_path,
-                product_images(image_url)
+                product_images(image_url),
+                product_variants,
+                full_description,
+                original_price,
+                discount_percent
             `)
             .eq('merchant_id', merchant.id)
             .gt('total_stock', 0);
@@ -5449,12 +5481,18 @@
                 const safeName = (p.name || 'Product').replace(/'/g, "\\'");
                 const safeDesc = (p.description || '').replace(/'/g, "\\'");
                 
+                // Logic for Stock Status Badge
+                let stockBadge = '';
+                if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>';
+                else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
+                
                 const html = `
                 <div class="customer-product-card" 
                      onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" 
                      style="animation-delay: ${index * 0.1}s">
                     <div class="modern-img-wrapper">
                         <img src="${img}" class="modern-img" alt="${safeName}">
+                        ${stockBadge}
                     </div>
                     <div class="modern-details" style="padding: 16px;">
                         <h4 class="modern-title">${p.name}</h4>
@@ -5587,4 +5625,4 @@
 </style>
 
 </body>
-</html>
+</html>    
