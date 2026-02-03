@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Biashara Yako Automation</title>
+    <title>linkamarket |create online store & sell via whatsapp</title>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CMBWJH2ER1"></script>
 <script>
@@ -1503,6 +1503,7 @@
     .chat-bubble { padding: 12px 16px; font-size: 14px; line-height: 1.5; box-shadow: 0 4px 15px rgba(37, 208, 120, 0.1); }
     .chat-bubble.ai-response { background-color: white !important; color: #0f1a14 !important; border: 1px solid #e5e7eb !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important; border-radius: 12px; border-bottom-left-radius: 0; }
     .chat-bubble.user { background-color: #f3f4f6 !important; color: #0f1a14 !important; border: 1px solid #e5e7eb !important; border-radius: 12px; border-bottom-right-radius: 0; }
+    .chat-bubble.ai { background-color: #25d078 !important; color: white !important; }
     .ai-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 0; gap: 16px; }
     .sparkle-container { position: relative; height: 60px; width: 200px; display: flex; justify-content: center; align-items: center; }
     .sparkle-wrapper { position: relative; width: 100%; animation: floatWave 6s ease-in-out infinite; }
@@ -5258,8 +5259,7 @@
                         <div class="star" style="width: 8px; height: 8px; top: 24px; left: 16px; animation-delay: 0.4s"></div>
                         
                         <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #25d078; opacity: 0.4;">
-                            <span class="material-symbols-outlined" style="font-size: 32px; animation: softPulse 2s infinite;">auto_awesome</span>
-                        </div>
+                            <span class="material-symbols-outlined" style="font-size: 32px; animation: softPulse 2s infinite;">auto_awesome</span></div>
                     </div>
                 </div>
                 <div style="text-align: center;">
@@ -5578,7 +5578,7 @@
     });
 
     // =======================================================
-    // ENHANCED PRODUCT DETAIL PAGE FUNCTIONS
+    // ENHANCED PRODUCT DETAIL PAGE FUNCTIONS (FIXED)
     // =======================================================
 
     let CURRENT_PRODUCT_DETAIL = null;
@@ -5586,8 +5586,10 @@
     let CURRENT_IMAGE_INDEX = 0;
     let PRODUCT_IMAGES = [];
 
-    // ✅ OPEN PRODUCT DETAIL WITH FULL DATA
+    // ✅ FIXED: OPEN PRODUCT DETAIL WITH FULL DATA
     async function openProductDetailPage(id, name, price, stock, img, description) {
+        console.log('📱 Opening product detail:', { id, name, price, stock });
+        
         CURRENT_PRODUCT_DETAIL = {
             id: id,
             name: name,
@@ -5597,6 +5599,9 @@
             description: description,
             merchantId: CUSTOMER_MERCHANT_ID
         };
+
+        // Show screen first for better UX
+        showScreen('product-detail-page', true);
 
         // Navigation Context
         const isFromCustomerStorefront = IS_CUSTOMER_MODE;
@@ -5628,27 +5633,89 @@
                 .eq('id', id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Product fetch error:', error);
+                // Don't show error - use basic data instead
+                renderProductDetailBasic(CURRENT_PRODUCT_DETAIL);
+            } else {
+                // Merge fetched data with basic data
+                CURRENT_PRODUCT_DETAIL = { ...CURRENT_PRODUCT_DETAIL, ...product };
+                renderProductDetail(product);
+            }
 
-            // Update UI with Full Data
-            renderProductDetail(product);
-
-            // Load Reviews
-            await loadProductReviews(id);
+            // Load Reviews (non-blocking)
+            loadProductReviews(id).catch(err => {
+                console.error('Reviews load error:', err);
+                // Show empty reviews state
+                renderReviews([]);
+            });
 
         } catch (error) {
             console.error('Error loading product:', error);
-            alert('Failed to load product details');
+            // Fallback to basic rendering
+            renderProductDetailBasic(CURRENT_PRODUCT_DETAIL);
         }
-
-        // Show Screen
-        showScreen('product-detail-page', true);
     }
 
-    // ✅ RENDER PRODUCT DETAIL
-    function renderProductDetail(product) {
+    // ✅ NEW: Fallback renderer for basic product info
+    function renderProductDetailBasic(product) {
+        console.log('📦 Using basic product data');
+        
         // Title
-        document.getElementById('product-detail-title').textContent = product.name;
+        document.getElementById('product-detail-title').textContent = product.name || 'Product';
+
+        // Hide category badge
+        document.getElementById('product-category-badge').classList.add('hidden');
+
+        // Price (no discount)
+        document.getElementById('product-detail-price').textContent = `Tsh ${product.price.toLocaleString()}`;
+        document.getElementById('original-price').classList.add('hidden');
+        document.getElementById('discount-badge').classList.add('hidden');
+
+        // Stock Status
+        const stockIndicator = document.getElementById('stock-indicator');
+        const stockText = document.getElementById('stock-text');
+
+        if (product.stock === 0) {
+            stockIndicator.classList.add('out-of-stock');
+            stockText.textContent = 'Out of Stock';
+        } else if (product.stock <= 5) {
+            stockIndicator.classList.remove('out-of-stock');
+            stockText.textContent = `Only ${product.stock} left`;
+        } else {
+            stockIndicator.classList.remove('out-of-stock');
+            stockText.textContent = 'In Stock';
+        }
+
+        // Single Image
+        const slider = document.getElementById('product-image-slider');
+        slider.innerHTML = `
+            <div class="product-image-slide" style="background-image: url('${product.image || 'https://via.placeholder.com/600'}')"></div>
+        `;
+        
+        // Single dot
+        document.getElementById('image-dots').innerHTML = '<div class="image-dot active"></div>';
+
+        // Description
+        const descText = document.getElementById('description-text');
+        descText.textContent = product.description || 'No description available.';
+        document.getElementById('read-more-btn').classList.add('hidden');
+
+        // Hide variant sections
+        document.getElementById('color-section').classList.add('hidden');
+        document.getElementById('size-section').classList.add('hidden');
+        document.getElementById('material-section').classList.add('hidden');
+
+        // Empty reviews
+        renderReviews([]);
+    }
+
+    // ✅ FIXED: RENDER PRODUCT DETAIL
+    function renderProductDetail(product) {
+        console.log('🎨 Rendering full product detail:', product);
+        
+        // Title
+        document.getElementById('product-detail-title').textContent = product.name || 'Product';
 
         // Category Badge
         const categoryBadge = document.getElementById('product-category-badge');
@@ -5664,7 +5731,7 @@
         const originalPriceEl = document.getElementById('original-price');
         const discountBadgeEl = document.getElementById('discount-badge');
 
-        currentPriceEl.textContent = `Tsh ${product.selling_price.toLocaleString()}`;
+        currentPriceEl.textContent = `Tsh ${(product.selling_price || product.price || 0).toLocaleString()}`;
 
         if (product.original_price && product.discount_percent) {
             originalPriceEl.textContent = `Tsh ${product.original_price.toLocaleString()}`;
@@ -5681,12 +5748,14 @@
         const stockIndicator = document.getElementById('stock-indicator');
         const stockText = document.getElementById('stock-text');
 
-        if (product.total_stock === 0) {
+        const stock = product.total_stock || product.stock || 0;
+
+        if (stock === 0) {
             stockIndicator.classList.add('out-of-stock');
             stockText.textContent = 'Out of Stock';
-        } else if (product.total_stock <= 5) {
+        } else if (stock <= 5) {
             stockIndicator.classList.remove('out-of-stock');
-            stockText.textContent = `Only ${product.total_stock} left`;
+            stockText.textContent = `Only ${stock} left`;
         } else {
             stockIndicator.classList.remove('out-of-stock');
             stockText.textContent = 'In Stock';
@@ -5703,8 +5772,10 @@
         descText.textContent = fullDesc;
 
         if (fullDesc.length > 300) {
+            descText.classList.remove('expanded');
             readMoreBtn.classList.remove('hidden');
         } else {
+            descText.classList.add('expanded');
             readMoreBtn.classList.add('hidden');
         }
 
@@ -5778,18 +5849,30 @@
         });
     }
 
-    // ✅ RENDER VARIANTS
+    // ✅ FIXED: RENDER VARIANTS (with better error handling)
     function renderVariants(product) {
         try {
-            const variants = typeof product.product_variants === 'string' 
-                ? JSON.parse(product.product_variants) 
-                : product.product_variants || {};
+            let variants = {};
+            
+            // Parse variants safely
+            if (product.product_variants) {
+                if (typeof product.product_variants === 'string') {
+                    try {
+                        variants = JSON.parse(product.product_variants);
+                    } catch (e) {
+                        console.error('Failed to parse variants:', e);
+                        variants = {};
+                    }
+                } else if (typeof product.product_variants === 'object') {
+                    variants = product.product_variants;
+                }
+            }
 
             // Colors
             const colorSection = document.getElementById('color-section');
             const colorSelector = document.getElementById('color-selector');
 
-            if (variants.colors && variants.colors.length > 0) {
+            if (variants.colors && Array.isArray(variants.colors) && variants.colors.length > 0) {
                 colorSelector.innerHTML = variants.colors.map(color => {
                     const bgColor = getColorHex(color);
                     return `
@@ -5809,7 +5892,7 @@
             const sizeSection = document.getElementById('size-section');
             const sizeSelector = document.getElementById('size-selector');
 
-            if (variants.sizes && variants.sizes.length > 0) {
+            if (variants.sizes && Array.isArray(variants.sizes) && variants.sizes.length > 0) {
                 sizeSelector.innerHTML = variants.sizes.map(size => `
                     <div class="variant-chip" onclick="selectVariant('size', '${size}', this)">
                         ${size}
@@ -5824,7 +5907,7 @@
             const materialSection = document.getElementById('material-section');
             const materialSelector = document.getElementById('material-selector');
 
-            if (variants.materials && variants.materials.length > 0) {
+            if (variants.materials && Array.isArray(variants.materials) && variants.materials.length > 0) {
                 materialSelector.innerHTML = variants.materials.map(material => `
                     <div class="variant-chip" onclick="selectVariant('material', '${material}', this)">
                         ${material}
@@ -5837,6 +5920,10 @@
 
         } catch (error) {
             console.error('Error rendering variants:', error);
+            // Hide all variant sections on error
+            document.getElementById('color-section').classList.add('hidden');
+            document.getElementById('size-section').classList.add('hidden');
+            document.getElementById('material-section').classList.add('hidden');
         }
     }
 
