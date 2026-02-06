@@ -4729,54 +4729,49 @@
         avgRatingEl.textContent = avgRating; avgStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); totalReviewsEl.textContent = `${reviews.length} reviews`; productStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); ratingCountEl.textContent = `(${reviews.length} reviews)`;
         const distribution = [0, 0, 0, 0, 0]; reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) { distribution[r.rating - 1]++; } });
         ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0; return `<div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>`; }).join('');
-    
-    reviewsList.innerHTML = reviews.map(review => { 
-        const date = new Date(review.created_at); 
-        const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); 
-        return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; 
-    }).join('');
-}
+        reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; }).join('');
+    }
 
-function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
-function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
-function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
-function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
+    function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
+    function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+    function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
+    function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
 
-async function submitReview() {
-    const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
-    if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
-    const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
-    try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
-}
+    async function submitReview() {
+        const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
+        if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
+        const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
+        try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
+    }
 
-function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
-function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
-function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
+    function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
+    function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
+    function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
 
-async function orderProductViaWhatsApp() {
-    if (!CURRENT_PRODUCT_DETAIL) return;
-    let phone = '';
-    if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
-    if (!phone) { alert('Contact information not available'); return; }
-    let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
-    if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
-    message += '\nPlease confirm availability.';
-    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
-}
+    async function orderProductViaWhatsApp() {
+        if (!CURRENT_PRODUCT_DETAIL) return;
+        let phone = '';
+        if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
+        if (!phone) { alert('Contact information not available'); return; }
+        let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
+        if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
+        message += '\nPlease confirm availability.';
+        const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
+    }
 
-// =======================================================
-// CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
-// =======================================================
+    // =======================================================
+    // CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
+    // =======================================================
 
-let CURRENT_MERCHANT_DATA = null;
+    let CURRENT_MERCHANT_DATA = null;
 
-async function loadCustomerStorefrontBySlug(slug) {
-    console.log('🔍 Looking up merchant by slug:', slug);
-    IS_CUSTOMER_MODE = true;
-    try {
-        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
+    async function loadCustomerStorefrontBySlug(slug) {
+        console.log('🔍 Looking up merchant by slug:', slug);
+        IS_CUSTOMER_MODE = true;
+        try {
+            const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
         if (merchantError || !merchant) {
             console.error('Slug lookup error:', merchantError);
             document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
