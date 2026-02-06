@@ -1642,6 +1642,32 @@
         cursor: pointer;
     }
     
+    /* NEW: Template Change Button in Settings */
+    .pf-action-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 16px;
+    }
+    .pf-action-card:active {
+        transform: scale(0.98);
+        background: #f8fafc;
+    }
+    .pf-action-icon {
+        width: 40px; height: 40px;
+        background: #f0f9ff;
+        color: #0284c7;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 12px;
+    }
+    
     /* --- ADDED: DASHBOARD ALERT CARD --- */
     .setup-alert-card {
         background: #fff7ed;
@@ -2955,6 +2981,20 @@
                 </div>
             </div>
 
+            <!-- ADDED: Template Change Button -->
+            <div class="pf-action-card" onclick="goToTemplateChange()">
+                <div style="display: flex; align-items: center;">
+                    <div class="pf-action-icon">
+                        <span class="material-symbols-outlined">palette</span>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; color: #0f172a; font-size: 15px;">Store Design</div>
+                        <div style="font-size: 12px; color: #64748b;">Change your shop template</div>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined" style="color: #cbd5e1;">chevron_right</span>
+            </div>
+
             <button class="save-profile-btn" onclick="saveShopProfile()">
                 <span class="material-symbols-outlined">save</span>
                 Save Changes
@@ -3620,6 +3660,7 @@
     // ✅ NEW: Track if user is in customer mode
     let IS_CUSTOMER_MODE = false;
     let CUSTOMER_MERCHANT_ID = null;
+    let IS_TEMPLATE_EDIT_MODE = false;
     
     // Auth State
     let isSignup = false;
@@ -3876,9 +3917,10 @@
             return;
         }
         
-        // Show template selection screen
+        IS_TEMPLATE_EDIT_MODE = false; // Ensure onboarding mode
+        document.getElementById('btn-step-3-5').innerText = 'Continue →'; // Reset button text
         navigateTo('3-5', 'Choose Template');
-        loadTemplates(); // Load templates when screen shows
+        loadTemplates();
     }
 
     // ============================================
@@ -3973,17 +4015,39 @@
         alert(`Preview for template: ${templateId}\n(Full preview implementation coming soon)`);
     }
 
+    // New function for Settings
+    function goToTemplateChange() {
+        IS_TEMPLATE_EDIT_MODE = true;
+        document.getElementById('btn-step-3-5').innerText = 'Save Template'; // Change text
+        // Show screen directly
+        showScreen('step-3-5', true);
+        loadTemplates();
+    }
+
+    // Update handleTemplateSelection
     async function handleTemplateSelection() {
-        if (!SELECTED_TEMPLATE_ID) {
-            alert('Please select a template first');
-            return;
+        if (!SELECTED_TEMPLATE_ID) return alert('Select a template');
+
+        if (IS_TEMPLATE_EDIT_MODE) {
+            // Handle Edit Mode Save
+            const btn = document.getElementById('btn-step-3-5');
+            btn.innerHTML = 'Saving...';
+            try {
+                const { data: { user } } = await sb.auth.getUser();
+                if(user) {
+                    await sb.from('profiles').update({ selected_template_id: SELECTED_TEMPLATE_ID }).eq('id', user.id);
+                    // Also apply locally immediately
+                    await applyTemplateToStorefront(SELECTED_TEMPLATE_ID);
+                    alert('Template Updated!');
+                    openProfileSettings(); // Go back to settings
+                }
+            } catch(e) { console.error(e); alert('Error saving'); }
+            btn.innerHTML = 'Save Template';
+        } else {
+            // Handle Onboarding Flow
+            localStorage.setItem('temp_template_id', SELECTED_TEMPLATE_ID);
+            navigateTo(4, 'Shop Rules');
         }
-        
-        // Save to localStorage temporarily
-        localStorage.setItem('temp_template_id', SELECTED_TEMPLATE_ID);
-        
-        // Continue to Step 4
-        navigateTo(4, 'Shop Rules');
     }
 
     // ✅ NEW FUNCTION: Add this anywhere in the script section
@@ -4665,35 +4729,37 @@
         avgRatingEl.textContent = avgRating; avgStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); totalReviewsEl.textContent = `${reviews.length} reviews`; productStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); ratingCountEl.textContent = `(${reviews.length} reviews)`;
         const distribution = [0, 0, 0, 0, 0]; reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) { distribution[r.rating - 1]++; } });
         ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0; return `<div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>`; }).join('');
-        reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; }).join('');
-    }
+    
+    reviewsList.innerHTML = reviews.map(review => { 
+        const date = new Date(review.created_at); 
+        const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); 
+        return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; 
+    }).join('');
+}
 
-    function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
-    function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
-    function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
-    function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
+function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
+function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
+function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
 
-    async function submitReview() {
-        const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
-        if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
-        const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
-        try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
-    }
+async function submitReview() {
+    const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
+    if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
+    const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
+    try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
+}
 
-    function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
-    function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
-    function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
+function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
+function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
+function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
 
-    async function orderProductViaWhatsApp() {
-        if (!CURRENT_PRODUCT_DETAIL) return;
-        let phone = '';
-        if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
-        if (!phone) { alert('Contact information not available'); return; }
-        let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
-        if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message +=`Color: ${variants.color}\n`; 
-        if (variants.size) message += `Size: ${variants.size}\n`; 
-        if (variants.material) message += `Material: ${variants.material}\n`; 
-    }
+async function orderProductViaWhatsApp() {
+    if (!CURRENT_PRODUCT_DETAIL) return;
+    let phone = '';
+    if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
+    if (!phone) { alert('Contact information not available'); return; }
+    let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
+    if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
     message += '\nPlease confirm availability.';
     const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -4789,6 +4855,7 @@ async function loadCustomerStorefrontData(merchant) {
     }
     showScreen('customer-storefront', true);
     if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
+
 }
 
 function contactMerchantWhatsApp() {
