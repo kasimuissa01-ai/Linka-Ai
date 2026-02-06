@@ -3086,9 +3086,9 @@
                 </div>
                 <span class="nav-label add-label">Ongeza</span>
             </div>
-            <div class="nav-item" onclick="goToTemplateSettings()">
-                <span class="material-symbols-outlined nav-icon">palette</span>
-                <span class="nav-label">Mpangilio</span>
+            <div class="nav-item" onclick="goToAI()">
+                <span class="material-symbols-outlined nav-icon">auto_awesome</span>
+                <span class="nav-label">AI</span>
             </div>
         </div>
     </div>
@@ -3151,32 +3151,6 @@
                         ">
                     </div>
                     <div class="pf-helper">Orders will be sent to this number via WhatsApp.</div>
-                </div>
-
-                <!-- Template Selection Preview -->
-                <div class="pf-group">
-                    <label class="pf-label">Store Design Template</label>
-                    <button onclick="goToTemplateSettings()" style="
-                        width: 100%;
-                        padding: 16px;
-                        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-                        border: 2px solid #22c55e;
-                        border-radius: 16px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        cursor: pointer;
-                        transition: transform 0.2s;
-                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <span class="material-symbols-outlined" style="font-size: 24px; color: #16a34a;">palette</span>
-                            <div style="text-align: left;">
-                                <div style="font-weight: 700; color: #166534; font-size: 14px;">Change Store Design</div>
-                                <div style="font-size: 12px; color: #16a34a;">Customize how customers see your store</div>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined" style="color: #16a34a;">chevron_right</span>
-                    </button>
                 </div>
 
                 <!-- Link Preview -->
@@ -3274,9 +3248,9 @@
                 </div>
                 <span class="nav-label add-label">Ongeza</span>
             </div>
-            <div class="nav-item" onclick="goToTemplateSettings()">
-                <span class="material-symbols-outlined nav-icon">palette</span>
-                <span class="nav-label">Mpangilio</span>
+            <div class="nav-item" onclick="goToAI()">
+                <span class="material-symbols-outlined nav-icon">auto_awesome</span>
+                <span class="nav-label">AI</span>
             </div>
         </div>
     </div>
@@ -4075,28 +4049,10 @@
 
         const { data: { session } } = await sb.auth.getSession();
         if(session) {
-            // ✅ CHECK IF USER COMPLETED ONBOARDING
-            const { data: { user } } = await sb.auth.getUser();
-            const { data: profile } = await sb
-                .from('profiles')
-                .select('onboarding_completed, business_name')
-                .eq('id', user.id)
-                .single();
-            
-            // If NEW user (no business name or onboarding not completed)
-            if (!profile?.onboarding_completed || !profile?.business_name) {
-                console.log('🆕 New user detected - starting onboarding');
-                history.pushState({ step: 1 }, 'Welcome', '?step=1');
-                showScreen('step-1', false);
-                return; // STOP HERE - don't load dashboard
-            }
-            
-            // Existing user - proceed normally
             if (step) {
                 if (step === 'add-product') showScreen('step-add-product', false);
                 else if (step === 'ai') showScreen('step-ai', false);
                 else if (step === 'analytics') showScreen('step-analytics', false);
-                else if (step === 'templates') showScreen('step-3-5', false); // ✅ NEW: Template settings
                 else showScreen('step-' + step, false);
                 if(step == 5 || step == 'ai') loadDashboard();
             } else {
@@ -4105,7 +4061,7 @@
                 loadDashboard();
             }
         } else {
-            showScreen('step-auth', false);
+            showScreen('step-auth', true);
         }
     });
 
@@ -4389,41 +4345,11 @@ async function handleTemplateSelection() {
         return;
     }
     
-    // Check if user is in onboarding OR updating template
-    const { data: { user } } = await sb.auth.getUser();
-    const { data: profile } = await sb
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', user.id)
-        .single();
+    // Save to localStorage temporarily
+    localStorage.setItem('temp_template_id', SELECTED_TEMPLATE_ID);
     
-    if (profile?.onboarding_completed) {
-        // ✅ EXISTING USER - Save template immediately
-        const btn = document.getElementById('btn-step-3-5');
-        btn.innerHTML = 'Saving...';
-        btn.disabled = true;
-        
-        const { error } = await sb
-            .from('profiles')
-            .update({ selected_template_id: SELECTED_TEMPLATE_ID })
-            .eq('id', user.id);
-        
-        if (error) {
-            alert('Error saving template: ' + error.message);
-            btn.innerHTML = 'Save Changes <span class="arrow-icon">→</span>';
-            btn.disabled = false;
-            return;
-        }
-        
-        // Apply template and return to dashboard
-        await applyTemplateToStorefront(SELECTED_TEMPLATE_ID);
-        alert('✅ Template updated successfully!');
-        loadDashboard();
-    } else {
-        // ✅ NEW USER - Continue to Step 4 (onboarding)
-        localStorage.setItem('temp_template_id', SELECTED_TEMPLATE_ID);
-        navigateTo(4, 'Shop Rules');
-    }
+    // Continue to Step 4
+    navigateTo(4, 'Shop Rules');
 }
 
 // ✅ NEW FUNCTION: Add this anywhere in the script section
@@ -4693,39 +4619,6 @@ async function handleStep4Click() {
             updateLinkPreview(profile.business_name);
         }
     }
-    
-    async function goToTemplateSettings() {
-        trackSection("Template Settings");
-        history.pushState({ step: 'templates' }, 'Choose Template', '?step=templates');
-        
-        // Reuse Step 3-5 screen but for existing users
-        showScreen('step-3-5', true);
-        
-        // Load current template selection
-        const { data: { user } } = await sb.auth.getUser();
-        const { data: profile } = await sb
-            .from('profiles')
-            .select('selected_template_id')
-            .eq('id', user.id)
-            .single();
-        
-        // Load templates and pre-select current one
-        await loadTemplates();
-        
-        if (profile?.selected_template_id) {
-            SELECTED_TEMPLATE_ID = profile.selected_template_id;
-            const card = document.getElementById(`template-${profile.selected_template_id}`);
-            if (card) {
-                card.classList.add('selected');
-                const btn = document.getElementById('btn-step-3-5');
-                if(btn) {
-                    btn.classList.remove('btn-disabled');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Save Changes <span class="arrow-icon">→</span>';
-                }
-            }
-        }
-    }
 
     function updateLinkPreview(val) {
         const name = val || document.getElementById('prof-shop-name').value;
@@ -4800,24 +4693,81 @@ async function handleStep4Click() {
         const now = new Date();
         let startDate = new Date();
         if (range === 'week') { const day = now.getDay() || 7; if(day !== 1) startDate.setHours(-24 * (day - 1)); else startDate.setHours(0,0,0,0); } else if (range === 'month') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); } else { startDate.setHours(0,0,0,0); }
-const startStr = startDate.toISOString();
-const { data: salesData } = await sb.from('sales').select('total_amount, created_at, product_id, products(name)').eq('merchant_id', user.id).eq('payment_type', 'cash').gte('created_at', startStr).order('created_at', { ascending: false });
-const { data: debtData } = await sb.from('debts').select('total_amount, created_at, debtor_name').eq('merchant_id', user.id).gte('created_at', startStr).order('created_at', { ascending: false });
-let totalSales = 0; let totalDebt = 0; const allTransactions = [];
-if (salesData) { salesData.forEach(s => { totalSales += s.total_amount; allTransactions.push({ type: 'sale', name: s.products?.name || 'Bidhaa', amount: s.total_amount, time: new Date(s.created_at), label: 'Cash' }); }); }
-if (debtData) { debtData.forEach(d => { totalDebt += d.total_amount; allTransactions.push({ type: 'debt', name: 'Deni la ' + d.debtor_name.split(' ')[0], amount: d.total_amount, time: new Date(d.created_at), label: 'Inadaiwa' }); }); }
-allTransactions.sort((a,b) => b.time - a.time);
-document.getElementById('ana-total-profit').innerText = (totalSales + totalDebt).toLocaleString() + ' TZS';
-document.getElementById('ana-sales-val').innerText = totalSales.toLocaleString() + ' TZS';
-document.getElementById('ana-debt-val').innerText = totalDebt.toLocaleString() + ' TZS';
-const listContainer = document.getElementById('ana-list-container');
-listContainer.innerHTML = '';
-if(allTransactions.length === 0) { listContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#9ca3af; display:flex; flex-direction:column; align-items:center;">Hakuna data kwa muda huu.</p>'; } else { allTransactions.forEach(t => { const isSale = t.type === 'sale'; const iconClass = isSale ? 'ali-ic-green' : 'ali-ic-orange'; const icon = isSale ? 'checkroom' : 'person'; const amountClass = isSale ? 'pos' : 'neg'; const amountSign = '+'; const badgeClass = isSale ? '' : 'debt'; const hours = t.time.getHours(); const minutes = t.time.getMinutes().toString().padStart(2, '0'); const period = hours < 12 ? 'Asubuhi' : (hours < 16 ? 'Mchana' : (hours < 19 ? 'Jioni' : 'Usiku')); const timeStr = Saa ${hours}:${minutes} ${period}; const html = <div class="ana-list-item"><div class="ali-left"><div class="ali-icon-circle ${iconClass}"><span class="material-symbols-outlined">${icon}</span></div><div class="ali-info"><h4>${t.name}</h4><p>${timeStr}</p></div></div><div class="ali-right"><span class="ali-amount ${amountClass}">${amountSign} ${t.amount.toLocaleString()}</span><span class="ali-badge ${badgeClass}">${t.label}</span></div></div>;
+        const startStr = startDate.toISOString();
+        const { data: salesData } = await sb.from('sales').select('total_amount, created_at, product_id, products(name)').eq('merchant_id', user.id).eq('payment_type', 'cash').gte('created_at', startStr).order('created_at', { ascending: false });
+        const { data: debtData } = await sb.from('debts').select('total_amount, created_at, debtor_name').eq('merchant_id', user.id).gte('created_at', startStr).order('created_at', { ascending: false });
+        let totalSales = 0; let totalDebt = 0; const allTransactions = [];
+        if (salesData) { salesData.forEach(s => { totalSales += s.total_amount; allTransactions.push({ type: 'sale', name: s.products?.name || 'Bidhaa', amount: s.total_amount, time: new Date(s.created_at), label: 'Cash' }); }); }
+        if (debtData) { debtData.forEach(d => { totalDebt += d.total_amount; allTransactions.push({ type: 'debt', name: 'Deni la ' + d.debtor_name.split(' ')[0], amount: d.total_amount, time: new Date(d.created_at), label: 'Inadaiwa' }); }); }
+        allTransactions.sort((a,b) => b.time - a.time);
+        document.getElementById('ana-total-profit').innerText = (totalSales + totalDebt).toLocaleString() + ' TZS'; 
+        document.getElementById('ana-sales-val').innerText = totalSales.toLocaleString() + ' TZS';
+        document.getElementById('ana-debt-val').innerText = totalDebt.toLocaleString() + ' TZS';
+        const listContainer = document.getElementById('ana-list-container');
+        listContainer.innerHTML = '';
+        if(allTransactions.length === 0) { listContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#9ca3af; display:flex; flex-direction:column; align-items:center;">Hakuna data kwa muda huu.</p>'; } else { allTransactions.forEach(t => { const isSale = t.type === 'sale'; const iconClass = isSale ? 'ali-ic-green' : 'ali-ic-orange'; const icon = isSale ? 'checkroom' : 'person'; const amountClass = isSale ? 'pos' : 'neg'; const amountSign = '+'; const badgeClass = isSale ? '' : 'debt'; const hours = t.time.getHours(); const minutes = t.time.getMinutes().toString().padStart(2, '0'); const period = hours < 12 ? 'Asubuhi' : (hours < 16 ? 'Mchana' : (hours < 19 ? 'Jioni' : 'Usiku')); const timeStr = `Saa ${hours}:${minutes} ${period}`; const html = `<div class="ana-list-item"><div class="ali-left"><div class="ali-icon-circle ${iconClass}"><span class="material-symbolsoutlined">
+𝑖
+𝑐
+𝑜
+𝑛
+<
+/
+𝑠
+𝑝
+𝑎
+𝑛
+>
+<
+/
+𝑑
+𝑖
+𝑣
+>
+<
+𝑑
+𝑖
+𝑣
+𝑐
+𝑙
+𝑎
+𝑠
+𝑠
+=
+"
+𝑎
+𝑙
+𝑖
+−
+𝑖
+𝑛
+𝑓
+𝑜
+"
+>
+<
+ℎ
+4
+>
+icon</span></div><divclass="ali−info"><h4>
+{t.name}</h4><p>${timeStr}</p></div></div><div class="ali-right"><span class="ali-amount ${amountClass}">
+𝑎
+𝑚
+𝑜
+𝑢
+𝑛
+𝑡
+𝑆
+𝑖
+𝑔
+𝑛
+amountSign
+{t.amount.toLocaleString()}</span><span class="ali-badge ${badgeClass}">${t.label}</span></div></div>`;
 listContainer.innerHTML += html;
 });
 }
 }
 function getProductImage(product) { if (product.image_path) { const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path); return data.publicUrl; } if (product.product_images && product.product_images.length > 0) { return product.product_images[0].image_url; } return 'https://via.placeholder.com/150'; }
+
 // --- ADD PRODUCT LOGIC ---
 function goToAddProduct() {
     trackSection("Add Product");
@@ -5391,15 +5341,23 @@ async function loadCustomerStorefront(merchantId) {
     } catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
 }
 
-async function loadCustomerStorefrontData(merchant) {
-    CURRENT_MERCHANT_DATA = merchant;
-    
-    // ✅ NEW: Apply selected template
-    if (merchant.selected_template_id) {
-        await applyTemplateToStorefront(merchant.selected_template_id);
-    }
+// ADD this at the very start of loadCustomerStorefrontData function
 
-    const businessName = merchant.business_name || 'My Store';
+async function loadCustomerStorefrontData(merchant) {
+CURRENT_MERCHANT_DATA = merchant;
+
+code
+Code
+download
+content_copy
+expand_less
+// ✅ NEW: Apply selected template
+if (merchant.selected_template_id) {
+    await applyTemplateToStorefront(merchant.selected_template_id);
+}
+
+// ... rest of existing function continues ...
+const businessName = merchant.business_name || 'My Store';
     const storeNameEl = document.getElementById('customer-store-name');
     const heroStoreNameEl = document.getElementById('customer-hero-store-name');
     if (storeNameEl) storeNameEl.innerText = businessName;
@@ -5448,8 +5406,14 @@ async function loadCustomerStorefrontData(merchant) {
     }
     showScreen('customer-storefront', true);
     if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
+
 }
 
+code
+Code
+download
+content_copy
+expand_less
 function contactMerchantWhatsApp() {
     if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
     const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
@@ -5469,40 +5433,6 @@ function typeWriterCustomer(text) {
 function scrollToProducts() {
     const productsSection = document.getElementById('customer-products-section');
     if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-}
-
-// ✅ FIXED: Template Settings Function
-async function goToTemplateSettings() {
-    trackSection("Template Settings");
-    history.pushState({ step: 'templates' }, 'Choose Template', '?step=templates');
-    
-    // Reuse Step 3-5 screen but for existing users
-    showScreen('step-3-5', true);
-    
-    // Load current template selection
-    const { data: { user } } = await sb.auth.getUser();
-    const { data: profile } = await sb
-        .from('profiles')
-        .select('selected_template_id')
-        .eq('id', user.id)
-        .single();
-    
-    // Load templates and pre-select current one
-    await loadTemplates();
-    
-    if (profile?.selected_template_id) {
-        SELECTED_TEMPLATE_ID = profile.selected_template_id;
-        const card = document.getElementById(`template-${profile.selected_template_id}`);
-        if (card) {
-            card.classList.add('selected');
-            const btn = document.getElementById('btn-step-3-5');
-            if(btn) {
-                btn.classList.remove('btn-disabled');
-                btn.disabled = false;
-                btn.innerHTML = 'Save Changes <span class="arrow-icon">→</span>';
-            }
-        }
-    }
 }
 </script>
 
