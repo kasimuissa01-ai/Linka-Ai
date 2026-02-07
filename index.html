@@ -303,137 +303,69 @@
     }
     #other-input-container.open { max-height: 100px; opacity: 1; margin-top: 10px; }
     
-    /* ============================================
-       SHOPIFY-INSPIRED TEMPLATE SELECTION
-       ============================================ */
-
-    /* Template Grid Container */
-    .templates-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 16px;
-        width: 100%;
-        padding: 0;
-    }
-
-    @media (min-width: 640px) {
-        .templates-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-    }
-
-    /* Modern Template Card */
+    /* Template Selection Styles */
     .template-card {
         background: white;
-        border-radius: 16px;
-        overflow: hidden;
+        border-radius: 20px;
+        padding: 16px;
+        border: 3px solid #e5e7eb;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid #e5e7eb;
-        position: relative;
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 4px 0 #e5e7eb;
     }
 
-    .template-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        border-color: #d1d5db;
+    .template-card:active {
+        transform: translateY(4px);
+        box-shadow: 0 0px 0 #e5e7eb;
     }
 
     .template-card.selected {
-        border-color: #25d078;
-        box-shadow: 0 0 0 3px rgba(37, 208, 120, 0.1);
-        transform: translateY(-4px);
+        border-color: #58cc02;
+        background-color: #f0fdf4;
+        box-shadow: 0 4px 0 #46a302;
     }
 
-    /* Template Preview Image */
+    .template-card.selected:active {
+        box-shadow: 0 0px 0 #46a302;
+    }
+
     .template-preview {
         width: 100%;
         height: 200px;
+        border-radius: 12px;
         background-size: cover;
         background-position: center;
         position: relative;
         overflow: hidden;
     }
 
-    .template-preview::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.3));
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .template-card:hover .template-preview::after {
-        opacity: 1;
-    }
-
-    /* Selection Checkmark */
-    .template-selected-check {
-        display: none;
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        width: 32px;
-        height: 32px;
-        background: #25d078;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(37, 208, 120, 0.4);
-        animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        z-index: 10;
-    }
-
-    .template-card.selected .template-selected-check {
-        display: flex;
-    }
-
-    @keyframes checkPop {
-        0% { transform: scale(0) rotate(-180deg); }
-        100% { transform: scale(1) rotate(0deg); }
-    }
-
-    /* Template Badge */
     .template-badge {
         position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(0, 0, 0, 0.75);
-        backdrop-filter: blur(8px);
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.7);
         color: white;
-        padding: 6px 12px;
+        padding: 4px 12px;
         border-radius: 20px;
         font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
     }
 
-    .template-badge.premium {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
-
-    /* Template Info Section */
     .template-info {
-        padding: 16px;
         display: flex;
-        flex-direction: column;
-        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .template-name {
         font-size: 16px;
         font-weight: 800;
         color: #1f2937;
-        margin: 0;
     }
 
     .template-category {
@@ -443,18 +375,15 @@
         padding: 4px 10px;
         border-radius: 12px;
         font-weight: 700;
-        display: inline-block;
-        width: fit-content;
     }
 
-    /* Preview Button */
     .preview-btn {
         width: 100%;
-        padding: 12px;
-        background: transparent;
-        border: 2px solid #e5e7eb;
+        padding: 10px;
+        background: #f3f4f6;
+        border: none;
         border-radius: 12px;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         color: #4b5563;
         cursor: pointer;
@@ -463,155 +392,36 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        margin-top: 8px;
     }
 
     .preview-btn:hover {
-        background: #f9fafb;
-        border-color: #25d078;
-        color: #25d078;
+        background: #e5e7eb;
     }
 
-    .preview-btn:active {
-        transform: scale(0.98);
-    }
-
-    /* Search & Filter Bar */
-    .template-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 24px;
-        width: 100%;
-    }
-
-    .template-search {
-        position: relative;
-        width: 100%;
-    }
-
-    .template-search input {
-        width: 100%;
-        padding: 14px 16px 14px 48px;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
-        background: white;
-        transition: all 0.2s;
-    }
-
-    .template-search input:focus {
-        outline: none;
-        border-color: #25d078;
-        box-shadow: 0 0 0 3px rgba(37, 208, 120, 0.1);
-    }
-
-    .template-search .material-symbols-outlined {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #9ca3af;
-        font-size: 20px;
-    }
-
-    /* Category Filter Pills */
-    .template-filters {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        scrollbar-width: none;
-    }
-
-    .template-filters::-webkit-scrollbar {
+    .template-selected-check {
         display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(88, 204, 2, 0.95);
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(88, 204, 2, 0.5);
+        animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .filter-pill {
-        flex-shrink: 0;
-        padding: 8px 16px;
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 50px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #6b7280;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
+    .template-card.selected .template-selected-check {
+        display: flex;
     }
 
-    .filter-pill:hover {
-        border-color: #25d078;
-        color: #25d078;
+    @keyframes checkPop {
+        0% { transform: translate(-50%, -50%) scale(0); }
+        100% { transform: translate(-50%, -50%) scale(1); }
     }
-
-    .filter-pill.active {
-        background: #25d078;
-        color: white;
-        border-color: #25d078;
-    }
-
-    /* Loading Skeleton */
-    .template-skeleton {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        border: 2px solid #e5e7eb;
-    }
-
-    .skeleton-preview {
-        width: 100%;
-        height: 200px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-content {
-        padding: 16px;
-    }
-
-    .skeleton-line {
-        height: 16px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 4px;
-        margin-bottom: 8px;
-    }
-
-    .skeleton-line.short {
-        width: 60%;
-    }
-
-    @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-
-    /* Empty State */
-    .templates-empty {
-        text-align: center;
-        padding: 60px 20px;
-        color: #9ca3af;
-    }
-
-    .templates-empty .material-symbols-outlined {
-        font-size: 64px;
-        opacity: 0.3;
-        margin-bottom: 16px;
-    }
-
-    /* Animation Delays */
-    .template-card:nth-child(1) { animation-delay: 0.05s; }
-    .template-card:nth-child(2) { animation-delay: 0.1s; }
-    .template-card:nth-child(3) { animation-delay: 0.15s; }
-    .template-card:nth-child(4) { animation-delay: 0.2s; }
-    .template-card:nth-child(5) { animation-delay: 0.25s; }
-    .template-card:nth-child(6) { animation-delay: 0.3s; }
 
     /* Shop Rules Cards */
     .setting-card {
@@ -2693,6 +2503,126 @@
         transform: scale(0.98);
     }
 
+    /* Template Selection Styles */
+    .template-card {
+        background: white;
+        border-radius: 20px;
+        padding: 16px;
+        border: 3px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 4px 0 #e5e7eb;
+    }
+
+    .template-card:active {
+        transform: translateY(4px);
+        box-shadow: 0 0px 0 #e5e7eb;
+    }
+
+    .template-card.selected {
+        border-color: #58cc02;
+        background-color: #f0fdf4;
+        box-shadow: 0 4px 0 #46a302;
+    }
+
+    .template-card.selected:active {
+        box-shadow: 0 0px 0 #46a302;
+    }
+
+    .template-preview {
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .template-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .template-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .template-name {
+        font-size: 16px;
+        font-weight: 800;
+        color: #1f2937;
+    }
+
+    .template-category {
+        font-size: 12px;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+
+    .preview-btn {
+        width: 100%;
+        padding: 10px;
+        background: #f3f4f6;
+        border: none;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #4b5563;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .preview-btn:hover {
+        background: #e5e7eb;
+    }
+
+    .template-selected-check {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(88, 204, 2, 0.95);
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(88, 204, 2, 0.5);
+        animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .template-card.selected .template-selected-check {
+        display: flex;
+    }
+
+    @keyframes checkPop {
+        0% { transform: translate(-50%, -50%) scale(0); }
+        100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
     /* Responsive */
     @media (min-width: 640px) {
         .product-detail-container {
@@ -2867,39 +2797,9 @@
         <h1>Choose Your Store Design</h1>
         <div class="sub-header">Pick a template that matches your style</div>
         
-        <!-- Search & Filter Controls -->
-        <div class="template-controls">
-            <div class="template-search">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="template-search-input" placeholder="Search templates..." oninput="filterTemplates()">
-            </div>
-            
-            <div class="template-filters">
-                <button class="filter-pill active" data-category="all" onclick="filterByCategory('all', this)">All</button>
-                <button class="filter-pill" data-category="Fashion" onclick="filterByCategory('Fashion', this)">Fashion</button>
-                <button class="filter-pill" data-category="Electronics" onclick="filterByCategory('Electronics', this)">Electronics</button>
-                <button class="filter-pill" data-category="Food" onclick="filterByCategory('Food', this)">Food</button>
-                <button class="filter-pill" data-category="General" onclick="filterByCategory('General', this)">General</button>
-            </div>
-        </div>
-        
-        <!-- Templates Grid -->
-        <div class="templates-grid" id="templates-container">
-            <!-- Loading skeletons (shown initially) -->
-            <div class="template-skeleton">
-                <div class="skeleton-preview"></div>
-                <div class="skeleton-content">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line short"></div>
-                </div>
-            </div>
-            <div class="template-skeleton">
-                <div class="skeleton-preview"></div>
-                <div class="skeleton-content">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line short"></div>
-                </div>
-            </div>
+        <!-- Template Cards Container -->
+        <div id="templates-container" style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px; width: 100%;">
+            <!-- Templates loaded dynamically -->
         </div>
     </div>
     
@@ -4029,236 +3929,91 @@
 
     let SELECTED_TEMPLATE_ID = null;
 
-// ============================================
-// IMPROVED TEMPLATE SELECTION FUNCTIONS
-// ============================================
-
-let ALL_TEMPLATES = [];
-let FILTERED_TEMPLATES = [];
-let SELECTED_CATEGORY = 'all';
-
-async function loadTemplates() {
-    const container = document.getElementById('templates-container');
-    
-    // Show loading skeletons
-    container.innerHTML = `
-        <div class="template-skeleton">
-            <div class="skeleton-preview"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-            </div>
-        </div>
-        <div class="template-skeleton">
-            <div class="skeleton-preview"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-            </div>
-        </div>
-    `;
-    
-    try {
-        const { data: templates, error } = await sb
-            .from('store_templates')
-            .select('id, name, category, preview_image, html_structure, css_styles, is_active, is_premium')
-            .eq('is_active', true)
-            .order('name');
+    async function loadTemplates() {
+        const container = document.getElementById('templates-container');
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #9ca3af;">Loading templates...</div>';
         
-        if (error) {
-            console.error('Template fetch error:', error);
-            throw error;
-        }
-        
-        if (!templates || templates.length === 0) {
-            container.innerHTML = `
-                <div class="templates-empty" style="grid-column: 1/-1;">
-                    <span class="material-symbols-outlined">palette</span>
-                    <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No templates available</p>
-                    <p style="font-size: 14px;">We'll use a default design for now</p>
-                </div>`;
-            return;
-        }
-        
-        console.log('✅ Loaded templates:', templates.length);
-        ALL_TEMPLATES = templates;
-        FILTERED_TEMPLATES = templates;
-        renderTemplateCards(templates);
-        
-        // Auto-select current template if in edit mode
-        if (IS_TEMPLATE_EDIT_MODE) {
-            const { data: { user } } = await sb.auth.getUser();
-            if (user) {
-                const { data: profile } = await sb
-                    .from('profiles')
-                    .select('selected_template_id')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (profile?.selected_template_id) {
-                    SELECTED_TEMPLATE_ID = profile.selected_template_id;
-                    const card = document.getElementById(`template-${profile.selected_template_id}`);
-                    if (card) {
-                        card.classList.add('selected');
-                        document.getElementById('btn-step-3-5').classList.remove('btn-disabled');
-                        document.getElementById('btn-step-3-5').disabled = false;
-                    }
-                }
-            }
-        }
-        
-    } catch (error) {
-        console.error('Template load error:', error);
-        container.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ef4444;">
-                <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 12px;">error</span>
-                <p style="font-size: 16px; font-weight: 600;">Failed to load templates</p>
-                <p style="font-size: 14px; margin-top: 8px;">Please try again</p>
-                <button onclick="loadTemplates()" style="margin-top: 16px; padding: 10px 24px; background: #25d078; color: white; border: none; border-radius: 50px; font-weight: 700; cursor: pointer;">
-                    Retry
-                </button>
-            </div>`;
-    }
-}
-
-function renderTemplateCards(templates) {
-    const container = document.getElementById('templates-container');
-    
-    if (templates.length === 0) {
-        container.innerHTML = `
-            <div class="templates-empty" style="grid-column: 1/-1;">
-                <span class="material-symbols-outlined">search_off</span>
-                <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No templates found</p>
-                <p style="font-size: 14px;">Try a different search or category</p>
-            </div>`;
-        return;
-    }
-    
-    container.innerHTML = templates.map((template, index) => `
-        <div class="template-card" id="template-${template.id}" onclick="selectTemplate('${template.id}')" style="animation-delay: ${index * 0.05}s">
-            <div class="template-preview" style="background-image: url('${template.preview_image || 'https://via.placeholder.com/400x300?text=Preview'}')">
-                <div class="template-selected-check">
-                    <span class="material-symbols-outlined" style="font-size: 20px; color: white;">check</span>
-                </div>
-                ${template.is_premium ? '<div class="template-badge premium">✨ Premium</div>' : '<div class="template-badge">Free</div>'}
-            </div>
+        try {
+            const { data: templates, error } = await sb
+                .from('store_templates')
+                .select('*')
+                .order('name');
             
-            <div class="template-info">
-                <div class="template-name">${template.name}</div>
-                <div class="template-category">${template.category || 'General'}</div>
+            if (error) throw error;
+            
+            if (!templates || templates.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                        <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No templates available</p>
+                        <p style="font-size: 14px;">We'll use a default design for now</p>
+                    </div>`;
+                return;
+            }
+            
+            renderTemplateCards(templates);
+            
+        } catch (error) {
+            console.error('Template load error:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #ef4444;">
+                    Failed to load templates. Please try again.
+                </div>`;
+        }
+    }
+
+    function renderTemplateCards(templates) {
+        const container = document.getElementById('templates-container');
+        
+        container.innerHTML = templates.map(template => `
+            <div class="template-card" id="template-${template.id}" onclick="selectTemplate('${template.id}')">
+                <div class="template-preview" style="background-image: url('${template.preview_image || 'https://via.placeholder.com/400x300?text=Preview'}')">
+                    <div class="template-selected-check">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: white;">check_circle</span>
+                    </div>
+                    ${template.is_premium ? '<div class="template-badge">✨ Premium</div>' : ''}
+                </div>
+                
+                <div class="template-info">
+                    <div>
+                        <div class="template-name">${template.name}</div>
+                        <div class="template-category">${template.category || 'General'}</div>
+                    </div>
+                </div>
                 
                 <button class="preview-btn" onclick="event.stopPropagation(); previewTemplate('${template.id}')">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
                     Preview
                 </button>
             </div>
-        </div>
-    `).join('');
-}
+        `).join('');
+    }
 
-function selectTemplate(templateId) {
-    // Remove previous selection
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    // Select new template
-    const selectedCard = document.getElementById(`template-${templateId}`);
-    if (selectedCard) {
-        selectedCard.classList.add('selected');
-        SELECTED_TEMPLATE_ID = templateId;
+    function selectTemplate(templateId) {
+        // Remove previous selection
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('selected');
+        });
         
-        // Enable continue button
-        const btn = document.getElementById('btn-step-3-5');
-        btn.classList.remove('btn-disabled');
-        btn.disabled = false;
-        
-        // Haptic feedback
-        if (navigator.vibrate) navigator.vibrate(30);
-        
-        // Scroll to selected card
-        selectedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Select new template
+        const selectedCard = document.getElementById(`template-${templateId}`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+            SELECTED_TEMPLATE_ID = templateId;
+            
+            // Enable continue button
+            const btn = document.getElementById('btn-step-3-5');
+            btn.classList.remove('btn-disabled');
+            btn.disabled = false;
+            
+            // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
     }
-}
 
-function filterByCategory(category, element) {
-    SELECTED_CATEGORY = category;
-    
-    // Update active pill
-    document.querySelectorAll('.filter-pill').forEach(pill => {
-        pill.classList.remove('active');
-    });
-    element.classList.add('active');
-    
-    // Filter templates
-    if (category === 'all') {
-        FILTERED_TEMPLATES = ALL_TEMPLATES;
-    } else {
-        FILTERED_TEMPLATES = ALL_TEMPLATES.filter(t => t.category === category);
+    function previewTemplate(templateId) {
+        // Show preview modal (implement later or redirect to demo page)
+        alert(`Preview for template: ${templateId}\n(Full preview implementation coming soon)`);
     }
-    
-    // Apply search filter if exists
-    const searchTerm = document.getElementById('template-search-input')?.value.toLowerCase();
-    if (searchTerm) {
-        FILTERED_TEMPLATES = FILTERED_TEMPLATES.filter(t => 
-            t.name.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    renderTemplateCards(FILTERED_TEMPLATES);
-}
-
-function filterTemplates() {
-    const searchTerm = document.getElementById('template-search-input').value.toLowerCase();
-    
-    let filtered = SELECTED_CATEGORY === 'all' ? ALL_TEMPLATES : ALL_TEMPLATES.filter(t => t.category === SELECTED_CATEGORY);
-    
-    if (searchTerm) {
-        filtered = filtered.filter(t => 
-            t.name.toLowerCase().includes(searchTerm) || 
-            (t.category && t.category.toLowerCase().includes(searchTerm))
-        );
-    }
-    
-    FILTERED_TEMPLATES = filtered;
-    renderTemplateCards(filtered);
-}
-
-function previewTemplate(templateId) {
-    const template = ALL_TEMPLATES.find(t => t.id === templateId);
-    if (!template) return;
-    
-    // Create preview modal
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
-        display: flex; align-items: center; justify-content: center; padding: 20px;
-        animation: fadeIn 0.2s ease;
-    `;
-    
-    modal.innerHTML = `
-        <div style="background: white; border-radius: 24px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; animation: slideUp 0.3s ease;">
-            <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 20px; font-weight: 800; color: #1f2937; margin: 0;">${template.name}</h3>
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="width: 36px; height: 36px; border-radius: 50%; background: #f3f4f6; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
-                </button>
-            </div>
-            <div style="padding: 0;">
-                <img src="${template.preview_image || 'https://via.placeholder.com/600x400'}" style="width: 100%; height: auto; display: block;">
-            </div>
-            <div style="padding: 20px; border-top: 1px solid #e5e7eb;">
-                <button onclick="this.parentElement.parentElement.parentElement.remove(); selectTemplate('${templateId}');" style="width: 100%; padding: 14px; background: #25d078; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    Select This Template
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-}
 
     // New function for Settings
     function goToTemplateChange() {
@@ -4973,151 +4728,150 @@ function previewTemplate(templateId) {
         const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0); const avgRating = (totalRating / reviews.length).toFixed(1);
         avgRatingEl.textContent = avgRating; avgStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); totalReviewsEl.textContent = `${reviews.length} reviews`; productStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); ratingCountEl.textContent = `(${reviews.length} reviews)`;
         const distribution = [0, 0, 0, 0, 0]; reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) { distribution[r.rating - 1]++; } });
-        ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 :0; return <div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>; }).join('');
-reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return <div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>; }).join('');
-}
-
-function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
-function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
-function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
-function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
-
-async function submitReview() {
-    const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
-    if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
-    const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
-    try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
-}
-
-function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
-function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
-function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
-
-async function orderProductViaWhatsApp() {
-    if (!CURRENT_PRODUCT_DETAIL) return;
-    let phone = '';
-    if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
-    if (!phone) { alert('Contact information not available'); return; }
-    let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
-    if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
-    message += '\nPlease confirm availability.';
-    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
-}
-
-// =======================================================
-// CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
-// =======================================================
-
-let CURRENT_MERCHANT_DATA = null;
-
-async function loadCustomerStorefrontBySlug(slug) {
-    console.log('🔍 Looking up merchant by slug:', slug);
-    IS_CUSTOMER_MODE = true;
-    try {
-        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
-    if (merchantError || !merchant) {
-        console.error('Slug lookup error:', merchantError);
-        document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
-        return;
+        ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0; return `<div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>`; }).join('');
+        reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; }).join('');
     }
-    CUSTOMER_MERCHANT_ID = merchant.id;
-    console.log('✅ Found merchant:', merchant.business_name);
-    await loadCustomerStorefrontData(merchant);
-} catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
 
+    function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
+    function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+    function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
+    function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
+
+    async function submitReview() {
+        const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
+        if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
+        const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
+        try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
+    }
+
+    function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
+    function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
+    function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
+
+    async function orderProductViaWhatsApp() {
+        if (!CURRENT_PRODUCT_DETAIL) return;
+        let phone = '';
+        if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
+        if (!phone) { alert('Contact information not available'); return; }
+        let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
+        if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
+        message += '\nPlease confirm availability.';
+        const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
+    }
+
+    // =======================================================
+    // CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
+    // =======================================================
+
+    let CURRENT_MERCHANT_DATA = null;
+
+    async function loadCustomerStorefrontBySlug(slug) {
+        console.log('🔍 Looking up merchant by slug:', slug);
+        IS_CUSTOMER_MODE = true;
+        try {
+            const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
+        if (merchantError || !merchant) {
+            console.error('Slug lookup error:', merchantError);
+            document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
+            return;
+        }
+        CUSTOMER_MERCHANT_ID = merchant.id;
+        console.log('✅ Found merchant:', merchant.business_name);
+        await loadCustomerStorefrontData(merchant);
+    } catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
 }
 
 async function loadCustomerStorefront(merchantId) {
-console.log('🛍️ Loading storefront for merchant ID:', merchantId);
-IS_CUSTOMER_MODE = true; CUSTOMER_MERCHANT_ID = merchantId;
-try {
-const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('id', merchantId).single();
-if (merchantError || !merchant) { throw new Error('Store not found'); }
-await loadCustomerStorefrontData(merchant);
-} catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
+    console.log('🛍️ Loading storefront for merchant ID:', merchantId);
+    IS_CUSTOMER_MODE = true; CUSTOMER_MERCHANT_ID = merchantId;
+    try {
+        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('id', merchantId).single();
+        if (merchantError || !merchant) { throw new Error('Store not found'); }
+        await loadCustomerStorefrontData(merchant);
+    } catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
 }
 
 async function loadCustomerStorefrontData(merchant) {
-CURRENT_MERCHANT_DATA = merchant;
+    CURRENT_MERCHANT_DATA = merchant;
 
-// ✅ NEW: Apply selected template
-if (merchant.selected_template_id) {
-    await applyTemplateToStorefront(merchant.selected_template_id);
-}
-
-const businessName = merchant.business_name || 'My Store';
-const storeNameEl = document.getElementById('customer-store-name');
-const heroStoreNameEl = document.getElementById('customer-hero-store-name');
-if (storeNameEl) storeNameEl.innerText = businessName;
-if (heroStoreNameEl) heroStoreNameEl.innerText = businessName;
-typeWriterCustomer("Welcome to our store, you are our priority 🤍");
-
-const slides = document.querySelectorAll('.hero-slide');
-if (slides.length > 1) {
-    let currentSlide = 0; slides[0]?.classList.add('active');
-    setInterval(() => { slides[currentSlide]?.classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide]?.classList.add('active'); }, 5000);
-}
-
-const { data: products, error: productsError } = await sb.from('products').select(`id, name, description, selling_price, total_stock, image_path, product_images(image_url), product_variants, full_description, original_price, discount_percent`).eq('merchant_id', merchant.id).gt('total_stock', 0);
-if (productsError) { console.error('Products error:', productsError); throw new Error(`Products fetch failed: ${productsError.message}`); }
-
-const activeProducts = products?.filter(p => p.is_active !== false) || [];
-const container = document.getElementById('customer-products-grid');
-if (!container) throw new Error('Products container not found');
-container.innerHTML = '';
-
-if (activeProducts.length > 0) {
-    // Check if we need carousel (10+ products)
-    const useCarousel = activeProducts.length >= 10;
-    
-    if (useCarousel) {
-        // CAROUSEL MODE
-        container.style.display = 'block'; container.style.overflowX = 'auto'; container.style.scrollSnapType = 'x mandatory'; container.style.webkitOverflowScrolling = 'touch'; container.style.scrollbarWidth = 'none'; container.style.padding = '0 20px';
-        const carouselHTML = `<div style="display: flex; gap: 20px; padding-bottom: 20px;">${activeProducts.map((p, index) => {
-            const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-            let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-            return `<div class="carousel-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="min-width: 280px; max-width: 280px; scroll-snap-align: start; animation: fadeInUp 0.6s ease forwards; animation-delay: ${index * 0.05}s; opacity: 0;"><div class="modern-img-wrapper" style="border-radius: 16px;"><img src="${img}" class="modern-img" alt="${safeName}" style="border-radius: 16px;">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:12px; right:12px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:8px 14px; border-radius:50px; font-size:13px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); animation: badgeBounce 2s ease-in-out infinite;">🔥 -${p.discount_percent}% OFF</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title" style="font-size: 16px; margin-bottom: 8px;">${p.name}</h4><div style="display: flex; align-items: center; justify-content: space-between;"><p class="modern-price" style="font-size: 20px;">Tsh ${p.selling_price.toLocaleString()}</p>${p.original_price ? `<span style="font-size: 14px; color: #9ca3af; text-decoration: line-through;">Tsh ${p.original_price.toLocaleString()}</span>` : ''}</div></div></div>`;
-        }).join('')}</div><div style="text-align: center; padding: 16px 0; color: #9ca3af; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-outlined" style="font-size: 18px; animation: swipeAnimation 2s ease-in-out infinite;">swipe</span>Swipe to see more products</div>`;
-        container.innerHTML = carouselHTML;
-    } else {
-        // GRID MODE
-        container.style.display = 'grid'; container.style.overflowX = 'visible';
-        activeProducts.forEach((p, index) => {
-            const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-            let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-            const html = `<div class="customer-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="animation-delay: ${index * 0.1}s"><div class="modern-img-wrapper"><img src="${img}" class="modern-img" alt="${safeName}">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:10px; right:10px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:6px 12px; border-radius:50px; font-size:12px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">🔥 -${p.discount_percent}%</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title">${p.name}</h4><p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p></div></div>`;
-            container.innerHTML += html;
-        });
+    // ✅ NEW: Apply selected template
+    if (merchant.selected_template_id) {
+        await applyTemplateToStorefront(merchant.selected_template_id);
     }
-} else {
-    container.innerHTML = `<div style="grid-column: 1/-1; padding:80px 20px; text-align:center; color:#94a3b8;"><div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;"><span class="material-symbols-outlined" style="font-size:48px; color:#667eea;">inventory_2</span></div><p style="font-size:18px; font-weight:700; color:#64748b; margin-bottom: 8px;">No Products Available</p><p style="font-size:14px; color:#94a3b8;">Please check back later</p></div>`;
-}
-showScreen('customer-storefront', true);
-if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
+
+    const businessName = merchant.business_name || 'My Store';
+    const storeNameEl = document.getElementById('customer-store-name');
+    const heroStoreNameEl = document.getElementById('customer-hero-store-name');
+    if (storeNameEl) storeNameEl.innerText = businessName;
+    if (heroStoreNameEl) heroStoreNameEl.innerText = businessName;
+    typeWriterCustomer("Welcome to our store, you are our priority 🤍");
+    
+    const slides = document.querySelectorAll('.hero-slide');
+    if (slides.length > 1) {
+        let currentSlide = 0; slides[0]?.classList.add('active');
+        setInterval(() => { slides[currentSlide]?.classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide]?.classList.add('active'); }, 5000);
+    }
+
+    const { data: products, error: productsError } = await sb.from('products').select(`id, name, description, selling_price, total_stock, image_path, product_images(image_url), product_variants, full_description, original_price, discount_percent`).eq('merchant_id', merchant.id).gt('total_stock', 0);
+    if (productsError) { console.error('Products error:', productsError); throw new Error(`Products fetch failed: ${productsError.message}`); }
+    
+    const activeProducts = products?.filter(p => p.is_active !== false) || [];
+    const container = document.getElementById('customer-products-grid');
+    if (!container) throw new Error('Products container not found');
+    container.innerHTML = '';
+    
+    if (activeProducts.length > 0) {
+        // Check if we need carousel (10+ products)
+        const useCarousel = activeProducts.length >= 10;
+        
+        if (useCarousel) {
+            // CAROUSEL MODE
+            container.style.display = 'block'; container.style.overflowX = 'auto'; container.style.scrollSnapType = 'x mandatory'; container.style.webkitOverflowScrolling = 'touch'; container.style.scrollbarWidth = 'none'; container.style.padding = '0 20px';
+            const carouselHTML = `<div style="display: flex; gap: 20px; padding-bottom: 20px;">${activeProducts.map((p, index) => {
+                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
+                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
+                return `<div class="carousel-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="min-width: 280px; max-width: 280px; scroll-snap-align: start; animation: fadeInUp 0.6s ease forwards; animation-delay: ${index * 0.05}s; opacity: 0;"><div class="modern-img-wrapper" style="border-radius: 16px;"><img src="${img}" class="modern-img" alt="${safeName}" style="border-radius: 16px;">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:12px; right:12px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:8px 14px; border-radius:50px; font-size:13px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); animation: badgeBounce 2s ease-in-out infinite;">🔥 -${p.discount_percent}% OFF</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title" style="font-size: 16px; margin-bottom: 8px;">${p.name}</h4><div style="display: flex; align-items: center; justify-content: space-between;"><p class="modern-price" style="font-size: 20px;">Tsh ${p.selling_price.toLocaleString()}</p>${p.original_price ? `<span style="font-size: 14px; color: #9ca3af; text-decoration: line-through;">Tsh ${p.original_price.toLocaleString()}</span>` : ''}</div></div></div>`;
+            }).join('')}</div><div style="text-align: center; padding: 16px 0; color: #9ca3af; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-outlined" style="font-size: 18px; animation: swipeAnimation 2s ease-in-out infinite;">swipe</span>Swipe to see more products</div>`;
+            container.innerHTML = carouselHTML;
+        } else {
+            // GRID MODE
+            container.style.display = 'grid'; container.style.overflowX = 'visible';
+            activeProducts.forEach((p, index) => {
+                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
+                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
+                const html = `<div class="customer-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="animation-delay: ${index * 0.1}s"><div class="modern-img-wrapper"><img src="${img}" class="modern-img" alt="${safeName}">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:10px; right:10px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:6px 12px; border-radius:50px; font-size:12px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">🔥 -${p.discount_percent}%</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title">${p.name}</h4><p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p></div></div>`;
+                container.innerHTML += html;
+            });
+        }
+    } else {
+        container.innerHTML = `<div style="grid-column: 1/-1; padding:80px 20px; text-align:center; color:#94a3b8;"><div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;"><span class="material-symbols-outlined" style="font-size:48px; color:#667eea;">inventory_2</span></div><p style="font-size:18px; font-weight:700; color:#64748b; margin-bottom: 8px;">No Products Available</p><p style="font-size:14px; color:#94a3b8;">Please check back later</p></div>`;
+    }
+    showScreen('customer-storefront', true);
+    if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
 
 }
 
 function contactMerchantWhatsApp() {
-if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
-const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
-if (!phone) { alert('WhatsApp number not available. Please contact the merchant directly.'); return; }
-const message = Hi! I'm interested in your products. Can you help me?;
-const whatsappUrl = https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)};
-window.open(whatsappUrl, '_blank');
-if (window.amp) { amp.logEvent("Customer Contact Merchant", { merchant_name: CURRENT_MERCHANT_DATA.business_name }); }
+    if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
+    const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
+    if (!phone) { alert('WhatsApp number not available. Please contact the merchant directly.'); return; }
+    const message = `Hi! I'm interested in your products. Can you help me?`;
+    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    if (window.amp) { amp.logEvent("Customer Contact Merchant", { merchant_name: CURRENT_MERCHANT_DATA.business_name }); }
 }
 
 function typeWriterCustomer(text) {
-const element = document.getElementById('customer-typewriter'); if (!element) return; let i = 0; element.textContent = "";
-function type() { if (i < text.length) { element.textContent += text.charAt(i); i++; setTimeout(type, 80); } }
-setTimeout(type, 500);
+    const element = document.getElementById('customer-typewriter'); if (!element) return; let i = 0; element.textContent = "";
+    function type() { if (i < text.length) { element.textContent += text.charAt(i); i++; setTimeout(type, 80); } }
+    setTimeout(type, 500);
 }
 
 function scrollToProducts() {
-const productsSection = document.getElementById('customer-products-section');
-if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    const productsSection = document.getElementById('customer-products-section');
+    if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); }
