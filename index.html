@@ -2622,389 +2622,6 @@
         0% { transform: translate(-50%, -50%) scale(0); }
         100% { transform: translate(-50%, -50%) scale(1); }
     }
-/* =========================================
-   PRODUCT DESCRIPTION CARDS STYLES
-   ========================================= */
-.description-cards-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin: 24px 0;
-    padding: 0 20px;
-}
-
-@media (min-width: 768px) {
-    .description-cards-container {
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-}
-
-.description-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.description-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(37, 208, 120, 0.15);
-    border-color: #25d078;
-}
-
-.description-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #25d078;
-}
-
-.description-card-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #25d078, #1ea35e);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-}
-
-.description-card-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: #1e293b;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.description-card-content {
-    font-size: 15px;
-    line-height: 1.7;
-    color: #475569;
-    font-family: 'Spline Sans', sans-serif;
-    white-space: pre-wrap;
-}
-
-.description-card-content p {
-    margin-bottom: 12px;
-}
-
-.description-card-content ul,
-.description-card-content ol {
-    margin-left: 20px;
-    margin-bottom: 12px;
-}
-
-.description-card-content li {
-    margin-bottom: 8px;
-}
-
-.no-description-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    text-align: center;
-    color: #94a3b8;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 2px dashed #cbd5e1;
-}
-
-.no-description-placeholder .material-symbols-outlined {
-    font-size: 48px;
-    color: #cbd5e1;
-    margin-bottom: 12px;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-/* =========================================
-   ANALYTICS DASHBOARD STYLES
-   ========================================= */
-.analytics-dashboard {
-    padding: 24px;
-    background: #f8fafc;
-    min-height: 100vh;
-}
-
-.analytics-header {
-    margin-bottom: 32px;
-}
-
-.analytics-header h2 {
-    font-size: 28px;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.analytics-header p {
-    font-size: 14px;
-    color: #64748b;
-    font-family: 'Spline Sans', sans-serif;
-}
-
-.analytics-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 32px;
-}
-
-@media (min-width: 768px) {
-    .analytics-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .analytics-stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-.stat-card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(37, 208, 120, 0.15);
-}
-
-.stat-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-}
-
-.stat-card-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stat-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-
-.stat-card-icon.green {
-    background: linear-gradient(135deg, #10b98115, #05966915);
-    color: #059669;
-}
-
-.stat-card-icon.blue {
-    background: linear-gradient(135deg, #3b82f615, #2563eb15);
-    color: #2563eb;
-}
-
-.stat-card-icon.purple {
-    background: linear-gradient(135deg, #8b5cf615, #7c3aed15);
-    color: #7c3aed;
-}
-
-.stat-card-icon.orange {
-    background: linear-gradient(135deg, #f59e0b15, #d9770015);
-    color: #d97700;
-}
-
-.stat-card-value {
-    font-size: 36px;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.stat-card-trend {
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.stat-card-trend.up {
-    color: #10b981;
-}
-
-.stat-card-trend.down {
-    color: #ef4444;
-}
-
-.stat-card-trend.neutral {
-    color: #64748b;
-}
-
-.chart-card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
-}
-
-.chart-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.chart-card-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: #1e293b;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.chart-filters {
-    display: flex;
-    gap: 8px;
-}
-
-.chart-filter-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: white;
-    font-size: 13px;
-    font-weight: 600;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Spline Sans', sans-serif;
-}
-
-.chart-filter-btn:hover {
-    background: #f8fafc;
-    border-color: #25d078;
-}
-
-.chart-filter-btn.active {
-    background: linear-gradient(135deg, #25d078, #1ea35e);
-    color: white;
-    border-color: #25d078;
-}
-
-.visits-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-}
-
-.visits-table th {
-    background: #f8fafc;
-    padding: 12px;
-    text-align: left;
-    font-size: 13px;
-    font-weight: 700;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.visits-table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
-    color: #64748b;
-}
-
-.visits-table tr:hover {
-    background: #f8fafc;
-}
-
-.live-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #ef444415, #dc262615);
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #dc2626;
-}
-
-.live-indicator::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #ef4444;
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.5;
-        transform: scale(1.2);
-    }
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #94a3b8;
-}
-
-.empty-state-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-}
-
-.empty-state-icon .material-symbols-outlined {
-    font-size: 40px;
-    color: #64748b;
-}
 
     /* Responsive */
     @media (min-width: 640px) {
@@ -3290,27 +2907,6 @@
                 </div>
                 <span class="nav-label add-label">Ongeza</span>
             </div>
-            
-            <button onclick="loadAnalyticsDashboard()" 
-                    class="dashboard-nav-btn"
-                    style="background: linear-gradient(135deg, #667eea, #764ba2); 
-                           color: white; 
-                           border: none; 
-                           padding: 0 16px; 
-                           border-radius: 16px; 
-                           font-weight: 700; 
-                           font-size: 14px; 
-                           cursor: pointer; 
-                           display: flex; 
-                           flex-direction: column;
-                           align-items: center; 
-                           justify-content: center;
-                           height: 100%;
-                           margin: 0;
-                           flex: 1;">
-                <span class="material-symbols-outlined" style="font-size: 24px;">analytics</span>
-                <span style="font-size: 11px;">Analytics</span>
-            </button>
         </div>
     </div>
 </div>
@@ -3729,7 +3325,7 @@
 <!-- ============================================
      ENHANCED PRODUCT DETAIL PAGE
      ============================================ -->
-<div id="customer-product-detail" class="screen-wrapper hidden">
+<div id="product-detail-page" class="screen-wrapper hidden">
     <div class="product-detail-container">
         <!-- Navigation Bar -->
         <nav class="product-nav-bar">
@@ -3751,7 +3347,7 @@
             
             <!-- Image Gallery with Swipe -->
             <div class="product-image-gallery">
-                <div id="product-detail-images" style="display:flex; overflow-x:auto; gap:10px; scroll-snap-type: x mandatory;">
+                <div class="product-image-slider" id="product-image-slider">
                     <!-- Images injected by JS -->
                 </div>
                 <div class="image-dots" id="image-dots"></div>
@@ -3761,7 +3357,7 @@
             <div class="product-info-card">
                 <div class="product-category-badge" id="product-category-badge">Electronics</div>
                 
-                <h1 class="product-detail-title" id="product-detail-name">Product Name</h1>
+                <h1 class="product-detail-title" id="product-detail-title">Product Name</h1>
                 
                 <!-- Rating Stars -->
                 <div class="product-rating-row">
@@ -3775,13 +3371,13 @@
                 <div class="product-price-section">
                     <div class="price-row">
                         <span class="current-price" id="product-detail-price">Tsh 0</span>
-                        <span class="original-price hidden" id="product-detail-original-price">Tsh 0</span>
+                        <span class="original-price hidden" id="original-price">Tsh 0</span>
                     </div>
-                    <div class="discount-badge hidden" id="product-detail-discount">-20% OFF</div>
+                    <div class="discount-badge hidden" id="discount-badge">-20% OFF</div>
                 </div>
 
                 <!-- Stock Indicator -->
-                <div class="stock-indicator" id="product-detail-stock">
+                <div class="stock-indicator" id="stock-indicator">
                     <span class="material-symbols-outlined">inventory</span>
                     <span id="stock-text">In Stock</span>
                 </div>
@@ -3800,23 +3396,29 @@
                 </div>
             </div>
 
-            <!-- Variants and Descriptions -->
-            <div id="product-variants-container"></div>
+            <!-- Color Variants -->
             <div class="product-section hidden" id="color-section">
                 <h3 class="section-title">Available Colors</h3>
-                <div class="variant-selector" id="color-selector"></div>
-            </div>
-            <div class="product-section hidden" id="size-section">
-                <h3 class="section-title">Select Size</h3>
-                <div class="variant-selector" id="size-selector"></div>
-            </div>
-            <div class="product-section hidden" id="material-section">
-                <h3 class="section-title">Material</h3>
-                <div class="variant-selector" id="material-selector"></div>
+                <div class="variant-selector" id="color-selector">
+                    <!-- Color chips injected by JS -->
+                </div>
             </div>
 
-            <!-- Description Cards Container -->
-            <div class="description-cards-container" id="product-description-cards"></div>
+            <!-- Size Variants -->
+            <div class="product-section hidden" id="size-section">
+                <h3 class="section-title">Select Size</h3>
+                <div class="variant-selector" id="size-selector">
+                    <!-- Size chips injected by JS -->
+                </div>
+            </div>
+
+            <!-- Material Variants -->
+            <div class="product-section hidden" id="material-section">
+                <h3 class="section-title">Material</h3>
+                <div class="variant-selector" id="material-selector">
+                    <!-- Material chips injected by JS -->
+                </div>
+            </div>
 
             <!-- Customer Reviews Section -->
             <div class="product-section">
@@ -4043,72 +3645,6 @@
     </div>
 </div>
 
-<!-- =========================================
-     ANALYTICS DASHBOARD SCREEN
-     ========================================= -->
-<div id="analytics-screen" class="screen-wrapper hidden">
-    <div class="analytics-dashboard">
-        <!-- Header -->
-        <div class="analytics-header">
-            <button onclick="showScreen('step-5')" 
-                    style="background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span style="font-size: 14px; font-weight: 600;">Back to Dashboard</span>
-            </button>
-            <h2>📊 Store Analytics</h2>
-            <p>Track your store performance and customer visits in real-time</p>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="analytics-stats-grid" id="analytics-stats-grid">
-            <!-- Stats cards will be inserted here -->
-        </div>
-
-        <!-- Visits Chart -->
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <h3 class="chart-card-title">Customer Visits Over Time</h3>
-                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
-                        <span class="live-indicator">LIVE</span>
-                        <span style="font-size: 13px; color: #64748b;">Auto-updates every 30 seconds</span>
-                    </div>
-                </div>
-                <div class="chart-filters">
-                    <button class="chart-filter-btn active" onclick="changeAnalyticsPeriod('today')" id="filter-today">Today</button>
-                    <button class="chart-filter-btn" onclick="changeAnalyticsPeriod('week')" id="filter-week">7 Days</button>
-                    <button class="chart-filter-btn" onclick="changeAnalyticsPeriod('month')" id="filter-month">30 Days</button>
-                </div>
-            </div>
-            <div id="visits-chart-container">
-                <!-- Chart will be rendered here -->
-            </div>
-        </div>
-
-        <!-- Recent Visits Table -->
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <h3 class="chart-card-title">Recent Visits</h3>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="visits-table">
-                    <thead>
-                        <tr>
-                            <th>Date & Time</th>
-                            <th>Device</th>
-                            <th>Location</th>
-                            <th>Referrer</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-visits-tbody">
-                        <!-- Rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     // --- SUPABASE CONFIG ---
     const SUPABASE_URL = 'https://vqgnxqabvmmpfoiceass.supabase.co';
@@ -4125,8 +3661,6 @@
     let IS_CUSTOMER_MODE = false;
     let CUSTOMER_MERCHANT_ID = null;
     let IS_TEMPLATE_EDIT_MODE = false;
-    let CURRENT_PRODUCT_DATA = null;
-    let CURRENT_PRODUCT_ID = null;
     
     // Auth State
     let isSignup = false;
@@ -4347,7 +3881,7 @@
     
     function showScreen(stepId, animate) {
         // Removed 'step-11', 'step-ai', 'step-analytics' from this list
-        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'customer-product-detail', 'customer-storefront', 'step-profile', 'analytics-screen'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(stepId);
         if(target) { target.classList.remove('hidden'); if (animate) { target.classList.remove('fade-in'); void target.offsetWidth; target.classList.add('fade-in'); } }
     }
@@ -4359,10 +3893,10 @@
     window.addEventListener('popstate', (event) => {
         const step = event.state ? event.state.step : null;
         if (IS_CUSTOMER_MODE) {
-            if (step === 'product-detail') { showScreen('customer-product-detail', true); } else { loadCustomerStorefrontData(CURRENT_MERCHANT_DATA); }
+            if (step === 'product-detail') { showScreen('product-detail-page', true); } else { loadCustomerStorefrontData(CURRENT_MERCHANT_DATA); }
             return;
         }
-        if (step === 'product-detail') { showScreen('customer-product-detail', true); return; }
+        if (step === 'product-detail') { showScreen('product-detail-page', true); return; }
         sb.auth.getSession().then(({data:{session}}) => {
             if(!session && step > 0 && step !== 'auth') { showScreen('step-auth', true); } else {
                 if (step === 'add-product') showScreen('step-add-product', true);
@@ -4923,843 +4457,422 @@
     // ENHANCED PRODUCT DETAIL PAGE FUNCTIONS (FIXED)
     // =======================================================
 
+    let CURRENT_PRODUCT_DETAIL = null;
     let SELECTED_RATING = 0;
     let CURRENT_IMAGE_INDEX = 0;
     let PRODUCT_IMAGES = [];
 
     // ✅ FIXED: Open Product Detail with ALL images
-    async function openProductDetailPage(productId, productName, sellingPrice, stock, imageUrl, description) {
-    console.log('🛍️ Opening product detail for:', productId);
-    
-    try {
-        // Fetch full product details including description and full_description
-        const { data: productData, error } = await sb
-            .from('products')
-            .select(`
-                id, 
-                name, 
-                description, 
-                full_description,
-                selling_price, 
-                total_stock, 
-                image_path, 
-                original_price,
-                discount_percent,
-                product_images(image_url),
-                product_variants
-            `)
-            .eq('id', productId)
-            .single();
-
-        if (error || !productData) {
-            console.error('Product fetch error:', error);
-            alert('Could not load product details');
-            return;
+    async function openProductDetailPage(id, name, price, stock, img, description) {
+        console.log('📱 Opening product detail:', { id, name, price, stock });
+        
+        CURRENT_PRODUCT_DETAIL = { 
+            id: id, 
+            name: name, 
+            price: Number(price), 
+            stock: Number(stock), 
+            image: img, 
+            description: description, 
+            merchantId: CUSTOMER_MERCHANT_ID 
+        };
+        
+        showScreen('product-detail-page', true);
+        
+        const isFromCustomerStorefront = IS_CUSTOMER_MODE;
+        if (isFromCustomerStorefront) {
+            history.pushState({ step: 'product-detail', productId: id, from: 'storefront', isCustomer: true }, `Product: ${name}`, `#product-${id}`);
+        } else {
+            history.pushState({ step: 'product-detail', productId: id, from: 'dashboard', isCustomer: false }, `Product: ${name}`, `?product=${id}`);
         }
-
-        CURRENT_PRODUCT_ID = productId;
-        CURRENT_PRODUCT_DATA = productData;
-
-        // Update product detail UI
-        document.getElementById('product-detail-name').innerText = productData.name;
-        document.getElementById('product-detail-price').innerText = `Tsh ${productData.selling_price.toLocaleString()}`;
         
-        // Show original price if exists
-        const originalPriceEl = document.getElementById('product-detail-original-price');
-        if (productData.original_price && productData.original_price > productData.selling_price) {
-            originalPriceEl.innerTextTsh ${productData.original_price.toLocaleString()}`;
-originalPriceEl.classList.remove('hidden');
-} else {
-originalPriceEl.classList.add('hidden');
-}
-
-}
-
-// ✅ NEW: Render Product Description Cards
-function renderProductDescriptionCards(productData) {
-    const container = document.getElementById('product-description-cards');
-    if (!container) return;
-
-    let html = '';
-
-    // Card 1: Maelezo ya Matumizi (Usage Description)
-    const usageDescription = productData.description?.trim();
-    if (usageDescription) {
-        html += `
-            <div class="description-card" style="animation-delay: 0.1s;">
-                <div class="description-card-header">
-                    <div class="description-card-icon">
-                        <span class="material-symbols-outlined">info</span>
-                    </div>
-                    <h3 class="description-card-title">Maelezo ya Matumizi</h3>
-                </div>
-                <div class="description-card-content">
-                    ${formatDescriptionText(usageDescription)}
-                </div>
-            </div>
-        `;
-    }
-
-    // Card 2: Maelezo ya Bidhaa (Full Description)
-    const fullDescription = productData.full_description?.trim();
-    if (fullDescription) {
-        html += `
-            <div class="description-card" style="animation-delay: 0.2s;">
-                <div class="description-card-header">
-                    <div class="description-card-icon">
-                        <span class="material-symbols-outlined">inventory_2</span>
-                    </div>
-                    <h3 class="description-card-title">Maelezo ya Bidhaa</h3>
-                </div>
-                <div class="description-card-content">
-                    ${formatDescriptionText(fullDescription)}
-                </div>
-            </div>
-        `;
-    }
-
-    // If no descriptions, show placeholder
-    if (!html) {
-        html = `
-            <div class="description-card" style="grid-column: 1 / -1;">
-                <div class="no-description-placeholder">
-                    <span class="material-symbols-outlined">description</span>
-                    <p style="font-weight: 600; margin: 0;">Hakuna maelezo ya ziada</p>
-                </div>
-            </div>
-        `;
-    }
-
-    container.innerHTML = html;
-}
-
-function formatDescriptionText(text) {
-    if (!text) return '';
-    return text.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => `<p>${line}</p>`)
-        .join('');
-}
-
-// ✅ NEW: Fallback renderer for basic product info
-function renderProductDetailBasic(product) {
-    console.log('📦 Using basic product data');
-    document.getElementById('product-detail-name').textContent = product.name || 'Product';
-    document.getElementById('product-category-badge').classList.add('hidden');
-    document.getElementById('product-detail-price').textContent = `Tsh ${product.price.toLocaleString()}`;
-    document.getElementById('product-detail-original-price').classList.add('hidden');
-    document.getElementById('product-detail-discount').classList.add('hidden');
-    
-    // Render basic images
-    const slider = document.getElementById('product-detail-images');
-    slider.innerHTML = `<div class="product-image-slide" style="min-width:100%; background-image: url('${product.image || 'https://via.placeholder.com/600'}')"></div>`;
-    
-    // Hide complex sections
-    document.getElementById('product-description-cards').innerHTML = '';
-    document.getElementById('color-section').classList.add('hidden');
-    document.getElementById('size-section').classList.add('hidden');
-    document.getElementById('material-section').classList.add('hidden');
-    renderReviews([]);
-}
-
-// ✅ FIXED: RENDER VARIANTS
-function renderVariants(product) {
-    try {
-        let variants = {};
-        
-        // ✅ FIXED: Better variant parsing
-        if (product.product_variants) {
-            if (typeof product.product_variants === 'string') {
-                try {
-                    variants = JSON.parse(product.product_variants);
-                } catch (e) {
-                    console.error('Failed to parse variants:', e);
-                    variants = {};
-                }
-            } else if (typeof product.product_variants === 'object') {
-                variants = product.product_variants;
+        try {
+            // ✅ CRITICAL: Fetch product WITH all images from product_images table
+            const { data: product, error } = await sb
+                .from('products')
+                .select(`
+                    *,
+                    product_images(image_url, display_order)
+                `)
+                .eq('id', id)
+                .single();
+            
+            if (error) {
+                console.error('Product fetch error:', error);
+                renderProductDetailBasic(CURRENT_PRODUCT_DETAIL);
+            } else {
+                console.log('✅ Product with images:', product);
+                CURRENT_PRODUCT_DETAIL = { ...CURRENT_PRODUCT_DETAIL, ...product };
+                renderProductDetail(product);
             }
+            
+            loadProductReviews(id).catch(err => {
+                console.error('Reviews load error:', err);
+                renderReviews([]);
+            });
+        } catch (error) {
+            console.error('Error loading product:', error);
+            renderProductDetailBasic(CURRENT_PRODUCT_DETAIL);
         }
-        
-        // ✅ SHOW COLORS
-        const colorSection = document.getElementById('color-section');
-        const colorSelector = document.getElementById('color-selector');
-        if (variants.colors && Array.isArray(variants.colors) && variants.colors.length > 0) {
-            colorSelector.innerHTML = variants.colors.map(color => {
-                const bgColor = getColorHex(color);
-                return `<div class="color-chip" style="background: ${bgColor};" onclick="selectVariant('color', '${color}', this)">
-                    <div class="checkmark">
-                        <span class="material-symbols-outlined" style="font-size: 14px; color: #25d078;">check</span>
-                    </div>
-                </div>`;
-            }).join('');
-            colorSection.classList.remove('hidden');
-        } else {
-            colorSection.classList.add('hidden');
-        }
-        
-        // ✅ SHOW SIZES
-        const sizeSection = document.getElementById('size-section');
-        const sizeSelector = document.getElementById('size-selector');
-        if (variants.sizes && Array.isArray(variants.sizes) && variants.sizes.length > 0) {
-            sizeSelector.innerHTML = variants.sizes.map(size => 
-                `<div class="variant-chip" onclick="selectVariant('size', '${size}', this)">${size}</div>`
-            ).join('');
-            sizeSection.classList.remove('hidden');
-        } else {
-            sizeSection.classList.add('hidden');
-        }
-        
-        // ✅ SHOW MATERIALS
-        const materialSection = document.getElementById('material-section');
-        const materialSelector = document.getElementById('material-selector');
-        if (variants.materials && Array.isArray(variants.materials) && variants.materials.length > 0) {
-            materialSelector.innerHTML = variants.materials.map(material => 
-                `<div class="variant-chip" onclick="selectVariant('material', '${material}', this)">${material}</div>`
-            ).join('');
-            materialSection.classList.remove('hidden');
-        } else {
-            materialSection.classList.add('hidden');
-        }
-        
-    } catch (error) {
-        console.error('Error rendering variants:', error);
+    }
+
+    // ✅ NEW: Fallback renderer for basic product info
+    function renderProductDetailBasic(product) {
+        console.log('📦 Using basic product data');
+        document.getElementById('product-detail-title').textContent = product.name || 'Product';
+        document.getElementById('product-category-badge').classList.add('hidden');
+        document.getElementById('product-detail-price').textContent = `Tsh ${product.price.toLocaleString()}`;
+        document.getElementById('original-price').classList.add('hidden');
+        document.getElementById('discount-badge').classList.add('hidden');
+        const stockIndicator = document.getElementById('stock-indicator');
+        const stockText = document.getElementById('stock-text');
+        if (product.stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; } else if (product.stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${product.stock} left`; } else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
+        const slider = document.getElementById('product-image-slider');
+        slider.innerHTML = `<div class="product-image-slide" style="background-image: url('${product.image || 'https://via.placeholder.com/600'}')"></div>`;
+        document.getElementById('image-dots').innerHTML = '<div class="image-dot active"></div>';
+        const descText = document.getElementById('description-text');
+        descText.textContent = product.description || 'No description available.';
+        document.getElementById('read-more-btn').classList.add('hidden');
         document.getElementById('color-section').classList.add('hidden');
         document.getElementById('size-section').classList.add('hidden');
         document.getElementById('material-section').classList.add('hidden');
+        renderReviews([]);
     }
-}
 
-// ✅ FIXED: Render ALL images with auto-scroll
-function renderImageGallery(product) {
-    PRODUCT_IMAGES = [];
-    
-    // ✅ Add main image first
-    if (product.image_path) {
-        const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path);
-        PRODUCT_IMAGES.push(data.publicUrl);
+    // ✅ FIXED: RENDER PRODUCT DETAIL
+    function renderProductDetail(product) {
+        console.log('🎨 Rendering full product detail:', product);
+        document.getElementById('product-detail-title').textContent = product.name || 'Product';
+        const categoryBadge = document.getElementById('product-category-badge');
+        if (product.category) { categoryBadge.textContent = product.category; categoryBadge.classList.remove('hidden'); } else { categoryBadge.classList.add('hidden'); }
+        const currentPriceEl = document.getElementById('product-detail-price');
+        const originalPriceEl = document.getElementById('original-price');
+        const discountBadgeEl = document.getElementById('discount-badge');
+        currentPriceEl.textContent = `Tsh ${(product.selling_price || product.price || 0).toLocaleString()}`;
+        if (product.original_price && product.discount_percent) { originalPriceEl.textContent = `Tsh ${product.original_price.toLocaleString()}`; originalPriceEl.classList.remove('hidden'); discountBadgeEl.textContent = `-${product.discount_percent}% OFF`; discountBadgeEl.classList.remove('hidden'); } else { originalPriceEl.classList.add('hidden'); discountBadgeEl.classList.add('hidden'); }
+        const stockIndicator = document.getElementById('stock-indicator');
+        const stockText = document.getElementById('stock-text');
+        const stock = product.total_stock || product.stock || 0;
+        if (stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; } else if (stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${stock} left`; } else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
+        renderImageGallery(product);
+        const descText = document.getElementById('description-text');
+        const readMoreBtn = document.getElementById('read-more-btn');
+        const fullDesc = product.full_description || product.description || 'No description available.';
+        descText.textContent = fullDesc;
+        if (fullDesc.length > 300) { descText.classList.remove('expanded'); readMoreBtn.classList.remove('hidden'); } else { descText.classList.add('expanded'); readMoreBtn.classList.add('hidden'); }
+        renderVariants(product);
     }
-    
-    // ✅ Add all additional images from product_images table
-    if (product.product_images && product.product_images.length > 0) {
-        // Sort by display_order
-        product.product_images
-            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-            .forEach(img => {
-                if (img.image_url && !PRODUCT_IMAGES.includes(img.image_url)) {
-                    PRODUCT_IMAGES.push(img.image_url);
-                }
-            });
-    }
-    
-    // ✅ Fallback placeholder
-    if (PRODUCT_IMAGES.length === 0) {
-        PRODUCT_IMAGES.push('https://via.placeholder.com/600');
-    }
-    
-    // ✅ Render image slider
-    const slider = document.getElementById('product-detail-images');
-    if (slider) {
+
+    // ✅ FIXED: Render ALL images with auto-scroll
+    function renderImageGallery(product) {
+        PRODUCT_IMAGES = [];
+        
+        // ✅ Add main image first
+        if (product.image_path) {
+            const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path);
+            PRODUCT_IMAGES.push(data.publicUrl);
+        }
+        
+        // ✅ Add all additional images from product_images table
+        if (product.product_images && product.product_images.length > 0) {
+            console.log('📸 Found additional images:', product.product_images.length);
+            
+            // Sort by display_order
+            product.product_images
+                .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+                .forEach(img => {
+                    if (img.image_url && !PRODUCT_IMAGES.includes(img.image_url)) {
+                        PRODUCT_IMAGES.push(img.image_url);
+                    }
+                });
+        }
+        
+        // ✅ Fallback placeholder
+        if (PRODUCT_IMAGES.length === 0) {
+            PRODUCT_IMAGES.push('https://via.placeholder.com/600');
+        }
+        
+        console.log('🖼️ Total images to display:', PRODUCT_IMAGES.length);
+        
+        // ✅ Render image slider
+        const slider = document.getElementById('product-image-slider');
         slider.innerHTML = PRODUCT_IMAGES.map((url, index) => 
-            `<div class="product-image-slide ken-burns-slide" style="min-width:100%; background-image: url('${url}')"></div>`
+            `<div class="product-image-slide ken-burns-slide" style="background-image: url('${url}')"></div>`
         ).join('');
-    }
-    
-    // ✅ Render dots
-    const dotsContainer = document.getElementById('image-dots');
-    if (dotsContainer) {
+        
+        // ✅ Render dots
+        const dotsContainer = document.getElementById('image-dots');
         dotsContainer.innerHTML = PRODUCT_IMAGES.map((_, index) => 
             `<div class="image-dot ${index === 0 ? 'active' : ''}" onclick="jumpToImage(${index})"></div>`
         ).join('');
+        
+        CURRENT_IMAGE_INDEX = 0;
+        
+        // ✅ Auto-scroll if multiple images
+        let autoScrollInterval;
+        if (PRODUCT_IMAGES.length > 1) {
+            autoScrollInterval = setInterval(() => {
+                CURRENT_IMAGE_INDEX = (CURRENT_IMAGE_INDEX + 1) % PRODUCT_IMAGES.length;
+                jumpToImage(CURRENT_IMAGE_INDEX);
+            }, 4000); // Change image every 4 seconds
+            
+            // Pause on touch/hover
+            slider.addEventListener('touchstart', () => {
+                clearInterval(autoScrollInterval);
+            }, { once: false });
+            
+            slider.addEventListener('mouseenter', () => {
+                clearInterval(autoScrollInterval);
+            });
+            
+            // Resume after touch ends
+            slider.addEventListener('touchend', () => {
+                autoScrollInterval = setInterval(() => {
+                    CURRENT_IMAGE_INDEX = (CURRENT_IMAGE_INDEX + 1) % PRODUCT_IMAGES.length;
+                    jumpToImage(CURRENT_IMAGE_INDEX);
+                }, 4000);
+            }, { once: true });
+        }
+        
+        // ✅ Update dots on manual scroll
+        slider.addEventListener('scroll', () => {
+            const scrollLeft = slider.scrollLeft;
+            const slideWidth = slider.offsetWidth;
+            const newIndex = Math.round(scrollLeft / slideWidth);
+            
+            if (newIndex !== CURRENT_IMAGE_INDEX) {
+                CURRENT_IMAGE_INDEX = newIndex;
+                updateActiveDot();
+            }
+        });
     }
-    
-    CURRENT_IMAGE_INDEX = 0;
-}
 
-function jumpToImage(index) { 
-    const slider = document.getElementById('product-detail-images'); 
-    if (!slider) return;
-    const slideWidth = slider.offsetWidth; 
-    slider.scrollTo({ left: index * slideWidth, behavior: 'smooth' }); 
-    updateActiveDot(index);
-}
+    function jumpToImage(index) { const slider = document.getElementById('product-image-slider'); const slideWidth = slider.offsetWidth; slider.scrollTo({ left: index * slideWidth, behavior: 'smooth' }); }
+    function updateActiveDot() { const dots = document.querySelectorAll('.image-dot'); dots.forEach((dot, i) => { dot.classList.toggle('active', i === CURRENT_IMAGE_INDEX); }); }
 
-function updateActiveDot(index) { 
-    const dots = document.querySelectorAll('.image-dot'); 
-    dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); }); 
-    CURRENT_IMAGE_INDEX = index;
-}
-
-function getColorHex(colorName) { const colors = { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Black': '#1f2937', 'White': '#f9fafb', 'Yellow': '#eab308', 'Purple': '#a855f7', 'Pink': '#ec4899', 'Orange': '#f97316', 'Brown': '#92400e' }; return colors[colorName] || '#9ca3af'; }
-function selectVariant(type, value, element) { const container = element.parentElement; container.querySelectorAll('.variant-chip, .color-chip').forEach(chip => { chip.classList.remove('selected'); }); element.classList.add('selected'); if (!CURRENT_PRODUCT_DETAIL.selectedVariants) { CURRENT_PRODUCT_DETAIL.selectedVariants = {}; } CURRENT_PRODUCT_DETAIL.selectedVariants[type] = value; }
-function toggleDescription() { const descText = document.getElementById('description-text'); const btn = document.getElementById('read-more-btn'); const isExpanded = descText.classList.contains('expanded'); if (isExpanded) { descText.classList.remove('expanded'); btn.textContent = 'Read More'; } else { descText.classList.add('expanded'); btn.textContent = 'Read Less'; } }
-
-async function loadProductReviews(productId) { try { const { data: reviews, error } = await sb.from('product_reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false }); if (error) throw error; renderReviews(reviews || []); } catch (error) { console.error('Error loading reviews:', error); } }
-function renderReviews(reviews) {
-    const reviewsList = document.getElementById('reviews-list'); const avgRatingEl = document.getElementById('avg-rating'); const avgStarsEl = document.getElementById('avg-stars'); const totalReviewsEl = document.getElementById('total-reviews'); const ratingBarsEl = document.getElementById('rating-bars'); const productStarsEl = document.getElementById('product-stars'); const ratingCountEl = document.getElementById('rating-count');
-    if (reviews.length === 0) { reviewsList.innerHTML = `<div class="no-reviews"><span class="material-symbols-outlined">rate_review</span><p>No reviews yet. Be the first to review!</p></div>`; avgRatingEl.textContent = '0.0'; avgStarsEl.textContent = '☆☆☆☆☆'; totalReviewsEl.textContent = '0 reviews'; productStarsEl.textContent = '☆☆☆☆☆'; ratingCountEl.textContent = '(0 reviews)'; return; }
-    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0); const avgRating = (totalRating / reviews.length).toFixed(1);
-    avgRatingEl.textContent = avgRating; avgStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); totalReviewsEl.textContent = `${reviews.length} reviews`; productStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); ratingCountEl.textContent = `(${reviews.length} reviews)`;
-    const distribution = [0, 0, 0, 0, 0]; reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) { distribution[r.rating - 1]++; } });
-    ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0; return `<div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>`; }).join('');
-    reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; }).join('');
-}
-
-function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
-function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
-function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
-function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
-
-async function submitReview() {
-    const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
-    if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
-    const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
-    try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
-}
-
-function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
-function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
-function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
-
-async function orderProductViaWhatsApp() {
-    if (!CURRENT_PRODUCT_DETAIL) return;
-    let phone = '';
-    if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
-    if (!phone) { alert('Contact information not available'); return; }
-    let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
-    if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
-    message += '\nPlease confirm availability.';
-    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
-}
-
-// =======================================================
-// CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
-// =======================================================
-
-let CURRENT_MERCHANT_DATA = null;
-
-async function loadCustomerStorefrontBySlug(slug) {
-    console.log('🔍 Looking up merchant by slug:', slug);
-    IS_CUSTOMER_MODE = true;
-    try {
-        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
-    if (merchantError || !merchant) {
-        console.error('Slug lookup error:', merchantError);
-        document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
-        return;
+    // ✅ FIXED: RENDER VARIANTS
+    function renderVariants(product) {
+        try {
+            let variants = {};
+            
+            // ✅ FIXED: Better variant parsing
+            if (product.product_variants) {
+                if (typeof product.product_variants === 'string') {
+                    try {
+                        variants = JSON.parse(product.product_variants);
+                    } catch (e) {
+                        console.error('Failed to parse variants:', e);
+                        variants = {};
+                    }
+                } else if (typeof product.product_variants === 'object') {
+                    variants = product.product_variants;
+                }
+            }
+            
+            // ✅ SHOW COLORS
+            const colorSection = document.getElementById('color-section');
+            const colorSelector = document.getElementById('color-selector');
+            if (variants.colors && Array.isArray(variants.colors) && variants.colors.length > 0) {
+                colorSelector.innerHTML = variants.colors.map(color => {
+                    const bgColor = getColorHex(color);
+                    return `<div class="color-chip" style="background: ${bgColor};" onclick="selectVariant('color', '${color}', this)">
+                        <div class="checkmark">
+                            <span class="material-symbols-outlined" style="font-size: 14px; color: #25d078;">check</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                colorSection.classList.remove('hidden');
+            } else {
+                colorSection.classList.add('hidden');
+            }
+            
+            // ✅ SHOW SIZES
+            const sizeSection = document.getElementById('size-section');
+            const sizeSelector = document.getElementById('size-selector');
+            if (variants.sizes && Array.isArray(variants.sizes) && variants.sizes.length > 0) {
+                sizeSelector.innerHTML = variants.sizes.map(size => 
+                    `<div class="variant-chip" onclick="selectVariant('size', '${size}', this)">${size}</div>`
+                ).join('');
+                sizeSection.classList.remove('hidden');
+            } else {
+                sizeSection.classList.add('hidden');
+            }
+            
+            // ✅ SHOW MATERIALS
+            const materialSection = document.getElementById('material-section');
+            const materialSelector = document.getElementById('material-selector');
+            if (variants.materials && Array.isArray(variants.materials) && variants.materials.length > 0) {
+                materialSelector.innerHTML = variants.materials.map(material => 
+                    `<div class="variant-chip" onclick="selectVariant('material', '${material}', this)">${material}</div>`
+                ).join('');
+                materialSection.classList.remove('hidden');
+            } else {
+                materialSection.classList.add('hidden');
+            }
+            
+        } catch (error) {
+            console.error('Error rendering variants:', error);
+            document.getElementById('color-section').classList.add('hidden');
+            document.getElementById('size-section').classList.add('hidden');
+            document.getElementById('material-section').classList.add('hidden');
+        }
     }
-    CUSTOMER_MERCHANT_ID = merchant.id;
-    console.log('✅ Found merchant:', merchant.business_name);
-    await loadCustomerStorefrontData(merchant);
-} catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
 
+    function getColorHex(colorName) { const colors = { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Black': '#1f2937', 'White': '#f9fafb', 'Yellow': '#eab308', 'Purple': '#a855f7', 'Pink': '#ec4899', 'Orange': '#f97316', 'Brown': '#92400e' }; return colors[colorName] || '#9ca3af'; }
+    function selectVariant(type, value, element) { const container = element.parentElement; container.querySelectorAll('.variant-chip, .color-chip').forEach(chip => { chip.classList.remove('selected'); }); element.classList.add('selected'); if (!CURRENT_PRODUCT_DETAIL.selectedVariants) { CURRENT_PRODUCT_DETAIL.selectedVariants = {}; } CURRENT_PRODUCT_DETAIL.selectedVariants[type] = value; }
+    function toggleDescription() { const descText = document.getElementById('description-text'); const btn = document.getElementById('read-more-btn'); const isExpanded = descText.classList.contains('expanded'); if (isExpanded) { descText.classList.remove('expanded'); btn.textContent = 'Read More'; } else { descText.classList.add('expanded'); btn.textContent = 'Read Less'; } }
+
+    async function loadProductReviews(productId) { try { const { data: reviews, error } = await sb.from('product_reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false }); if (error) throw error; renderReviews(reviews || []); } catch (error) { console.error('Error loading reviews:', error); } }
+    function renderReviews(reviews) {
+        const reviewsList = document.getElementById('reviews-list'); const avgRatingEl = document.getElementById('avg-rating'); const avgStarsEl = document.getElementById('avg-stars'); const totalReviewsEl = document.getElementById('total-reviews'); const ratingBarsEl = document.getElementById('rating-bars'); const productStarsEl = document.getElementById('product-stars'); const ratingCountEl = document.getElementById('rating-count');
+        if (reviews.length === 0) { reviewsList.innerHTML = `<div class="no-reviews"><span class="material-symbols-outlined">rate_review</span><p>No reviews yet. Be the first to review!</p></div>`; avgRatingEl.textContent = '0.0'; avgStarsEl.textContent = '☆☆☆☆☆'; totalReviewsEl.textContent = '0 reviews'; productStarsEl.textContent = '☆☆☆☆☆'; ratingCountEl.textContent = '(0 reviews)'; return; }
+        const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0); const avgRating = (totalRating / reviews.length).toFixed(1);
+        avgRatingEl.textContent = avgRating; avgStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); totalReviewsEl.textContent = `${reviews.length} reviews`; productStarsEl.innerHTML = getStarHTML(parseFloat(avgRating)); ratingCountEl.textContent = `(${reviews.length} reviews)`;
+        const distribution = [0, 0, 0, 0, 0]; reviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) { distribution[r.rating - 1]++; } });
+        ratingBarsEl.innerHTML = [5, 4, 3, 2, 1].map(star => { const count = distribution[star - 1]; const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0; return `<div class="rating-bar-row"><div class="bar-label">${star}⭐</div><div class="bar-container"><div class="bar-fill" style="width: ${percentage}%"></div></div><div class="bar-count">${count}</div></div>`; }).join('');
+        reviewsList.innerHTML = reviews.map(review => { const date = new Date(review.created_at); const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); return `<div class="review-card"><div class="review-header"><div class="reviewer-info"><h4>${review.customer_name}</h4><div class="review-date">${formattedDate}</div></div><div class="review-stars">${getStarHTML(review.rating)}</div></div><p class="review-text">${review.review_text || 'No comment'}</p></div>`; }).join('');
+    }
+
+    function getStarHTML(rating) { const fullStars = Math.floor(rating); const hasHalfStar = rating % 1 >= 0.5; const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0); return '⭐'.repeat(fullStars) + (hasHalfStar ? '⭐' : '') + '☆'.repeat(emptyStars); }
+    function openReviewModal() { SELECTED_RATING = 0; document.getElementById('reviewer-name').value = ''; document.getElementById('reviewer-email').value = ''; document.getElementById('review-text').value = ''; document.querySelectorAll('.star-btn').forEach(star => { star.classList.remove('active'); }); const modal = document.getElementById('review-modal'); modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+    function closeReviewModal(event) { if (event && event.target.id !== 'review-modal') return; const modal = document.getElementById('review-modal'); modal.classList.add('hidden'); modal.style.display = 'none'; }
+    function selectRating(rating) { SELECTED_RATING = rating; document.querySelectorAll('.star-btn').forEach((star, index) => { if (index < rating) { star.classList.add('active'); } else { star.classList.remove('active'); } }); }
+
+    async function submitReview() {
+        const name = document.getElementById('reviewer-name').value.trim(); const email = document.getElementById('reviewer-email').value.trim(); const reviewText = document.getElementById('review-text').value.trim();
+        if (!name) { alert('Please enter your name'); return; } if (SELECTED_RATING === 0) { alert('Please select a rating'); return; } if (!reviewText) { alert('Please write a review'); return; }
+        const btn = document.querySelector('.submit-review-btn'); btn.disabled = true; btn.innerHTML = '<span>Submitting...</span>';
+        try { const { error } = await sb.from('product_reviews').insert([{ product_id: CURRENT_PRODUCT_DETAIL.id, customer_name: name, customer_email: email || null, rating: SELECTED_RATING, review_text: reviewText }]); if (error) throw error; if (window.amp) { amp.logEvent("Review Submitted", { product_id: CURRENT_PRODUCT_DETAIL.id, rating: SELECTED_RATING }); } alert('Thank you for your review! ⭐'); closeReviewModal(); await loadProductReviews(CURRENT_PRODUCT_DETAIL.id); } catch (error) { console.error('Error submitting review:', error); alert('Failed to submit review. Please try again.'); } finally { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">send</span> Submit Review'; }
+    }
+
+    function shareProduct() { const url = window.location.href; const text = `Check out ${CURRENT_PRODUCT_DETAIL.name}!`; if (navigator.share) { navigator.share({ title: CURRENT_PRODUCT_DETAIL.name, text: text, url: url }); } else { navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } }
+    function toggleFavorite() { const icon = document.getElementById('fav-icon'); icon.classList.toggle('favorited'); if (icon.classList.contains('favorited')) { icon.textContent = 'favorite'; alert('Added to favorites! ❤️'); } else { icon.textContent = 'favorite_border'; alert('Removed from favorites'); } }
+    function closeProductDetail() { window.history.back(); CURRENT_PRODUCT_DETAIL = null; }
+
+    async function orderProductViaWhatsApp() {
+        if (!CURRENT_PRODUCT_DETAIL) return;
+        let phone = '';
+        if (CURRENT_PRODUCT_DETAIL.merchantId) { if (!CURRENT_MERCHANT_DATA) { alert('Contact information loading...'); return; } phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number; } else { const { data: { user } } = await sb.auth.getUser(); if (!user) { alert('Please login to place an order'); return; } const { data: merchantData } = await sb.from('profiles').select('whatsapp_number, phone_number').eq('id', user.id).single(); phone = merchantData?.whatsapp_number || merchantData?.phone_number || ''; }
+        if (!phone) { alert('Contact information not available'); return; }
+        let message = `Hi! I want to order:\n\n*${CURRENT_PRODUCT_DETAIL.name}*\nPrice: Tsh ${CURRENT_PRODUCT_DETAIL.price.toLocaleString()}\n`;
+        if (CURRENT_PRODUCT_DETAIL.selectedVariants) { const variants = CURRENT_PRODUCT_DETAIL.selectedVariants; if (variants.color) message += `Color: ${variants.color}\n`; if (variants.size) message += `Size: ${variants.size}\n`; if (variants.material) message += `Material: ${variants.material}\n`; }
+        message += '\nPlease confirm availability.';
+        const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
+    }
+
+    // =======================================================
+    // CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
+    // =======================================================
+
+    let CURRENT_MERCHANT_DATA = null;
+
+    async function loadCustomerStorefrontBySlug(slug) {
+        console.log('🔍 Looking up merchant by slug:', slug);
+        IS_CUSTOMER_MODE = true;
+        try {
+            const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
+        if (merchantError || !merchant) {
+            console.error('Slug lookup error:', merchantError);
+            document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
+            return;
+        }
+        CUSTOMER_MERCHANT_ID = merchant.id;
+        console.log('✅ Found merchant:', merchant.business_name);
+        await loadCustomerStorefrontData(merchant);
+    } catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
 }
 
 async function loadCustomerStorefront(merchantId) {
-console.log('🛍️ Loading storefront for merchant ID:', merchantId);
-IS_CUSTOMER_MODE = true; CUSTOMER_MERCHANT_ID = merchantId;
-try {
-const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('id', merchantId).single();
-if (merchantError || !merchant) { throw new Error('Store not found'); }
-await loadCustomerStorefrontData(merchant);
-} catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
+    console.log('🛍️ Loading storefront for merchant ID:', merchantId);
+    IS_CUSTOMER_MODE = true; CUSTOMER_MERCHANT_ID = merchantId;
+    try {
+        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('id', merchantId).single();
+        if (merchantError || !merchant) { throw new Error('Store not found'); }
+        await loadCustomerStorefrontData(merchant);
+    } catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
 }
 
 async function loadCustomerStorefrontData(merchant) {
-CURRENT_MERCHANT_DATA = merchant;
+    CURRENT_MERCHANT_DATA = merchant;
 
-// ✅ NEW: Apply selected template
-if (merchant.selected_template_id) {
-    await applyTemplateToStorefront(merchant.selected_template_id);
-}
-
-const businessName = merchant.business_name || 'My Store';
-const storeNameEl = document.getElementById('customer-store-name');
-const heroStoreNameEl = document.getElementById('customer-hero-store-name');
-if (storeNameEl) storeNameEl.innerText = businessName;
-if (heroStoreNameEl) heroStoreNameEl.innerText = businessName;
-typeWriterCustomer("Welcome to our store, you are our priority 🤍");
-
-const slides = document.querySelectorAll('.hero-slide');
-if (slides.length > 1) {
-    let currentSlide = 0; slides[0]?.classList.add('active');
-    setInterval(() => { slides[currentSlide]?.classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide]?.classList.add('active'); }, 5000);
-}
-
-const { data: products, error: productsError } = await sb.from('products').select(`id, name, description, selling_price, total_stock, image_path, product_images(image_url), product_variants, full_description, original_price, discount_percent`).eq('merchant_id', merchant.id).gt('total_stock', 0);
-if (productsError) { console.error('Products error:', productsError); throw new Error(`Products fetch failed: ${productsError.message}`); }
-
-const activeProducts = products?.filter(p => p.is_active !== false) || [];
-const container = document.getElementById('customer-products-grid');
-if (!container) throw new Error('Products container not found');
-container.innerHTML = '';
-
-if (activeProducts.length > 0) {
-    // Check if we need carousel (10+ products)
-    const useCarousel = activeProducts.length >= 10;
-    
-    if (useCarousel) {
-        // CAROUSEL MODE
-        container.style.display = 'block'; container.style.overflowX = 'auto'; container.style.scrollSnapType = 'x mandatory'; container.style.webkitOverflowScrolling = 'touch'; container.style.scrollbarWidth = 'none'; container.style.padding = '0 20px';
-        const carouselHTML = `<div style="display: flex; gap: 20px; padding-bottom: 20px;">${activeProducts.map((p, index) => {
-            const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-            let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-            return `<div class="carousel-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="min-width: 280px; max-width: 280px; scroll-snap-align: start; animation: fadeInUp 0.6s ease forwards; animation-delay: ${index * 0.05}s; opacity: 0;"><div class="modern-img-wrapper" style="border-radius: 16px;"><img src="${img}" class="modern-img" alt="${safeName}" style="border-radius: 16px;">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:12px; right:12px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:8px 14px; border-radius:50px; font-size:13px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); animation: badgeBounce 2s ease-in-out infinite;">🔥 -${p.discount_percent}% OFF</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title" style="font-size: 16px; margin-bottom: 8px;">${p.name}</h4><div style="display: flex; align-items: center; justify-content: space-between;"><p class="modern-price" style="font-size: 20px;">Tsh ${p.selling_price.toLocaleString()}</p>${p.original_price ? `<span style="font-size: 14px; color: #9ca3af; text-decoration: line-through;">Tsh ${p.original_price.toLocaleString()}</span>` : ''}</div></div></div>`;
-        }).join('')}</div><div style="text-align: center; padding: 16px 0; color: #9ca3af; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-outlined" style="font-size: 18px; animation: swipeAnimation 2s ease-in-out infinite;">swipe</span>Swipe to see more products</div>`;
-        container.innerHTML = carouselHTML;
-    } else {
-        // GRID MODE
-        container.style.display = 'grid'; container.style.overflowX = 'visible';
-        activeProducts.forEach((p, index) => {
-            const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-            let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-            const html = `<div class="customer-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="animation-delay: ${index * 0.1}s"><div class="modern-img-wrapper"><img src="${img}" class="modern-img" alt="${safeName}">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:10px; right:10px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:6px 12px; border-radius:50px; font-size:12px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">🔥 -${p.discount_percent}%</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title">${p.name}</h4><p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p></div></div>`;
-            container.innerHTML += html;
-        });
+    // ✅ NEW: Apply selected template
+    if (merchant.selected_template_id) {
+        await applyTemplateToStorefront(merchant.selected_template_id);
     }
-} else {
-    container.innerHTML = `<div style="grid-column: 1/-1; padding:80px 20px; text-align:center; color:#94a3b8;"><div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;"><span class="material-symbols-outlined" style="font-size:48px; color:#667eea;">inventory_2</span></div><p style="font-size:18px; font-weight:700; color:#64748b; margin-bottom: 8px;">No Products Available</p><p style="font-size:14px; color:#94a3b8;">Please check back later</p></div>`;
-}
 
-// ✨ Track customer visit
-await trackCustomerVisit(merchant.id);
+    const businessName = merchant.business_name || 'My Store';
+    const storeNameEl = document.getElementById('customer-store-name');
+    const heroStoreNameEl = document.getElementById('customer-hero-store-name');
+    if (storeNameEl) storeNameEl.innerText = businessName;
+    if (heroStoreNameEl) heroStoreNameEl.innerText = businessName;
+    typeWriterCustomer("Welcome to our store, you are our priority 🤍");
+    
+    const slides = document.querySelectorAll('.hero-slide');
+    if (slides.length > 1) {
+        let currentSlide = 0; slides[0]?.classList.add('active');
+        setInterval(() => { slides[currentSlide]?.classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide]?.classList.add('active'); }, 5000);
+    }
 
-showScreen('customer-storefront', true);
-if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
+    const { data: products, error: productsError } = await sb.from('products').select(`id, name, description, selling_price, total_stock, image_path, product_images(image_url), product_variants, full_description, original_price, discount_percent`).eq('merchant_id', merchant.id).gt('total_stock', 0);
+    if (productsError) { console.error('Products error:', productsError); throw new Error(`Products fetch failed: ${productsError.message}`); }
+    
+    const activeProducts = products?.filter(p => p.is_active !== false) || [];
+    const container = document.getElementById('customer-products-grid');
+    if (!container) throw new Error('Products container not found');
+    container.innerHTML = '';
+    
+    if (activeProducts.length > 0) {
+        // Check if we need carousel (10+ products)
+        const useCarousel = activeProducts.length >= 10;
+        
+        if (useCarousel) {
+            // CAROUSEL MODE
+            container.style.display = 'block'; container.style.overflowX = 'auto'; container.style.scrollSnapType = 'x mandatory'; container.style.webkitOverflowScrolling = 'touch'; container.style.scrollbarWidth = 'none'; container.style.padding = '0 20px';
+            const carouselHTML = `<div style="display: flex; gap: 20px; padding-bottom: 20px;">${activeProducts.map((p, index) => {
+                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
+                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
+                return `<div class="carousel-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="min-width: 280px; max-width: 280px; scroll-snap-align: start; animation: fadeInUp 0.6s ease forwards; animation-delay: ${index * 0.05}s; opacity: 0;"><div class="modern-img-wrapper" style="border-radius: 16px;"><img src="${img}" class="modern-img" alt="${safeName}" style="border-radius: 16px;">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:12px; right:12px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:8px 14px; border-radius:50px; font-size:13px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); animation: badgeBounce 2s ease-in-out infinite;">🔥 -${p.discount_percent}% OFF</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title" style="font-size: 16px; margin-bottom: 8px;">${p.name}</h4><div style="display: flex; align-items: center; justify-content: space-between;"><p class="modern-price" style="font-size: 20px;">Tsh ${p.selling_price.toLocaleString()}</p>${p.original_price ? `<span style="font-size: 14px; color: #9ca3af; text-decoration: line-through;">Tsh ${p.original_price.toLocaleString()}</span>` : ''}</div></div></div>`;
+            }).join('')}</div><div style="text-align: center; padding: 16px 0; color: #9ca3af; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-outlined" style="font-size: 18px; animation: swipeAnimation 2s ease-in-out infinite;">swipe</span>Swipe to see more products</div>`;
+            container.innerHTML = carouselHTML;
+        } else {
+            // GRID MODE
+            container.style.display = 'grid'; container.style.overflowX = 'visible';
+            activeProducts.forEach((p, index) => {
+                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
+                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
+                const html = `<div class="customer-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="animation-delay: ${index * 0.1}s"><div class="modern-img-wrapper"><img src="${img}" class="modern-img" alt="${safeName}">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:10px; right:10px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:6px 12px; border-radius:50px; font-size:12px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">🔥 -${p.discount_percent}%</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title">${p.name}</h4><p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p></div></div>`;
+                container.innerHTML += html;
+            });
+        }
+    } else {
+        container.innerHTML = `<div style="grid-column: 1/-1; padding:80px 20px; text-align:center; color:#94a3b8;"><div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;"><span class="material-symbols-outlined" style="font-size:48px; color:#667eea;">inventory_2</span></div><p style="font-size:18px; font-weight:700; color:#64748b; margin-bottom: 8px;">No Products Available</p><p style="font-size:14px; color:#94a3b8;">Please check back later</p></div>`;
+    }
+    showScreen('customer-storefront', true);
+    if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
 
 }
 
 function contactMerchantWhatsApp() {
-if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
-const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
-if (!phone) { alert('WhatsApp number not available. Please contact the merchant directly.'); return; }
-const message = Hi! I'm interested in your products. Can you help me?;
-const whatsappUrl = https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)};
-window.open(whatsappUrl, '_blank');
-if (window.amp) { amp.logEvent("Customer Contact Merchant", { merchant_name: CURRENT_MERCHANT_DATA.business_name }); }
+    if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
+    const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
+    if (!phone) { alert('WhatsApp number not available. Please contact the merchant directly.'); return; }
+    const message = `Hi! I'm interested in your products. Can you help me?`;
+    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    if (window.amp) { amp.logEvent("Customer Contact Merchant", { merchant_name: CURRENT_MERCHANT_DATA.business_name }); }
 }
 
 function typeWriterCustomer(text) {
-const element = document.getElementById('customer-typewriter'); if (!element) return; let i = 0; element.textContent = "";
-function type() { if (i < text.length) { element.textContent += text.charAt(i); i++; setTimeout(type, 80); } }
-setTimeout(type, 500);
+    const element = document.getElementById('customer-typewriter'); if (!element) return; let i = 0; element.textContent = "";
+    function type() { if (i < text.length) { element.textContent += text.charAt(i); i++; setTimeout(type, 80); } }
+    setTimeout(type, 500);
 }
 
 function scrollToProducts() {
-const productsSection = document.getElementById('customer-products-section');
-if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    const productsSection = document.getElementById('customer-products-section');
+    if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }
-
-// =========================================
-// ANALYTICS DASHBOARD FUNCTIONS
-// =========================================
-
-let ANALYTICS_PERIOD = 'today';
-let ANALYTICS_AUTO_REFRESH = null;
-
-/**
-
-Load Analytics Dashboard
-*/
-async function loadAnalyticsDashboard() {
-console.log('📊 Loading Analytics Dashboard...');
-
-try {
-// Get current user
-const { data: { user } } = await sb.auth.getUser();
-if (!user) {
-alert('Please log in to view analytics');
-return;
-}
-
-// Show analytics screen
- showScreen('analytics-screen', true);
-
- // Load analytics data
- await refreshAnalyticsData();
-
- // Start auto-refresh (every 30 seconds)
- if (ANALYTICS_AUTO_REFRESH) {
-     clearInterval(ANALYTICS_AUTO_REFRESH);
- }
- ANALYTICS_AUTO_REFRESH = setInterval(() => {
-     refreshAnalyticsData();
- }, 30000);
-
- // Log event
- if (window.amp) {
-     amp.logEvent("Analytics Dashboard Opened", { 
-         merchant_id: user.id 
-     });
- }
-
-} catch (error) {
-console.error('❌ Error loading analytics:', error);
-alert('Failed to load analytics. Please try again.');
-}
-}
-
-/**
-
-Refresh Analytics Data
-*/
-async function refreshAnalyticsData() {
-const { data: { user } } = await sb.auth.getUser();
-if (!user) return;
-
-try {
-// Calculate date range based on period
-const now = new Date();
-let startDate;
-
-switch (ANALYTICS_PERIOD) {
-     case 'today':
-         startDate = new Date(now.setHours(0, 0, 0, 0));
-         break;
-     case 'week':
-         startDate = new Date(now.setDate(now.getDate() - 7));
-         break;
-     case 'month':
-         startDate = new Date(now.setDate(now.getDate() - 30));
-         break;
-     default:
-         startDate = new Date(now.setHours(0, 0, 0, 0));
- }
-
- // Fetch customer visits
- const { data: visits, error } = await sb
-     .from('customer_visits')
-     .select('*')
-     .eq('merchant_id', user.id)
-     .gte('visited_at', startDate.toISOString())
-     .order('visited_at', { ascending: false });
-
- if (error) throw error;
-
- // Calculate stats
- const totalVisits = visits?.length || 0;
- const uniqueVisitors = new Set(visits?.map(v => v.visitor_id || v.ip_address)).size;
- 
- // Calculate today's visits
- const todayStart = new Date();
- todayStart.setHours(0, 0, 0, 0);
- const todayVisits = visits?.filter(v => new Date(v.visited_at) >= todayStart).length || 0;
-
- // Calculate yesterday's visits for comparison
- const yesterdayStart = new Date(todayStart);
- yesterdayStart.setDate(yesterdayStart.getDate() - 1);
- const yesterdayEnd = new Date(todayStart);
- const yesterdayVisits = visits?.filter(v => {
-     const visitDate = new Date(v.visited_at);
-     return visitDate >= yesterdayStart && visitDate < yesterdayEnd;
- }).length || 0;
-
- // Calculate trend
- const trend = yesterdayVisits > 0 
-     ? ((todayVisits - yesterdayVisits) / yesterdayVisits * 100).toFixed(1)
-     : todayVisits > 0 ? 100 : 0;
-
- // Render stats cards
- renderStatsCards({
-     totalVisits,
-     todayVisits,
-     uniqueVisitors,
-     trend
- });
-
- // Render visits chart
- renderVisitsChart(visits);
-
- // Render recent visits table
- renderRecentVisitsTable(visits?.slice(0, 20) || []);
-
-} catch (error) {
-console.error('❌ Error refreshing analytics:', error);
-}
-}
-
-/**
-
-Render Stats Cards
-*/
-function renderStatsCards(stats) {
-const container = document.getElementById('analytics-stats-grid');
-if (!container) return;
-
-const trendIcon = stats.trend > 0 ? '↗' : stats.trend < 0 ? '↘' : '→';
-const trendClass = stats.trend > 0 ? 'up' : stats.trend < 0 ? 'down' : 'neutral';
-
-container.innerHTML = `
-<!-- Total Visits -->
-<div class="stat-card" style="animation-delay: 0.1s;">
-<div class="stat-card-header">
-<span class="stat-card-label">Total Visits</span>
-<div class="stat-card-icon green">
-<span class="material-symbols-outlined">visibility</span>
-</div>
-</div>
-<div class="stat-card-value">${stats.totalVisits.toLocaleString()}</div>
-<div class="stat-card-trend ${trendClass}">
-<span>
-𝑡
-𝑟
-𝑒
-𝑛
-𝑑
-𝐼
-𝑐
-𝑜
-𝑛
-<
-/
-𝑠
-𝑝
-𝑎
-𝑛
->
-<
-𝑠
-𝑝
-𝑎
-𝑛
->
-trendIcon</span><span>
-{Math.abs(stats.trend)}% vs yesterday</span>
-</div>
-</div>
-
-<!-- Today's Visits -->
- <div class="stat-card" style="animation-delay: 0.2s;">
-     <div class="stat-card-header">
-         <span class="stat-card-label">Today's Visits</span>
-         <div class="stat-card-icon blue">
-             <span class="material-symbols-outlined">today</span>
-         </div>
-     </div>
-     <div class="stat-card-value">${stats.todayVisits.toLocaleString()}</div>
-     <div class="stat-card-trend neutral">
-         <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
-         <span>Live updates</span>
-     </div>
- </div>
-
- <!-- Unique Visitors -->
- <div class="stat-card" style="animation-delay: 0.3s;">
-     <div class="stat-card-header">
-         <span class="stat-card-label">Unique Visitors</span>
-         <div class="stat-card-icon purple">
-             <span class="material-symbols-outlined">person</span>
-         </div>
-     </div>
-     <div class="stat-card-value">${stats.uniqueVisitors.toLocaleString()}</div>
-     <div class="stat-card-trend neutral">
-         <span class="material-symbols-outlined" style="font-size: 16px;">groups</span>
-         <span>${((stats.uniqueVisitors / stats.totalVisits) * 100 || 0).toFixed(0)}% of total</span>
-     </div>
- </div>
-
- <!-- Avg Visits Per Day -->
- <div class="stat-card" style="animation-delay: 0.4s;">
-     <div class="stat-card-header">
-         <span class="stat-card-label">Avg / Day</span>
-         <div class="stat-card-icon orange">
-             <span class="material-symbols-outlined">trending_up</span>
-         </div>
-     </div>
-     <div class="stat-card-value">${(stats.totalVisits / (ANALYTICS_PERIOD === 'today' ? 1 : ANALYTICS_PERIOD === 'week' ? 7 : 30)).toFixed(1)}</div>
-     <div class="stat-card-trend neutral">
-         <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span>
-         <span>Average visits</span>
-     </div>
- </div>
-
-`;
-}
-
-/**
-
-Render Visits Chart (Simple Bar Chart)
-*/
-function renderVisitsChart(visits) {
-const container = document.getElementById('visits-chart-container');
-if (!container) return;
-
-if (!visits || visits.length === 0) {
-container.innerHTML = <div class="empty-state"> <div class="empty-state-icon"> <span class="material-symbols-outlined">show_chart</span> </div> <p style="font-weight: 600; color: #64748b;">No visit data available</p> <p style="font-size: 14px; color: #94a3b8;">Share your store link to start tracking visits</p> </div>;
-return;
-}
-
-// Group visits by date
-const visitsByDate = {};
-visits.forEach(visit => {
-const date = new Date(visit.visited_at).toLocaleDateString('en-US', {
-month: 'short',
-day: 'numeric'
-});
-visitsByDate[date] = (visitsByDate[date] || 0) + 1;
-});
-
-// Get dates and counts
-const dates = Object.keys(visitsByDate).slice(0, 15).reverse();
-const counts = dates.map(date => visitsByDate[date]);
-const maxCount = Math.max(...counts);
-
-// Generate simple bar chart
-let chartHTML = '<div style="display: flex; align-items: flex-end; gap: 8px; height: 250px; padding: 20px;">';
-
-dates.forEach((date, index) => {
-const count = counts[index];
-const height = (count / maxCount) * 100;
-
-chartHTML += `
-     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-         <div style="width: 100%; height: ${height}%; min-height: 20px; background: linear-gradient(180deg, #25d078, #1ea35e); border-radius: 8px 8px 0 0; position: relative; transition: all 0.3s ease; cursor: pointer;" 
-              onmouseover="this.style.transform='scaleY(1.05)'; this.style.filter='brightness(1.1)';"
-              onmouseout="this.style.transform='scaleY(1)'; this.style.filter='brightness(1)';">
-             <div style="position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; opacity: 0; transition: opacity 0.3s ease;" 
-                  onmouseover="this.style.opacity='1'">
-                 ${count} visits
-             </div>
-         </div>
-         <span style="font-size: 11px; color: #64748b; font-weight: 600; text-align: center;">${date}</span>
-     </div>
- `;
-
-});
-
-chartHTML += '</div>';
-container.innerHTML = chartHTML;
-}
-
-/**
-
-Render Recent Visits Table
-*/
-function renderRecentVisitsTable(visits) {
-const tbody = document.getElementById('recent-visits-tbody');
-if (!tbody) return;
-
-if (visits.length === 0) {
-tbody.innerHTML = <tr> <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;"> <div class="empty-state-icon" style="margin: 0 auto 16px;"> <span class="material-symbols-outlined">inbox</span> </div> <p style="font-weight: 600; color: #64748b;">No visits yet</p> <p style="font-size: 14px; color: #94a3b8;">Share your store link to start tracking</p> </td> </tr>;
-return;
-}
-
-tbody.innerHTML = visits.map(visit => {
-const date = new Date(visit.visited_at);
-const formattedDate = date.toLocaleDateString('en-US', {
-month: 'short',
-day: 'numeric',
-hour: '2-digit',
-minute: '2-digit'
-});
-
-return `
-     <tr>
-         <td>
-             <div style="display: flex; align-items: center; gap: 8px;">
-                 <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">schedule</span>
-                 <span style="font-weight: 600; color: #1e293b;">${formattedDate}</span>
-             </div>
-         </td>
-         <td>
-             <div style="display: flex; align-items: center; gap: 8px;">
-                 <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">
-                     ${visit.device_type === 'mobile' ? 'smartphone' : 'computer'}
-                 </span>
-                 <span>${visit.device_type || 'Unknown'}</span>
-             </div>
-         </td>
-         <td>
-             <div style="display: flex; align-items: center; gap: 8px;">
-                 <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">location_on</span>
-                 <span>${visit.country || visit.city || 'Unknown'}</span>
-             </div>
-         </td>
-         <td>
-             <div style="display: flex; align-items: center; gap: 8px;">
-                 <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">link</span>
-                 <span>${visit.referrer || 'Direct'}</span>
-             </div>
-         </td>
-     </tr>
- `;
-
-}).join('');
-}
-
-/**
-
-Change Analytics Period
-*/
-function changeAnalyticsPeriod(period) {
-ANALYTICS_PERIOD = period;
-
-// Update button states
-document.querySelectorAll('.chart-filter-btn').forEach(btn => {
-btn.classList.remove('active');
-});
-document.getElementById(filter-${period}).classList.add('active');
-
-// Refresh data
-refreshAnalyticsData();
-
-// Log event
-if (window.amp) {
-amp.logEvent("Analytics Period Changed", { period });
-}
-}
-
-/**
-
-Track Customer Visit to Store
-*/
-async function trackCustomerVisit(merchantId) {
-try {
-// Get visitor information
-const visitorId = localStorage.getItem('visitor_id') || visitor_${Math.random().toString(36).slice(2)};
-localStorage.setItem('visitor_id', visitorId);
-
-// Detect device type
- const deviceType = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
-
- // Get referrer
- const referrer = document.referrer ? new URL(document.referrer).hostname : 'Direct';
-
- // Insert visit record
- const { error } = await sb
-     .from('customer_visits')
-     .insert({
-         merchant_id: merchantId,
-         visitor_id: visitorId,
-         device_type: deviceType,
-         referrer: referrer,
-         user_agent: navigator.userAgent,
-         visited_at: new Date().toISOString()
-     });
-
- if (error) {
-     console.error('Error tracking visit:', error);
- } else {
-     console.log('✅ Customer visit tracked');
- }
-
-} catch (error) {
-console.error('❌ Error tracking customer visit:', error);
-}
-}
-
-// Clean up interval when leaving analytics screen
-const originalShowScreen = showScreen;
-showScreen = function(screenId, skipAuth) {
-if (screenId !== 'analytics-screen' && ANALYTICS_AUTO_REFRESH) {
-clearInterval(ANALYTICS_AUTO_REFRESH);
-ANALYTICS_AUTO_REFRESH = null;
-}
-originalShowScreen(screenId, skipAuth);
-};
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); }
 </script>
