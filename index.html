@@ -5128,9 +5128,7 @@ function renderProductDetail(product) {
     } else { 
         descText.classList.add('expanded'); 
         readMoreBtn.classList.add('hidden'); 
-    }
-    
-    renderVariants(product);
+    }renderVariants(product);
 }
 
 // ✅ FIXED: Render ALL images with auto-scroll
@@ -5200,7 +5198,7 @@ function renderImageGallery(product) {
         }, { once: true });
     }
     
-    // ✅ Update dots on manual scroll
+    // ✅ Update dots on manual scroll (FIXED SYNTAX HERE)
     slider.addEventListener('scroll', () => {
         const scrollLeft = slider.scrollLeft;
         const slideWidth = slider.offsetWidth;
@@ -5227,7 +5225,7 @@ function updateActiveDot() {
 }
 
 // =======================================================
-// PROFESSIONAL EDIT MODE FEATURES
+// PROFESSIONAL EDIT MODE LOGIC (FIXED & ROBUST)
 // =======================================================
 
 let EDIT_DRAFT_PRODUCT = null;
@@ -5266,7 +5264,7 @@ async function openProductEditModal(productId) {
 
     } catch (error) {
         console.error("Error fetching product for edit:", error);
-        alert("Failed to load product details.");
+        alert("Failed to load product details. Check your internet or login status.");
         closeEditModal();
     }
 }
@@ -5288,13 +5286,25 @@ function closeEditModal() {
 
 function renderEditModalHTML() {
     const p = EDIT_DRAFT_PRODUCT;
-    const variants = typeof p.product_variants === 'string' ? JSON.parse(p.product_variants || '{}') : p.product_variants || {};
     
-    // Parse variants safe defaults
+    // Robust Variant Parsing (Fixes JSON crash)
+    let variants = { colors: [], sizes: [], materials: [] };
+    try {
+        if (typeof p.product_variants === 'string') {
+            variants = JSON.parse(p.product_variants);
+        } else if (typeof p.product_variants === 'object' && p.product_variants !== null) {
+            variants = p.product_variants;
+        }
+    } catch(e) { 
+        console.warn('Variant parse error', e); 
+    }
+
+    // Safe Defaults
     const colors = variants.colors || [];
     const sizes = variants.sizes || [];
-    const materials = variants.materials || [];
 
+    const safeName = (p.name || '').replace(/"/g, '&quot;');
+    
     const modalContainer = document.getElementById('product-edit-modal');
     
     const html = `
@@ -5323,7 +5333,7 @@ function renderEditModalHTML() {
                     
                     <div class="edit-form-group">
                         <label class="edit-form-label">Product Name <span class="required">*</span></label>
-                        <input type="text" id="edit-name" class="edit-form-input" value="${p.name.replace(/"/g, '&quot;')}" placeholder="e.g. Mens Cotton Shirt">
+                        <input type="text" id="edit-name" class="edit-form-input" value="${safeName}" placeholder="e.g. Mens Cotton Shirt">
                     </div>
 
                     <div class="edit-form-row">
@@ -5464,21 +5474,27 @@ function renderEditModalHTML() {
 function renderEditImagesHTML() {
     let html = '';
     
-    // Existing DB Images
-    if (EDIT_DRAFT_PRODUCT.image_path) {
-        const url = getProductImage(EDIT_DRAFT_PRODUCT); // Helper from main code
-        if (!DELETED_IMAGES.includes('main')) {
-            html += `
-            <div class="edit-image-preview-wrapper" id="img-main">
-                <img src="${url}" class="edit-image-preview">
-                <button class="edit-image-remove-btn" onclick="markImageForDeletion('main', null)">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-                <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); color:white; font-size:10px; text-align:center; padding:2px;">Main</span>
-            </div>`;
+    // Existing DB Images (Main)
+    if (EDIT_DRAFT_PRODUCT.image_path && !DELETED_IMAGES.includes('main')) {
+        // Use the existing helper but ensure it works here
+        let url = '';
+        if(EDIT_DRAFT_PRODUCT.image_path.startsWith('http')) url = EDIT_DRAFT_PRODUCT.image_path;
+        else {
+            const { data } = sb.storage.from('post-images').getPublicUrl(EDIT_DRAFT_PRODUCT.image_path);
+            url = data.publicUrl;
         }
+
+        html += `
+        <div class="edit-image-preview-wrapper" id="img-main">
+            <img src="${url}" class="edit-image-preview">
+            <button class="edit-image-remove-btn" onclick="markImageForDeletion('main', null)">
+                <span class="material-symbols-outlined">delete</span>
+            </button>
+            <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); color:white; font-size:10px; text-align:center; padding:2px;">Main</span>
+        </div>`;
     }
 
+    // Existing DB Images (Gallery)
     if (EDIT_DRAFT_PRODUCT.product_images) {
         EDIT_DRAFT_PRODUCT.product_images.forEach(img => {
             if (!DELETED_IMAGES.includes(img.id)) {
@@ -5708,6 +5724,74 @@ function getColorHex(colorName) {
     // Check if input is already a hex code
     if (colorName && colorName.startsWith('#')) return colorName;
     return colors[colorName] || '#e5e7eb'; 
+}
+
+// ✅ FIXED: Render Variants Logic
+function renderVariants(product) {
+    try {
+        let variants = {};
+        
+        // Robust Parsing for both String and Object types
+        if (product.product_variants) {
+            if (typeof product.product_variants === 'string') {
+                try {
+                    variants = JSON.parse(product.product_variants);
+                } catch (e) {
+                    console.error('Failed to parse variants:', e);
+                    variants = {};
+                }
+            } else if (typeof product.product_variants === 'object') {
+                variants = product.product_variants;
+            }
+        }
+        
+        // SHOW COLORS
+        const colorSection = document.getElementById('color-section');
+        const colorSelector = document.getElementById('color-selector');
+        if (variants.colors && Array.isArray(variants.colors) && variants.colors.length > 0) {
+            colorSelector.innerHTML = variants.colors.map(color => {
+                const bgColor = getColorHex(color);
+                return `<div class="color-chip" style="background: ${bgColor};" onclick="selectVariant('color', '${color}', this)">
+                    <div class="checkmark">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #25d078;">check</span>
+                    </div>
+                </div>`;
+            }).join('');
+            colorSection.classList.remove('hidden');
+        } else {
+            colorSection.classList.add('hidden');
+        }
+        
+        // SHOW SIZES
+        const sizeSection = document.getElementById('size-section');
+        const sizeSelector = document.getElementById('size-selector');
+        if (variants.sizes && Array.isArray(variants.sizes) && variants.sizes.length > 0) {
+            sizeSelector.innerHTML = variants.sizes.map(size => 
+                `<div class="variant-chip" onclick="selectVariant('size', '${size}', this)">${size}</div>`
+            ).join('');
+            sizeSection.classList.remove('hidden');
+        } else {
+            sizeSection.classList.add('hidden');
+        }
+        
+        // SHOW MATERIALS
+        const materialSection = document.getElementById('material-section');
+        const materialSelector = document.getElementById('material-selector');
+        if (variants.materials && Array.isArray(variants.materials) && variants.materials.length > 0) {
+            materialSelector.innerHTML = variants.materials.map(material => 
+                `<div class="variant-chip" onclick="selectVariant('material', '${material}', this)">${material}</div>`
+            ).join('');
+            materialSection.classList.remove('hidden');
+        } else {
+            materialSection.classList.add('hidden');
+        }
+        
+    } catch (error) {
+        console.error('Error rendering variants:', error);
+        document.getElementById('color-section').classList.add('hidden');
+        document.getElementById('size-section').classList.add('hidden');
+        document.getElementById('material-section').classList.add('hidden');
+    }
 }
 
 function selectVariant(type, value, element) { 
