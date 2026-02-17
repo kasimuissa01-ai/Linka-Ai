@@ -3935,6 +3935,9 @@
                 
                 <h1 class="product-detail-title" id="product-detail-title">Product Name</h1>
                 
+                <!-- Short Description (NEW ADDITION) -->
+                <p id="product-short-desc" style="font-size: 14px; color: #6b7280; margin-bottom: 16px; line-height: 1.5; font-family: 'Plus Jakarta Sans', sans-serif;"></p>
+                
                 <!-- Rating Stars -->
                 <div class="product-rating-row">
                     <div class="stars" id="product-stars">
@@ -5116,14 +5119,21 @@ function renderProductDetailBasic(product) {
     document.getElementById('product-detail-price').textContent = `Tsh ${product.price.toLocaleString()}`;
     document.getElementById('original-price').classList.add('hidden');
     document.getElementById('discount-badge').classList.add('hidden');
+    
+    // ✅ ADDED: Set short description fallback
+    document.getElementById('product-short-desc').textContent = product.description || '';
+    
     const stockIndicator = document.getElementById('stock-indicator');
     const stockText = document.getElementById('stock-text');
     if (product.stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; } else if (product.stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${product.stock} left`; } else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
     const slider = document.getElementById('product-image-slider');
     slider.innerHTML = `<div class="product-image-slide" style="background-image: url('${product.image || 'https://via.placeholder.com/600'}')"></div>`;
     document.getElementById('image-dots').innerHTML = '<div class="image-dot active"></div>';
+    
     const descText = document.getElementById('description-text');
+    // For basic render, we might only have one description field
     descText.textContent = product.description || 'No description available.';
+    
     document.getElementById('read-more-btn').classList.add('hidden');
     document.getElementById('color-section').classList.add('hidden');
     document.getElementById('size-section').classList.add('hidden');
@@ -5135,13 +5145,34 @@ function renderProductDetailBasic(product) {
 function renderProductDetail(product) {
     console.log('🎨 Rendering full product detail:', product);
     document.getElementById('product-detail-title').textContent = product.name || 'Product';
+    
     const categoryBadge = document.getElementById('product-category-badge');
-    if (product.category) { categoryBadge.textContent = product.category; categoryBadge.classList.remove('hidden'); } else { categoryBadge.classList.add('hidden'); }
+    if (product.category) { 
+        categoryBadge.textContent = product.category; 
+        categoryBadge.classList.remove('hidden'); 
+    } else { 
+        categoryBadge.classList.add('hidden'); 
+    }
+    
+    // ✅ ADDED: Render Short Description in Info Card
+    const shortDescEl = document.getElementById('product-short-desc');
+    if (product.description) {
+        shortDescEl.textContent = product.description;
+        shortDescEl.classList.remove('hidden');
+    } else {
+        shortDescEl.classList.add('hidden');
+    }
+
     const currentPriceEl = document.getElementById('product-detail-price');
     const originalPriceEl = document.getElementById('original-price');
     const discountBadgeEl = document.getElementById('discount-badge');
+    
     currentPriceEl.textContent = `Tsh ${(product.selling_price || product.price || 0).toLocaleString()}`;
-    if (product.original_price && product.discount_percent) { originalPriceEl.textContent = `Tsh ${product.original_price.toLocaleString()}`; originalPriceEl.classList.remove('hidden'); discountBadgeEl.textContent = `-${product.discount_percent}% OFF`; 
+    
+    if (product.original_price && product.discount_percent) { 
+        originalPriceEl.textContent = `Tsh ${product.original_price.toLocaleString()}`; 
+        originalPriceEl.classList.remove('hidden'); 
+        discountBadgeEl.textContent = `-${product.discount_percent}% OFF`; 
         discountBadgeEl.classList.remove('hidden'); 
     } else { 
         originalPriceEl.classList.add('hidden'); 
@@ -5165,11 +5196,14 @@ function renderProductDetail(product) {
     
     renderImageGallery(product);
     
+    // ✅ ADDED: Render Full Description in Bottom Section
     const descText = document.getElementById('description-text');
     const readMoreBtn = document.getElementById('read-more-btn');
-    const fullDesc = product.full_description || product.description || 'No description available.';
+    // Prefer full_description for the long text area, fallback to description if missing
+    const fullDesc = product.full_description || product.description || 'No additional details available.';
     
     descText.textContent = fullDesc;
+    
     if (fullDesc.length > 300) { 
         descText.classList.remove('expanded'); 
         readMoreBtn.classList.remove('hidden'); 
@@ -5420,15 +5454,15 @@ async function loadCustomerStorefrontBySlug(slug) {
     IS_CUSTOMER_MODE = true;
     try {
         const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
-        if (merchantError || !merchant) {
-            console.error('Slug lookup error:', merchantError);
-            document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
-            return;
-        }
-        CUSTOMER_MERCHANT_ID = merchant.id;
-        console.log('✅ Found merchant:', merchant.business_name);
-        await loadCustomerStorefrontData(merchant);
-    } catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
+    if (merchantError || !merchant) {
+        console.error('Slug lookup error:', merchantError);
+        document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
+        return;
+    }
+    CUSTOMER_MERCHANT_ID = merchant.id;
+    console.log('✅ Found merchant:', merchant.business_name);
+    await loadCustomerStorefrontData(merchant);
+} catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
 }
 
 async function loadCustomerStorefront(merchantId) {
