@@ -1,4 +1,4 @@
-const APP_VERSION = '2.0.6';
+const APP_VERSION = '2.0.7';
 
 const CACHE_NAME = `linkamarket-static-v${APP_VERSION}`;
 const CACHE_RUNTIME = `linkamarket-runtime-v${APP_VERSION}`;
