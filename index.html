@@ -303,126 +303,6 @@
     }
     #other-input-container.open { max-height: 100px; opacity: 1; margin-top: 10px; }
     
-    /* Template Selection Styles */
-    .template-card {
-        background: white;
-        border-radius: 20px;
-        padding: 16px;
-        border: 3px solid #e5e7eb;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        box-shadow: 0 4px 0 #e5e7eb;
-    }
-
-    .template-card:active {
-        transform: translateY(4px);
-        box-shadow: 0 0px 0 #e5e7eb;
-    }
-
-    .template-card.selected {
-        border-color: #58cc02;
-        background-color: #f0fdf4;
-        box-shadow: 0 4px 0 #46a302;
-    }
-
-    .template-card.selected:active {
-        box-shadow: 0 0px 0 #46a302;
-    }
-
-    .template-preview {
-        width: 100%;
-        height: 200px;
-        border-radius: 12px;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .template-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .template-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .template-name {
-        font-size: 16px;
-        font-weight: 800;
-        color: #1f2937;
-    }
-
-    .template-category {
-        font-size: 12px;
-        color: #6b7280;
-        background: #f3f4f6;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-weight: 700;
-    }
-
-    .preview-btn {
-        width: 100%;
-        padding: 10px;
-        background: #f3f4f6;
-        border: none;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #4b5563;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .preview-btn:hover {
-        background: #e5e7eb;
-    }
-
-    .template-selected-check {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 60px;
-        height: 60px;
-        background: rgba(88, 204, 2, 0.95);
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(88, 204, 2, 0.5);
-        animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .template-card.selected .template-selected-check {
-        display: flex;
-    }
-
-    @keyframes checkPop {
-        0% { transform: translate(-50%, -50%) scale(0); }
-        100% { transform: translate(-50%, -50%) scale(1); }
-    }
-
     /* Shop Rules Cards */
     .setting-card {
         background: white; border-radius: 20px; padding: 16px;
@@ -2635,9 +2515,8 @@
 
 /* Edit Button on Product Cards */
 .product-edit-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
+    /* REMOVED absolute positioning to allow side-by-side layout in flex container */
+    /* position: absolute; top: 12px; right: 12px; */
     width: 40px;
     height: 40px;
     background: linear-gradient(135deg, #667eea, #764ba2);
@@ -2651,23 +2530,9 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     transition: all 0.3s ease;
     z-index: 10;
-    opacity: 0;
-    transform: scale(0.8);
-}
-
-.product-card:hover .product-edit-btn,
-.customer-product-card:hover .product-edit-btn {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.product-edit-btn:hover {
-    transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-}
-
-.product-edit-btn .material-symbols-outlined {
-    font-size: 20px;
+    opacity: 1; 
+    transform: scale(1); 
+    position: relative;
 }
 
 /* Edit Modal Overlay */
@@ -3209,9 +3074,32 @@
         transform: translateX(100px);
     }
 }
+
+/* GLOBAL LOADER */
+#global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: white;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    transition: opacity 0.3s;
+}
 </style>
 </head>
 <body>
+    <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
+    <div id="global-loader">
+        <div style="width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #25d078; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="font-weight: 700; color: #25d078; font-size: 14px;">Loading...</p>
+    </div>
+
     <!-- SEO Content (Hidden but crawlable) -->
     <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
         <h1>Create Your Online Store & Sell via WhatsApp</h1>
@@ -4232,8 +4120,14 @@
     const SUPABASE_URL = 'https://vqgnxqabvmmpfoiceass.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxZ254cWFidm1tcGZvaWNlYXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzODE5NDMsImV4cCI6MjA3NDk1Nzk0M30.ZkOlMsqmfv4gCl3YG5CLe7te5DoIbZad8Y2mIpKTleA';
     
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Safety check for Supabase
+    let sb;
+    try {
+        const { createClient } = supabase;
+        sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) {
+        console.error("Supabase failed to initialize:", e);
+    }
 
     // --- STATE MANAGEMENT ---
     let CURRENT_BUSINESS_ID = localStorage.getItem('biashara_business_id');
@@ -4282,44 +4176,68 @@
     function trackAddProduct(productName, price) { if(window.amp) amp.logEvent("Product Added", { product_name: productName, price: price }); }
     
     // --- INIT ---
-    // ✅ UPDATE: Show PWA card on auth screen
+    // ✅ FIX: Robust Initialization Logic
     window.addEventListener('load', async () => {
-        typewriterEffect();
-
-        // Show PWA install card on auth screen
-        const authScreen = document.getElementById('step-auth');
-        if (authScreen && !authScreen.classList.contains('hidden')) {
-            showPWAInstallCard();
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const merchantId = urlParams.get('merchant');
-        const step = urlParams.get('step');
-        const pathSlug = window.location.pathname.replace(/^\//, '').replace(/\/$/, '');
-        
-        if (pathSlug && pathSlug !== 'index.html' && pathSlug !== '') {
-            console.log('🛍️ Customer Mode: Loading storefront from slug:', pathSlug);
-            await loadCustomerStorefrontBySlug(pathSlug);
-            return;
-        } else if (merchantId) {
-            console.log('🛍️ Customer Mode (Legacy): Loading storefront for merchant:', merchantId);
-            await loadCustomerStorefront(merchantId);
+        // 1. Check if Supabase loaded
+        if (typeof sb === 'undefined') {
+            document.getElementById('global-loader').innerHTML = '<p style="color:red; font-weight:bold;">Error: Database not loaded. Check internet.</p>';
             return;
         }
 
-        const { data: { session } } = await sb.auth.getSession();
-        if(session) {
-            if (step) {
-                if (step === 'add-product') showScreen('step-add-product', false);
-                else showScreen('step-' + step, false);
-                if(step == 5) loadDashboard();
-            } else {
-                history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                showScreen('step-5', false);
-                loadDashboard();
+        try {
+            typewriterEffect();
+
+            // Show PWA install card on auth screen
+            const authScreen = document.getElementById('step-auth');
+            if (authScreen && !authScreen.classList.contains('hidden')) {
+                showPWAInstallCard();
             }
-        } else {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const merchantId = urlParams.get('merchant');
+            const step = urlParams.get('step');
+            
+            // Fix path slug logic to avoid issues with local files
+            let pathSlug = window.location.pathname.replace(/^\//, '').replace(/\/$/, '');
+            if (pathSlug.includes('.html') || pathSlug.includes('file:')) {
+                pathSlug = ''; // Ignore local file paths
+            }
+            
+            if (pathSlug && pathSlug !== '') {
+                console.log('🛍️ Customer Mode: Loading storefront from slug:', pathSlug);
+                await loadCustomerStorefrontBySlug(pathSlug);
+            } else if (merchantId) {
+                console.log('🛍️ Customer Mode (Legacy): Loading storefront for merchant:', merchantId);
+                await loadCustomerStorefront(merchantId);
+            } else {
+                // Default flow
+                const { data: { session }, error } = await sb.auth.getSession();
+                
+                if (session) {
+                    if (step) {
+                        if (step === 'add-product') showScreen('step-add-product', false);
+                        else showScreen('step-' + step, false);
+                        if(step == 5) loadDashboard();
+                    } else {
+                        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                        showScreen('step-5', false);
+                        loadDashboard();
+                    }
+                } else {
+                    showScreen('step-auth', true);
+                }
+            }
+        } catch (error) {
+            console.error("Critical Init Error:", error);
+            // Fallback to Auth screen if logic fails
             showScreen('step-auth', true);
+        } finally {
+            // Hide global loader
+            const loader = document.getElementById('global-loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 300);
+            }
         }
     });
 
@@ -4787,7 +4705,7 @@
                             <!-- EDIT BUTTON -->
                             <button class="product-edit-btn" onclick="event.stopPropagation(); openProductEditModal('${p.id}')" 
                                     title="Edit Product"
-                                    style="width: 36px; height: 36px; border-radius: 50%; 
+                                    style="width: 40px; height: 40px; border-radius: 50%; 
                                            background: linear-gradient(135deg, #667eea, #764ba2); border: 2px solid white; 
                                            color: white; display: flex; align-items: center; justify-content: center; 
                                            cursor: pointer; box-shadow: 0 2px 12px rgba(102, 126, 234, 0.4); 
@@ -5141,7 +5059,7 @@ function renderProductDetailBasic(product) {
     renderReviews([]);
 }
 
-// ✅ FIXED: RENDER PRODUCT DETAIL
+// ✅ FIXED: RENDER PRODUCT DETAIL (Full Version)
 function renderProductDetail(product) {
     console.log('🎨 Rendering full product detail:', product);
     document.getElementById('product-detail-title').textContent = product.name || 'Product';
@@ -5308,77 +5226,488 @@ function updateActiveDot() {
     }); 
 }
 
-// ✅ FIXED: RENDER VARIANTS
-function renderVariants(product) {
+// =======================================================
+// PROFESSIONAL EDIT MODE FEATURES
+// =======================================================
+
+let EDIT_DRAFT_PRODUCT = null;
+let DELETED_IMAGES = [];
+let NEW_EDIT_IMAGES = [];
+
+async function openProductEditModal(productId) {
+    const modalContainer = document.getElementById('product-edit-modal');
+    modalContainer.innerHTML = `
+        <div class="edit-modal-overlay">
+            <div class="edit-spinner" style="width: 50px; height: 50px; border-width: 4px; border-color: white; border-top-color: transparent;"></div>
+        </div>`;
+    modalContainer.style.display = 'block';
+
     try {
-        let variants = {};
-        
-        // ✅ FIXED: Better variant parsing
-        if (product.product_variants) {
-            if (typeof product.product_variants === 'string') {
-                try {
-                    variants = JSON.parse(product.product_variants);
-                } catch (e) {
-                    console.error('Failed to parse variants:', e);
-                    variants = {};
-                }
-            } else if (typeof product.product_variants === 'object') {
-                variants = product.product_variants;
-            }
+        // Fetch full product details including images and variants
+        const { data: product, error } = await sb
+            .from('products')
+            .select(`*, product_images(id, image_url, display_order)`)
+            .eq('id', productId)
+            .single();
+
+        if (error) throw error;
+
+        // Initialize Edit State
+        EDIT_DRAFT_PRODUCT = product;
+        DELETED_IMAGES = [];
+        NEW_EDIT_IMAGES = []; // Array of File objects
+
+        // Sort existing images
+        if (EDIT_DRAFT_PRODUCT.product_images) {
+            EDIT_DRAFT_PRODUCT.product_images.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
         }
-        
-        // ✅ SHOW COLORS
-        const colorSection = document.getElementById('color-section');
-        const colorSelector = document.getElementById('color-selector');
-        if (variants.colors && Array.isArray(variants.colors) && variants.colors.length > 0) {
-            colorSelector.innerHTML = variants.colors.map(color => {
-                const bgColor = getColorHex(color);
-                return `<div class="color-chip" style="background: ${bgColor};" onclick="selectVariant('color', '${color}', this)">
-                    <div class="checkmark">
-                        <span class="material-symbols-outlined" style="font-size: 14px; color: #25d078;">check</span>
-                    </div>
-                </div>`;
-            }).join('');
-            colorSection.classList.remove('hidden');
-        } else {
-            colorSection.classList.add('hidden');
-        }
-        
-        // ✅ SHOW SIZES
-        const sizeSection = document.getElementById('size-section');
-        const sizeSelector = document.getElementById('size-selector');
-        if (variants.sizes && Array.isArray(variants.sizes) && variants.sizes.length > 0) {
-            sizeSelector.innerHTML = variants.sizes.map(size => 
-                `<div class="variant-chip" onclick="selectVariant('size', '${size}', this)">${size}</div>`
-            ).join('');
-            sizeSection.classList.remove('hidden');
-        } else {
-            sizeSection.classList.add('hidden');
-        }
-        
-        // ✅ SHOW MATERIALS
-        const materialSection = document.getElementById('material-section');
-        const materialSelector = document.getElementById('material-selector');
-        if (variants.materials && Array.isArray(variants.materials) && variants.materials.length > 0) {
-            materialSelector.innerHTML = variants.materials.map(material => 
-                `<div class="variant-chip" onclick="selectVariant('material', '${material}', this)">${material}</div>`
-            ).join('');
-            materialSection.classList.remove('hidden');
-        } else {
-            materialSection.classList.add('hidden');
-        }
-        
+
+        renderEditModalHTML();
+
     } catch (error) {
-        console.error('Error rendering variants:', error);
-        document.getElementById('color-section').classList.add('hidden');
-        document.getElementById('size-section').classList.add('hidden');
-        document.getElementById('material-section').classList.add('hidden');
+        console.error("Error fetching product for edit:", error);
+        alert("Failed to load product details.");
+        closeEditModal();
     }
 }
 
+function closeEditModal() {
+    const modal = document.getElementById('product-edit-modal');
+    // Add fade out effect
+    const container = modal.querySelector('.edit-modal-container');
+    if(container) {
+        container.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.innerHTML = '';
+        }, 300);
+    } else {
+        modal.style.display = 'none';
+    }
+}
+
+function renderEditModalHTML() {
+    const p = EDIT_DRAFT_PRODUCT;
+    const variants = typeof p.product_variants === 'string' ? JSON.parse(p.product_variants || '{}') : p.product_variants || {};
+    
+    // Parse variants safe defaults
+    const colors = variants.colors || [];
+    const sizes = variants.sizes || [];
+    const materials = variants.materials || [];
+
+    const modalContainer = document.getElementById('product-edit-modal');
+    
+    const html = `
+    <div class="edit-modal-overlay" onclick="closeEditModal()">
+        <div class="edit-modal-container" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="edit-modal-header">
+                <h2 class="edit-modal-title">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    Edit Product
+                </h2>
+                <button class="edit-modal-close" onclick="closeEditModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="edit-modal-body">
+                <!-- Section 1: Basic Info -->
+                <div class="edit-form-section">
+                    <div class="edit-section-header">
+                        <div class="edit-section-icon">
+                            <span class="material-symbols-outlined">label</span>
+                        </div>
+                        <h3 class="edit-section-title">Basic Information</h3>
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Product Name <span class="required">*</span></label>
+                        <input type="text" id="edit-name" class="edit-form-input" value="${p.name.replace(/"/g, '&quot;')}" placeholder="e.g. Mens Cotton Shirt">
+                    </div>
+
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label class="edit-form-label">Price (Selling) <span class="required">*</span></label>
+                            <input type="number" id="edit-price" class="edit-form-input" value="${p.selling_price}" placeholder="0">
+                        </div>
+                        <div class="edit-form-group">
+                            <label class="edit-form-label">Stock Quantity</label>
+                            <input type="number" id="edit-stock" class="edit-form-input" value="${p.total_stock}" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Images -->
+                <div class="edit-form-section">
+                    <div class="edit-section-header">
+                        <div class="edit-section-icon">
+                            <span class="material-symbols-outlined">imagesmode</span>
+                        </div>
+                        <h3 class="edit-section-title">Product Images</h3>
+                    </div>
+                    
+                    <div class="edit-image-upload-container" id="edit-image-list">
+                        ${renderEditImagesHTML()}
+                        
+                        <!-- Add Button -->
+                        <div class="edit-image-upload-btn" onclick="document.getElementById('edit-file-input').click()">
+                            <span class="material-symbols-outlined">add_photo_alternate</span>
+                            <span>Add Photo</span>
+                            <input type="file" id="edit-file-input" hidden accept="image/*" multiple onchange="handleEditFiles(this)">
+                        </div>
+                    </div>
+                    <p class="edit-form-hint">Tap 'Add Photo' to upload new images. Tap trash icon to remove.</p>
+                </div>
+
+                <!-- Section 3: Description -->
+                <div class="edit-form-section">
+                    <div class="edit-section-header">
+                        <div class="edit-section-icon">
+                            <span class="material-symbols-outlined">description</span>
+                        </div>
+                        <h3 class="edit-section-title">Description</h3>
+                    </div>
+                    
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Short Description (Usage)</label>
+                        <input type="text" id="edit-short-desc" class="edit-form-input" value="${(p.description || '').replace(/"/g, '&quot;')}" placeholder="Brief summary or usage instructions">
+                    </div>
+
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Full Details</label>
+                        <textarea id="edit-full-desc" class="edit-form-textarea" placeholder="Detailed product information...">${p.full_description || ''}</textarea>
+                    </div>
+                </div>
+
+                <!-- Section 4: Pricing & Offers -->
+                <div class="edit-form-section">
+                    <div class="edit-section-header">
+                        <div class="edit-section-icon">
+                            <span class="material-symbols-outlined">local_offer</span>
+                        </div>
+                        <h3 class="edit-section-title">Offers & Cost</h3>
+                    </div>
+
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label class="edit-form-label">Original Price (Before Discount)</label>
+                            <input type="number" id="edit-orig-price" class="edit-form-input" value="${p.original_price || ''}" placeholder="Optional">
+                        </div>
+                        <div class="edit-form-group">
+                            <label class="edit-form-label">Buying Price (Cost)</label>
+                            <input type="number" id="edit-cost" class="edit-form-input" value="${p.cost_price || ''}" placeholder="For your eyes only">
+                        </div>
+                    </div>
+
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Discount Percentage</label>
+                        <div class="edit-discount-group">
+                            <input type="number" id="edit-discount" class="edit-form-input" value="${p.discount_percent || ''}" placeholder="e.g. 20" max="100" oninput="updateDiscountPreview()">
+                            <div class="edit-discount-preview" id="edit-discount-badge">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span id="discount-val">${p.discount_percent || 0}% OFF</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Variants -->
+                <div class="edit-form-section">
+                    <div class="edit-section-header">
+                        <div class="edit-section-icon">
+                            <span class="material-symbols-outlined">tune</span>
+                        </div>
+                        <h3 class="edit-section-title">Variants</h3>
+                    </div>
+
+                    <!-- Colors -->
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Colors</label>
+                        <div class="edit-variants-list" id="edit-colors-list">
+                            ${colors.map(c => renderVariantItem('color', c)).join('')}
+                        </div>
+                        <button class="edit-add-variant-btn" onclick="addEditVariantField('color')" style="margin-top: 8px;">
+                            <span class="material-symbols-outlined">add</span> Add Color
+                        </button>
+                    </div>
+
+                    <!-- Sizes -->
+                    <div class="edit-form-group">
+                        <label class="edit-form-label">Sizes</label>
+                        <div class="edit-variants-list" id="edit-sizes-list">
+                            ${sizes.map(s => renderVariantItem('size', s)).join('')}
+                        </div>
+                        <button class="edit-add-variant-btn" onclick="addEditVariantField('size')" style="margin-top: 8px;">
+                            <span class="material-symbols-outlined">add</span> Add Size
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div class="edit-modal-actions">
+                <button class="edit-btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="edit-btn-save" onclick="saveProductChanges()">
+                    <span class="material-symbols-outlined">save</span> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    modalContainer.innerHTML = html;
+}
+
+// --- Edit Helper Functions ---
+
+function renderEditImagesHTML() {
+    let html = '';
+    
+    // Existing DB Images
+    if (EDIT_DRAFT_PRODUCT.image_path) {
+        const url = getProductImage(EDIT_DRAFT_PRODUCT); // Helper from main code
+        if (!DELETED_IMAGES.includes('main')) {
+            html += `
+            <div class="edit-image-preview-wrapper" id="img-main">
+                <img src="${url}" class="edit-image-preview">
+                <button class="edit-image-remove-btn" onclick="markImageForDeletion('main', null)">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+                <span style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.5); color:white; font-size:10px; text-align:center; padding:2px;">Main</span>
+            </div>`;
+        }
+    }
+
+    if (EDIT_DRAFT_PRODUCT.product_images) {
+        EDIT_DRAFT_PRODUCT.product_images.forEach(img => {
+            if (!DELETED_IMAGES.includes(img.id)) {
+                html += `
+                <div class="edit-image-preview-wrapper" id="img-${img.id}">
+                    <img src="${img.image_url}" class="edit-image-preview">
+                    <button class="edit-image-remove-btn" onclick="markImageForDeletion('${img.id}', null)">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>`;
+            }
+        });
+    }
+
+    // New Pending Images
+    NEW_EDIT_IMAGES.forEach((file, index) => {
+        const objectUrl = URL.createObjectURL(file);
+        html += `
+        <div class="edit-image-preview-wrapper" id="new-img-${index}">
+            <img src="${objectUrl}" class="edit-image-preview">
+            <button class="edit-image-remove-btn" onclick="removeNewEditImage(${index})">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <span style="position:absolute; top:0; left:0; background:#25d078; color:white; font-size:10px; padding:2px 6px; border-radius:0 0 8px 0;">New</span>
+        </div>`;
+    });
+
+    return html;
+}
+
+function handleEditFiles(input) {
+    if (input.files && input.files.length > 0) {
+        Array.from(input.files).forEach(file => {
+            if (file.size > 5 * 1024 * 1024) {
+                alert(`File ${file.name} is too large (Max 5MB)`);
+            } else {
+                NEW_EDIT_IMAGES.push(file);
+            }
+        });
+        refreshImagesSection();
+    }
+    input.value = ''; // Reset
+}
+
+function refreshImagesSection() {
+    const container = document.getElementById('edit-image-list');
+    // Keep the upload button, replace the rest
+    const uploadBtn = container.querySelector('.edit-image-upload-btn');
+    container.innerHTML = renderEditImagesHTML();
+    container.appendChild(uploadBtn);
+}
+
+function markImageForDeletion(id, element) {
+    if(confirm('Remove this image?')) {
+        DELETED_IMAGES.push(id);
+        refreshImagesSection();
+    }
+}
+
+function removeNewEditImage(index) {
+    NEW_EDIT_IMAGES.splice(index, 1);
+    refreshImagesSection();
+}
+
+function renderVariantItem(type, value) {
+    return `
+    <div class="edit-variant-item">
+        <input type="text" class="edit-variant-input ${type}-input" value="${value}" placeholder="Value">
+        <button class="edit-variant-remove-btn" onclick="this.parentElement.remove()">
+            <span class="material-symbols-outlined">delete</span>
+        </button>
+    </div>`;
+}
+
+function addEditVariantField(type) {
+    const list = document.getElementById(`edit-${type}s-list`);
+    const div = document.createElement('div');
+    div.innerHTML = renderVariantItem(type, '');
+    list.appendChild(div);
+    div.querySelector('input').focus();
+}
+
+function updateDiscountPreview() {
+    const val = document.getElementById('edit-discount').value;
+    document.getElementById('discount-val').innerText = (val || 0) + '% OFF';
+}
+
+// --- SAVE FUNCTION ---
+
+async function saveProductChanges() {
+    const btn = document.querySelector('.edit-btn-save');
+    const originalBtnContent = btn.innerHTML;
+    
+    // 1. Validate
+    const name = document.getElementById('edit-name').value.trim();
+    const price = document.getElementById('edit-price').value;
+    
+    if (!name || !price) {
+        alert('Product Name and Price are required.');
+        return;
+    }
+
+    // UI Loading State
+    btn.innerHTML = `<div class="edit-spinner"></div> Saving...`;
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const updates = {
+            name: name,
+            selling_price: parseFloat(price),
+            total_stock: parseInt(document.getElementById('edit-stock').value) || 0,
+            description: document.getElementById('edit-short-desc').value.trim(),
+            full_description: document.getElementById('edit-full-desc').value.trim(),
+            original_price: document.getElementById('edit-orig-price').value ? parseFloat(document.getElementById('edit-orig-price').value) : null,
+            cost_price: document.getElementById('edit-cost').value ? parseFloat(document.getElementById('edit-cost').value) : null,
+            discount_percent: document.getElementById('edit-discount').value ? parseInt(document.getElementById('edit-discount').value) : null
+        };
+
+        // Collect Variants
+        const colors = Array.from(document.querySelectorAll('.color-input')).map(i => i.value.trim()).filter(v => v);
+        const sizes = Array.from(document.querySelectorAll('.size-input')).map(i => i.value.trim()).filter(v => v);
+        
+        updates.product_variants = JSON.stringify({
+            colors: colors,
+            sizes: sizes,
+            materials: [] // Can extend later
+        });
+
+        // 2. Handle Database Update (Main Info)
+        const { error: updateError } = await sb
+            .from('products')
+            .update(updates)
+            .eq('id', EDIT_DRAFT_PRODUCT.id);
+
+        if (updateError) throw updateError;
+
+        // 3. Handle Images
+        
+        // A. Upload New Images
+        if (NEW_EDIT_IMAGES.length > 0) {
+            for (const file of NEW_EDIT_IMAGES) {
+                const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                
+                const { error: uploadError } = await sb.storage
+                    .from('post-images')
+                    .upload(fileName, file);
+                
+                if (!uploadError) {
+                    const publicUrl = sb.storage.from('post-images').getPublicUrl(fileName).data.publicUrl;
+                    
+                    // Insert into product_images
+                    await sb.from('product_images').insert({
+                        product_id: EDIT_DRAFT_PRODUCT.id,
+                        image_url: publicUrl,
+                        display_order: 10 // Append to end
+                    });
+                }
+            }
+        }
+
+        // B. Handle Deletions
+        if (DELETED_IMAGES.length > 0) {
+            // Check if main image is deleted
+            if (DELETED_IMAGES.includes('main')) {
+                // Clear main image path in products table
+                await sb.from('products').update({ image_path: null }).eq('id', EDIT_DRAFT_PRODUCT.id);
+            }
+            
+            // Delete from product_images table (filter out 'main' string)
+            const idsToDelete = DELETED_IMAGES.filter(id => id !== 'main');
+            if (idsToDelete.length > 0) {
+                await sb.from('product_images').delete().in('id', idsToDelete);
+            }
+        }
+
+        // 4. Success UI
+        showEditNotification('success', 'Changes saved successfully!');
+        closeEditModal();
+        
+        // Refresh Dashboard
+        loadDashboard();
+
+    } catch (error) {
+        console.error('Save failed:', error);
+        showEditNotification('error', 'Failed to save: ' + error.message);
+        btn.innerHTML = originalBtnContent;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+
+function showEditNotification(type, message) {
+    const el = document.createElement('div');
+    el.className = `edit-notification ${type}`;
+    el.innerHTML = `
+        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : 'error'}</span>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(el);
+    
+    // Auto remove
+    setTimeout(() => {
+        el.style.animation = 'slideOutRight 0.4s ease forwards';
+        setTimeout(() => el.remove(), 400);
+    }, 3000);
+}
+
+// --- HELPER TO GET HEX CODE (Used in Variants) ---
 function getColorHex(colorName) { 
-    const colors = { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Black': '#1f2937', 'White': '#f9fafb', 'Yellow': '#eab308', 'Purple': '#a855f7', 'Pink': '#ec4899', 'Orange': '#f97316', 'Brown': '#92400e' }; 
-    return colors[colorName] || '#9ca3af'; 
+    const colors = { 
+        'Red': '#ef4444', 
+        'Blue': '#3b82f6', 
+        'Green': '#22c55e', 
+        'Black': '#1f2937', 
+        'White': '#f9fafb', 
+        'Yellow': '#eab308', 
+        'Purple': '#a855f7', 
+        'Pink': '#ec4899', 
+        'Orange': '#f97316', 
+        'Brown': '#92400e',
+        'Grey': '#9ca3af',
+        'Gray': '#9ca3af',
+        'Navy': '#1e3a8a'
+    }; 
+    // Return known hex or default to a greyish placeholder if unknown
+    // Check if input is already a hex code
+    if (colorName && colorName.startsWith('#')) return colorName;
+    return colors[colorName] || '#e5e7eb'; 
 }
 
 function selectVariant(type, value, element) { 
@@ -5441,840 +5770,6 @@ async function orderProductViaWhatsApp() {
     const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
-}
-
-// =======================================================
-// CUSTOMER STOREFRONT FUNCTIONS (PUBLIC ACCESS)
-// =======================================================
-
-let CURRENT_MERCHANT_DATA = null;
-
-async function loadCustomerStorefrontBySlug(slug) {
-    console.log('🔍 Looking up merchant by slug:', slug);
-    IS_CUSTOMER_MODE = true;
-    try {
-        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('store_slug', slug.toLowerCase()).single();
-    if (merchantError || !merchant) {
-        console.error('Slug lookup error:', merchantError);
-        document.body.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 24px; background: #fafafa;"><div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f87171, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;"><span style="font-size: 60px;">😕</span></div><h1 style="font-size: 28px; font-weight: 800; color: #1f2937; margin-bottom: 12px;">Store Not Found</h1><p style="font-size: 16px; color: #6b7280; max-width: 400px; line-height: 1.6;">We couldn't find a store at <strong>/${slug}</strong>.<br>Please check the link and try again.</p><a href="/" style="margin-top: 24px; background: #25d078; color: white; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 700; display: inline-block;">Go Home</a></div>`;
-        return;
-    }
-    CUSTOMER_MERCHANT_ID = merchant.id;
-    console.log('✅ Found merchant:', merchant.business_name);
-    await loadCustomerStorefrontData(merchant);
-} catch (error) { console.error('❌ Slug lookup failed:', error); alert('Error loading store. Please try again.'); }
-}
-
-async function loadCustomerStorefront(merchantId) {
-    console.log('🛍️ Loading storefront for merchant ID:', merchantId);
-    IS_CUSTOMER_MODE = true; CUSTOMER_MERCHANT_ID = merchantId;
-    try {
-        const { data: merchant, error: merchantError } = await sb.from('profiles').select('id, business_name, whatsapp_number, phone_number, selected_template_id').eq('id', merchantId).single();
-        if (merchantError || !merchant) { throw new Error('Store not found'); }
-        await loadCustomerStorefrontData(merchant);
-    } catch (error) { console.error('❌ Merchant lookup error:', error); alert('Store not found. Please check the link.'); }
-}
-
-async function loadCustomerStorefrontData(merchant) {
-    CURRENT_MERCHANT_DATA = merchant;
-    // ✅ NEW: Apply selected template
-    if (merchant.selected_template_id) {
-        await applyTemplateToStorefront(merchant.selected_template_id);
-    }
-
-    const businessName = merchant.business_name || 'My Store';
-    const storeNameEl = document.getElementById('customer-store-name');
-    const heroStoreNameEl = document.getElementById('customer-hero-store-name');
-    if (storeNameEl) storeNameEl.innerText = businessName;
-    if (heroStoreNameEl) heroStoreNameEl.innerText = businessName;
-    typeWriterCustomer("Welcome to our store, you are our priority 🤍");
-
-    const slides = document.querySelectorAll('.hero-slide');
-    if (slides.length > 1) {
-        let currentSlide = 0; slides[0]?.classList.add('active');
-        setInterval(() => { slides[currentSlide]?.classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide]?.classList.add('active'); }, 5000);
-    }
-
-    const { data: products, error: productsError } = await sb.from('products').select(`id, name, description, selling_price, total_stock, image_path, product_images(image_url), product_variants, full_description, original_price, discount_percent`).eq('merchant_id', merchant.id).gt('total_stock', 0);
-    if (productsError) { console.error('Products error:', productsError); throw new Error(`Products fetch failed: ${productsError.message}`); }
-
-    const activeProducts = products?.filter(p => p.is_active !== false) || [];
-    const container = document.getElementById('customer-products-grid');
-    if (!container) throw new Error('Products container not found');
-    container.innerHTML = '';
-
-    if (activeProducts.length > 0) {
-        // Check if we need carousel (10+ products)
-        const useCarousel = activeProducts.length >= 10;
-        
-        if (useCarousel) {
-            // CAROUSEL MODE
-            container.style.display = 'block'; container.style.overflowX = 'auto'; container.style.scrollSnapType = 'x mandatory'; container.style.webkitOverflowScrolling = 'touch'; container.style.scrollbarWidth = 'none'; container.style.padding = '0 20px';
-            const carouselHTML = `<div style="display: flex; gap: 20px; padding-bottom: 20px;">${activeProducts.map((p, index) => {
-                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-                return `<div class="carousel-product-card" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')" style="min-width: 280px; max-width: 280px; scroll-snap-align: start; animation: fadeInUp 0.6s ease forwards; animation-delay: ${index * 0.05}s; opacity: 0;"><div class="modern-img-wrapper" style="border-radius: 16px;"><img src="${img}" class="modern-img" alt="${safeName}" style="border-radius: 16px;">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:12px; right:12px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:8px 14px; border-radius:50px; font-size:13px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); animation: badgeBounce 2s ease-in-out infinite;">🔥 -${p.discount_percent}% OFF</div>` : ''}</div><div class="modern-details" style="padding: 16px;"><h4 class="modern-title" style="font-size: 16px; margin-bottom: 8px;">${p.name}</h4><div style="display: flex; align-items: center; justify-content: space-between;"><p class="modern-price" style="font-size: 20px;">Tsh ${p.selling_price.toLocaleString()}</p>${p.original_price ? `<span style="font-size: 14px; color: #9ca3af; text-decoration: line-through;">Tsh ${p.original_price.toLocaleString()}</span>` : ''}</div></div></div>`;
-            }).join('')}</div><div style="text-align: center; padding: 16px 0; color: #9ca3af; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-outlined" style="font-size: 18px; animation: swipeAnimation 2s ease-in-out infinite;">swipe</span>Swipe to see more products</div>`;
-            container.innerHTML = carouselHTML;
-        } else {
-            // GRID MODE
-            container.style.display = 'grid'; container.style.overflowX = 'visible';
-            activeProducts.forEach((p, index) => {
-                const img = getProductImage(p); const safeName = (p.name || 'Product').replace(/'/g, "\\'"); const safeDesc = (p.description || '').replace(/'/g, "\\'");
-                let stockBadge = ''; if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>'; else if (p.total_stock <= 5) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-                const html = `<div class="customer-product-card" style="position: relative; animation-delay: ${index * 0.1}s">
-                    ${!IS_CUSTOMER_MODE ? `
-                        <button class="product-edit-btn" onclick="event.stopPropagation(); openProductEditModal('${p.id}')" title="Edit Product">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>
-                    ` : ''}
-                    <div onclick="${IS_CUSTOMER_MODE ? `openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')` : ''}" style="cursor: ${IS_CUSTOMER_MODE ? 'pointer' : 'default'}">
-                        <div class="modern-img-wrapper"><img src="${img}" class="modern-img" alt="${safeName}">${stockBadge}${p.discount_percent ? `<div style="position:absolute; top:10px; left:10px; background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:6px 12px; border-radius:50px; font-size:12px; font-weight:800; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">🔥 -${p.discount_percent}%</div>` : ''}</div>
-                        <div class="modern-details" style="padding: 16px;">
-                            <h4 class="modern-title">${p.name}</h4>
-                            <p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>`;
-                container.innerHTML += html;
-            });
-        }
-    } else {
-        container.innerHTML = `<div style="grid-column: 1/-1; padding:80px 20px; text-align:center; color:#94a3b8;"><div style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;"><span class="material-symbols-outlined" style="font-size:48px; color:#667eea;">inventory_2</span></div><p style="font-size:18px; font-weight:700; color:#64748b; margin-bottom: 8px;">No Products Available</p><p style="font-size:14px; color:#94a3b8;">Please check back later</p></div>`;
-    }
-    showScreen('customer-storefront', true);
-    if (window.amp) { amp.logEvent("Customer Storefront Visited", { merchant_id: merchant.id, merchant_name: businessName, products_count: activeProducts.length }); }
-}
-
-function contactMerchantWhatsApp() {
-    if (!CURRENT_MERCHANT_DATA) { alert('Contact information not available'); return; }
-    const phone = CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number;
-    if (!phone) { alert('WhatsApp number not available. Please contact the merchant directly.'); return; }
-    const message = `Hi! I'm interested in your products. Can you help me?`;
-    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    if (window.amp) { amp.logEvent("Customer Contact Merchant", { merchant_name: CURRENT_MERCHANT_DATA.business_name }); }
-}
-
-function typeWriterCustomer(text) {
-    const element = document.getElementById('customer-typewriter'); if (!element) return; let i = 0; element.textContent = "";
-    function type() { if (i < text.length) { element.textContent += text.charAt(i); i++; setTimeout(type, 80); } }
-    setTimeout(type, 500);
-}
-
-function scrollToProducts() {
-    const productsSection = document.getElementById('customer-products-section');
-    if (productsSection) { productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-}
-
-// =======================================================
-// EDIT MODE FUNCTIONS
-// =======================================================
-
-let CURRENT_EDIT_PRODUCT = null;
-let EDIT_PRODUCT_IMAGES = [];
-let EDIT_PRODUCT_VARIANTS = [];
-
-/**
- * Open Product Edit Modal
- */
-async function openProductEditModal(productId) {
-    console.log('✏️ Opening edit modal for product:', productId);
-    try {
-        // Show loading
-        showLoadingNotification('Loading product details...');
-        // Fetch full product details
-        const { data: product, error } = await sb
-            .from('products')
-            .select(`
-                id,
-                name,
-                description,
-                full_description,
-                selling_price,
-                original_price,
-                discount_percent,
-                total_stock,
-                image_path,
-                product_images(id, image_url),
-                product_variants
-            `)
-            .eq('id', productId)
-            .single();
-
-        if (error || !product) {
-            throw new Error('Failed to load product details');
-        }
-
-        CURRENT_EDIT_PRODUCT = product;
-        EDIT_PRODUCT_IMAGES = product.product_images || [];
-        EDIT_PRODUCT_VARIANTS = product.product_variants || [];
-
-        // Render edit modal
-        renderEditModal(product);
-
-        // Hide loading
-        hideLoadingNotification();
-
-        // Analytics
-        if (window.amp) {
-            amp.logEvent("Product Edit Modal Opened", {
-                product_id: productId,
-                product_name: product.name
-            });
-        }
-    } catch (error) {
-        console.error('❌ Error opening edit modal:', error);
-        hideLoadingNotification();
-        showNotification('Failed to load product details', 'error');
-    }
-}
-
-/**
- * Render Edit Modal
- */
-function renderEditModal(product) {
-    const modal = document.getElementById('product-edit-modal');
-    if (!modal) return;
-
-    const modalHTML = `
-    <div class="edit-modal-overlay" onclick="handleModalOverlayClick(event)">
-        <div class="edit-modal-container">
-            <!-- Header -->
-            <div class="edit-modal-header">
-                <h2 class="edit-modal-title">
-                    <span class="material-symbols-outlined">edit_note</span>
-                    Edit Product
-                </h2>
-                <button class="edit-modal-close" onclick="closeProductEditModal()">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="edit-modal-body">
-                <!-- Basic Information -->
-                <div class="edit-form-section">
-                    <div class="edit-section-header">
-                        <div class="edit-section-icon">
-                            <span class="material-symbols-outlined">info</span>
-                        </div>
-                        <h3 class="edit-section-title">Basic Information</h3>
-                    </div>
-                    
-                    <div class="edit-form-group">
-                        <label class="edit-form-label">
-                            Product Name <span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="edit-product-name" 
-                            class="edit-form-input"
-                            value="${product.name || ''}"
-                            placeholder="Enter product name"
-                            required
-                        >
-                    </div>
-
-                    <div class="edit-form-group">
-                        <label class="edit-form-label">
-                            Short Description (Maelezo ya Matunizi)
-                        </label>
-                        <textarea 
-                            id="edit-product-description" 
-                            class="edit-form-textarea"
-                            placeholder="Brief product description for customers..."
-                        >${product.description || ''}</textarea>
-                        <p class="edit-form-hint">This appears on the product card</p>
-                    </div>
-
-                    <div class="edit-form-group">
-                        <label class="edit-form-label">
-                            Full Description (Maelezo ya Bidhaa)
-                        </label>
-                        <textarea 
-                            id="edit-product-full-description" 
-                            class="edit-form-textarea"
-                            placeholder="Detailed product description, features, specifications..."
-                            style="min-height: 160px;"
-                        >${product.full_description || ''}</textarea>
-                        <p class="edit-form-hint">Detailed information shown on product detail page</p>
-                    </div>
-                </div>
-
-                <!-- Pricing -->
-                <div class="edit-form-section">
-                    <div class="edit-section-header">
-                        <div class="edit-section-icon">
-                            <span class="material-symbols-outlined">payments</span>
-                        </div>
-                        <h3 class="edit-section-title">Pricing & Stock</h3>
-                    </div>
-                    
-                    <div class="edit-form-row">
-                        <div class="edit-form-group">
-                            <label class="edit-form-label">
-                                Selling Price (Tsh) <span class="required">*</span>
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-selling-price" 
-                                class="edit-form-input"
-                                value="${product.selling_price || 0}"
-                                min="0"
-                                step="100"
-                                placeholder="0"
-                                required
-                            >
-                        </div>
-
-                        <div class="edit-form-group">
-                            <label class="edit-form-label">
-                                Original Price (Tsh)
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-original-price" 
-                                class="edit-form-input"
-                                value="${product.original_price || ''}"
-                                min="0"
-                                step="100"
-                                placeholder="Leave empty if no discount"
-                                oninput="calculateDiscount()"
-                            >
-                            <p class="edit-form-hint">For showing strikethrough price</p>
-                        </div>
-                    </div>
-
-                    <div class="edit-form-row">
-                        <div class="edit-form-group">
-                            <label class="edit-form-label">
-                                Stock Quantity <span class="required">*</span>
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-stock" 
-                                class="edit-form-input"
-                                value="${product.total_stock || 0}"
-                                min="0"
-                                placeholder="0"
-                                required
-                            >
-                        </div>
-
-                        <div class="edit-form-group">
-                            <label class="edit-form-label">
-                                Discount %
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-discount-percent" 
-                                class="edit-form-input"
-                                value="${product.discount_percent || ''}"
-                                min="0"
-                                max="100"
-                                placeholder="0"
-                                readonly
-                            >
-                            <p class="edit-form-hint">Auto-calculated from prices</p>
-                        </div>
-                    </div>
-
-                    ${product.discount_percent ? `
-                        <div class="edit-discount-preview">
-                            <span>🔥</span>
-                            <span id="discount-preview-text">-${product.discount_percent}% OFF</span>
-                        </div>
-                    ` : '<div id="discount-preview-container"></div>'}
-                </div>
-
-                <!-- Images -->
-                <div class="edit-form-section">
-                    <div class="edit-section-header">
-                        <div class="edit-section-icon">
-                            <span class="material-symbols-outlined">image</span>
-                        </div>
-                        <h3 class="edit-section-title">Product Images</h3>
-                    </div>
-                    
-                    <div class="edit-form-group">
-                        <label class="edit-form-label">Main Image</label>
-                        <div class="edit-image-upload-container">
-                            ${product.image_path ? `
-                                <div class="edit-image-preview-wrapper">
-                                    <img src="${product.image_path}" class="edit-image-preview" alt="Main image">
-                                    <button class="edit-image-remove-btn" onclick="removeMainImage()" title="Remove">
-                                        <span class="material-symbols-outlined">close</span>
-                                    </button>
-                                </div>
-                            ` : ''}
-                            <label class="edit-image-upload-btn" for="edit-main-image-input">
-                                <span class="material-symbols-outlined">add_photo_alternate</span>
-                                <span>Upload Main</span>
-                            </label>
-                            <input 
-                                type="file" 
-                                id="edit-main-image-input" 
-                                accept="image/*" 
-                                style="display: none;"
-                                onchange="handleMainImageUpload(event)"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="edit-form-group">
-                        <label class="edit-form-label">Additional Images</label>
-                        <div class="edit-image-upload-container" id="additional-images-container">
-                            ${EDIT_PRODUCT_IMAGES.map((img, index) => `
-                                <div class="edit-image-preview-wrapper" data-image-id="${img.id}">
-                                    <img src="${img.image_url}" class="edit-image-preview" alt="Additional image">
-                                    <button class="edit-image-remove-btn" onclick="removeAdditionalImage('${img.id}')" title="Remove">
-                                        <span class="material-symbols-outlined">close</span>
-                                    </button>
-                                </div>
-                            `).join('')}
-                            <label class="edit-image-upload-btn" for="edit-additional-images-input">
-                                <span class="material-symbols-outlined">add_photo_alternate</span>
-                                <span>Add More</span>
-                            </label>
-                            <input 
-                                type="file" 
-                                id="edit-additional-images-input" 
-                                accept="image/*" 
-                                multiple
-                                style="display: none;"
-                                onchange="handleAdditionalImagesUpload(event)"
-                            >
-                        </div>
-                        <p class="edit-form-hint">You can upload up to 5 additional images</p>
-                    </div>
-                </div>
-
-                <!-- Variants -->
-                <div class="edit-form-section">
-                    <div class="edit-section-header">
-                        <div class="edit-section-icon">
-                            <span class="material-symbols-outlined">tune</span>
-                        </div>
-                        <h3 class="edit-section-title">Product Variants</h3>
-                    </div>
-                    
-                    <div class="edit-variants-list" id="edit-variants-list">
-                        ${renderVariantsHTML()}
-                    </div>
-                    <button class="edit-add-variant-btn" onclick="addVariant()">
-                        <span class="material-symbols-outlined">add</span>
-                        <span>Add Variant</span>
-                    </button>
-                    <p class="edit-form-hint">e.g., Small, Medium, Large or Red, Blue, Green</p>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="edit-modal-actions">
-                <button class="edit-btn-cancel" onclick="closeProductEditModal()">
-                    <span class="material-symbols-outlined">close</span>
-                    <span>Cancel</span>
-                </button>
-                <button class="edit-btn-save" onclick="saveProductChanges()" id="save-product-btn">
-                    <span class="material-symbols-outlined">check</span>
-                    <span>Save Changes</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    `;
-
-    modal.innerHTML = modalHTML;
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-/**
- * Render Variants HTML
- */
-function renderVariantsHTML() {
-    if (!EDIT_PRODUCT_VARIANTS || EDIT_PRODUCT_VARIANTS.length === 0) {
-        return '<p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 20px;">No variants added yet</p>';
-    }
-    return EDIT_PRODUCT_VARIANTS.map((variant, index) =>
-        `<div class="edit-variant-item"> <input type="text" class="edit-variant-input" value="${variant}" placeholder="Variant name" onchange="updateVariant(${index}, this.value)" > <button class="edit-variant-remove-btn" onclick="removeVariant(${index})"> <span class="material-symbols-outlined">delete</span> </button> </div>`
-    ).join('');
-}
-
-/**
- * Add Variant
- */
-function addVariant() {
-    EDIT_PRODUCT_VARIANTS.push('');
-    document.getElementById('edit-variants-list').innerHTML = renderVariantsHTML();
-    // Focus on new input
-    const inputs = document.querySelectorAll('.edit-variant-input');
-    if (inputs.length > 0) {
-        inputs[inputs.length - 1].focus();
-    }
-}
-
-/**
- * Update Variant
- */
-function updateVariant(index, value) {
-    EDIT_PRODUCT_VARIANTS[index] = value;
-}
-
-/**
- * Remove Variant
- */
-function removeVariant(index) {
-    EDIT_PRODUCT_VARIANTS.splice(index, 1);
-    document.getElementById('edit-variants-list').innerHTML = renderVariantsHTML();
-}
-
-/**
- * Calculate Discount Percentage
- */
-function calculateDiscount() {
-    const sellingPrice = parseFloat(document.getElementById('edit-selling-price')?.value) || 0;
-    const originalPrice = parseFloat(document.getElementById('edit-original-price')?.value) || 0;
-    if (originalPrice > 0 && sellingPrice > 0 && originalPrice > sellingPrice) {
-        const discount = Math.round(((originalPrice - sellingPrice) / originalPrice) * 100);
-        document.getElementById('edit-discount-percent').value = discount;
-
-        // Update preview
-        const previewContainer = document.getElementById('discount-preview-container');
-        if (previewContainer) {
-            previewContainer.innerHTML = `
-                <div class="edit-discount-preview">
-                    <span>🔥</span>
-                    <span id="discount-preview-text">-${discount}% OFF</span>
-                </div>
-            `;
-        } else {
-            const previewText = document.getElementById('discount-preview-text');
-            if (previewText) {
-                previewText.textContent = `-${discount}% OFF`;
-            }
-        }
-    } else {
-        document.getElementById('edit-discount-percent').value = '';
-        const previewContainer = document.getElementById('discount-preview-container');
-        if (previewContainer) {
-            previewContainer.innerHTML = '';
-        }
-    }
-}
-
-/**
- * Handle Main Image Upload
- */
-async function handleMainImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        showNotification('Please select a valid image file', 'error');
-        return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-        showNotification('Image size must be less than 5MB', 'error');
-        return;
-    }
-    showLoadingNotification('Uploading image...');
-    try {
-        const { data: { user } } = await sb.auth.getUser();
-        const fileName = `${user.id}/${Date.now()}_${file.name}`;
-        const { data, error } = await sb.storage
-            .from('product-images')
-            .upload(fileName, file);
-
-        if (error) throw error;
-
-        const { data: { publicUrl } } = sb.storage
-            .from('product-images')
-            .getPublicUrl(fileName);
-
-        CURRENT_EDIT_PRODUCT.image_path = publicUrl;
-        
-        // Re-render modal
-        renderEditModal(CURRENT_EDIT_PRODUCT);
-        
-        hideLoadingNotification();
-        showNotification('Image uploaded successfully', 'success');
-    } catch (error) {
-        console.error('Image upload error:', error);
-        hideLoadingNotification();
-        showNotification('Failed to upload image', 'error');
-    }
-}
-
-/**
- * Handle Additional Images Upload
- */
-async function handleAdditionalImagesUpload(event) {
-    const files = Array.from(event.target.files);
-    if (files.length === 0) return;
-    if (EDIT_PRODUCT_IMAGES.length + files.length > 5) {
-        showNotification('Maximum 5 additional images allowed', 'error');
-        return;
-    }
-    showLoadingNotification('Uploading images...');
-    try {
-        const { data: { user } } = await sb.auth.getUser();
-
-        for (const file of files) {
-            if (!file.type.startsWith('image/')) continue;
-            if (file.size > 5 * 1024 * 1024) continue;
-
-            const fileName = `${user.id}/${Date.now()}_${file.name}`;
-            
-            const { data, error } = await sb.storage
-                .from('product-images')
-                .upload(fileName, file);
-
-            if (error) throw error;
-
-            const { data: { publicUrl } } = sb.storage
-                .from('product-images')
-                .getPublicUrl(fileName);
-
-            EDIT_PRODUCT_IMAGES.push({
-                id: `temp_${Date.now()}_${Math.random()}`,
-                image_url: publicUrl
-            });
-        }
-        
-        // Re-render additional images section
-        const container = document.getElementById('additional-images-container');
-        container.innerHTML = `
-            ${EDIT_PRODUCT_IMAGES.map((img, index) => `
-                <div class="edit-image-preview-wrapper" data-image-id="${img.id}">
-                    <img src="${img.image_url}" class="edit-image-preview" alt="Additional image">
-                    <button class="edit-image-remove-btn" onclick="removeAdditionalImage('${img.id}')" title="Remove">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-            `).join('')}
-            <label class="edit-image-upload-btn" for="edit-additional-images-input">
-                <span class="material-symbols-outlined">add_photo_alternate</span>
-                <span>Add More</span>
-            </label>
-            <input 
-                type="file" 
-                id="edit-additional-images-input" 
-                accept="image/*" 
-                multiple
-                style="display: none;"
-                onchange="handleAdditionalImagesUpload(event)"
-            >
-        `;
-        
-        hideLoadingNotification();
-        showNotification('Images uploaded successfully', 'success');
-    } catch (error) {
-        console.error('Images upload error:', error);
-        hideLoadingNotification();
-        showNotification('Failed to upload images', 'error');
-    }
-}
-
-/**
- * Remove Main Image
- */
-function removeMainImage() {
-    if (!confirm('Are you sure you want to remove the main image?')) return;
-    CURRENT_EDIT_PRODUCT.image_path = null;
-    renderEditModal(CURRENT_EDIT_PRODUCT);
-}
-
-/**
- * Remove Additional Image
- */
-function removeAdditionalImage(imageId) {
-    EDIT_PRODUCT_IMAGES = EDIT_PRODUCT_IMAGES.filter(img => img.id !== imageId);
-    // Remove from DOM
-    const element = document.querySelector(`[data-image-id="${imageId}"]`);
-    if (element) {
-        element.style.animation = 'fadeOut 0.3s ease forwards';
-        setTimeout(() => element.remove(), 300);
-    }
-}
-
-/**
- * Save Product Changes
- */
-async function saveProductChanges() {
-    console.log('💾 Saving product changes...');
-    // Get form values
-    const name = document.getElementById('edit-product-name')?.value.trim();
-    const description = document.getElementById('edit-product-description')?.value.trim();
-    const fullDescription = document.getElementById('edit-product-full-description')?.value.trim();
-    const sellingPrice = parseFloat(document.getElementById('edit-selling-price')?.value) || 0;
-    const originalPrice = parseFloat(document.getElementById('edit-original-price')?.value) || null;
-    const stock = parseInt(document.getElementById('edit-stock')?.value) || 0;
-    const discountPercent = parseInt(document.getElementById('edit-discount-percent')?.value) || null;
-    
-    // Validation
-    if (!name) {
-        showNotification('Please enter product name', 'error');
-        document.getElementById('edit-product-name')?.focus();
-        return;
-    }
-    if (sellingPrice <= 0) {
-        showNotification('Please enter a valid selling price', 'error');
-        document.getElementById('edit-selling-price')?.focus();
-        return;
-    }
-    
-    // Show loading
-    const saveBtn = document.getElementById('save-product-btn');
-    saveBtn.classList.add('loading');
-    saveBtn.innerHTML = '<div class="edit-spinner"></div><span>Saving...</span>';
-    saveBtn.disabled = true;
-    
-    try {
-        // Update product in database
-        const { error: updateError } = await sb
-            .from('products')
-            .update({
-                name,
-                description,
-                full_description: fullDescription,
-                selling_price: sellingPrice,
-                original_price: originalPrice,
-                discount_percent: discountPercent,
-                total_stock: stock,
-                image_path: CURRENT_EDIT_PRODUCT.image_path,
-                product_variants: EDIT_PRODUCT_VARIANTS.filter(v => v.trim() !== ''),
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', CURRENT_EDIT_PRODUCT.id);
-        
-        if (updateError) throw updateError;
-
-        // Handle additional images
-        // First, delete old images that were removed
-        const oldImageIds = CURRENT_EDIT_PRODUCT.product_images?.map(img => img.id) || [];
-        const newImageIds = EDIT_PRODUCT_IMAGES.map(img => img.id).filter(id => !id.startsWith('temp_'));
-        const imagesToDelete = oldImageIds.filter(id => !newImageIds.includes(id));
-
-        if (imagesToDelete.length > 0) {
-            await sb.from('product_images').delete().in('id', imagesToDelete);
-        }
-
-        // Insert new images
-        const newImages = EDIT_PRODUCT_IMAGES.filter(img => img.id.startsWith('temp_'));
-        if (newImages.length > 0) {
-            const { error: imagesError } = await sb
-                .from('product_images')
-                .insert(
-                    newImages.map(img => ({
-                        product_id: CURRENT_EDIT_PRODUCT.id,
-                        image_url: img.image_url
-                    }))
-                );
-
-            if (imagesError) console.error('Images insert error:', imagesError);
-        }
-
-        // Success!
-        showNotification('Product updated successfully! 🎉', 'success');
-        
-        // Close modal
-        setTimeout(() => {
-            closeProductEditModal();
-            // Reload products
-            loadDashboard();
-        }, 1500);
-
-        // Analytics
-        if (window.amp) {
-            amp.logEvent("Product Updated", {
-                product_id: CURRENT_EDIT_PRODUCT.id,
-                product_name: name
-            });
-        }
-    
-    } catch (error) {
-        console.error('❌ Error saving product:', error);
-        showNotification('Failed to save changes. Please try again.', 'error');
-        // Reset button
-        saveBtn.classList.remove('loading');
-        saveBtn.innerHTML = '<span class="material-symbols-outlined">check</span><span>Save Changes</span>';
-        saveBtn.disabled = false;
-    }
-}
-
-/**
- * Close Edit Modal
- */
-function closeProductEditModal() {
-    const modal = document.getElementById('product-edit-modal');
-    if (!modal) return;
-    // Animate out
-    const overlay = modal.querySelector('.edit-modal-overlay');
-    if (overlay) {
-        overlay.style.animation = 'fadeOut 0.3s ease forwards';
-        setTimeout(() => {
-            modal.style.display = 'none';
-            modal.innerHTML = '';
-            document.body.style.overflow = '';
-            CURRENT_EDIT_PRODUCT = null;
-            EDIT_PRODUCT_IMAGES = [];
-            EDIT_PRODUCT_VARIANTS = [];
-        }, 300);
-    }
-}
-
-/**
- * Handle Modal Overlay Click
- */
-function handleModalOverlayClick(event) {
-    if (event.target.classList.contains('edit-modal-overlay')) {
-        if (confirm('Are you sure you want to close? Any unsaved changes will be lost.')) {
-            closeProductEditModal();
-        }
-    }
-}
-
-/**
- * Show Notification
- */
-function showNotification(message, type = 'success') {
-    // Remove existing notification
-    const existing = document.querySelector('.edit-notification');
-    if (existing) existing.remove();
-    const notification = document.createElement('div');
-    notification.className = `edit-notification ${type}`;
-    notification.innerHTML = `<span class="material-symbols-outlined"> ${type === 'success' ? 'check_circle' : 'error'} </span> <span>${message}</span>`;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.4s ease forwards';
-        setTimeout(() => notification.remove(), 400);
-    }, 3000);
-}
-
-/**
- * Show Loading Notification
- */
-let LOADING_NOTIFICATION = null;
-function showLoadingNotification(message) {
-    hideLoadingNotification();
-    LOADING_NOTIFICATION = document.createElement('div');
-    LOADING_NOTIFICATION.className = 'edit-notification';
-    LOADING_NOTIFICATION.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
-    LOADING_NOTIFICATION.innerHTML = `
-        <div class="edit-spinner"></div>
-        <span>${message}</span>
-    `;
-
-    document.body.appendChild(LOADING_NOTIFICATION);
-}
-
-function hideLoadingNotification() {
-    if (LOADING_NOTIFICATION) {
-        LOADING_NOTIFICATION.remove();
-        LOADING_NOTIFICATION = null;
-    }
 }
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); } 
