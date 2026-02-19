@@ -3061,6 +3061,703 @@
     white-space: nowrap;
 }
 
+/* =========================================
+   ANALYTICS SCREEN STYLES
+   ========================================= */
+
+#step-analytics {
+    background: #f0fdf4;
+}
+
+.analytics-header {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+    padding: 20px 20px 28px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+}
+
+.analytics-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.analytics-header-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.analytics-header-sub {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 2px;
+}
+
+.analytics-live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.live-dot {
+    width: 8px; height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.analytics-hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.analytics-hero-stat {
+    background: rgba(255,255,255,0.13);
+    border-radius: 14px;
+    padding: 12px 10px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.analytics-hero-num {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.analytics-hero-label {
+    font-size: 10px;
+    opacity: 0.8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.analytics-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Metric Cards */
+.analytics-card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.analytics-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.analytics-card-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-card-title .ac-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.ac-icon-green { background: #dcfce7; color: #16a34a; }
+.ac-icon-blue  { background: #dbeafe; color: #2563eb; }
+.ac-icon-purple{ background: #ede9fe; color: #7c3aed; }
+.ac-icon-orange{ background: #fed7aa; color: #ea580c; }
+
+.analytics-period-badge {
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+/* Big number metric */
+.analytics-big-metric {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.analytics-big-num {
+    font-size: 38px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.analytics-trend {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+}
+
+.trend-up   { background: #dcfce7; color: #16a34a; }
+.trend-down { background: #fee2e2; color: #dc2626; }
+.trend-neutral { background: #f1f5f9; color: #64748b; }
+
+.analytics-sub-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+/* Mini bar chart */
+.mini-bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 48px;
+    margin-top: 4px;
+}
+
+.mini-bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    background: #dcfce7;
+    transition: height 0.5s ease;
+    min-height: 4px;
+    position: relative;
+}
+
+.mini-bar.highlight { background: #16a34a; }
+
+.mini-bar-labels {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.mini-bar-label {
+    flex: 1;
+    text-align: center;
+    font-size: 9px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+/* Conversion rate ring */
+.conversion-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.conversion-ring {
+    position: relative;
+    width: 80px; height: 80px;
+    flex-shrink: 0;
+}
+
+.conversion-ring svg {
+    transform: rotate(-90deg);
+}
+
+.ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 8; }
+.ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+
+.ring-center-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.ring-pct {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.ring-pct-label {
+    font-size: 9px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.conversion-breakdown {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.conv-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.conv-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.conv-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.conv-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* Top products list */
+.top-products-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.top-product-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.top-product-rank {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.top-product-rank.gold   { background: #fef9c3; color: #ca8a04; }
+.top-product-rank.silver { background: #f1f5f9; color: #475569; }
+.top-product-rank.bronze { background: #fed7aa; color: #c2410c; }
+
+.top-product-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.top-product-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-product-clicks {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.top-product-bar-wrap {
+    width: 60px;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.top-product-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #25d078, #16a34a);
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+/* Time filter tabs */
+.analytics-filter-tabs {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 4px;
+}
+
+.analytics-filter-tab {
+    flex: 1;
+    text-align: center;
+    padding: 7px 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.analytics-filter-tab.active {
+    background: white;
+    color: #16a34a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Refresh button */
+.analytics-refresh-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.analytics-refresh-btn:active {
+    background: rgba(255,255,255,0.15);
+    transform: rotate(180deg);
+}
+
+.analytics-refresh-btn .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Empty state */
+.analytics-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+}
+
+.analytics-empty .material-symbols-outlined {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 12px;
+    display: block;
+}
+
+/* Loading skeleton */
+.analytics-skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* =========================================
+   SMART STOREFRONT PRODUCT LAYOUT
+   ========================================= */
+
+/* Featured carousel card */
+.featured-card {
+    flex-shrink: 0;
+    width: 200px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+}
+
+.featured-card:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.featured-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.featured-card-body {
+    padding: 12px;
+}
+
+.featured-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+}
+
+.featured-card-price {
+    font-size: 15px;
+    font-weight: 800;
+    color: #16a34a;
+}
+
+.featured-card-orig {
+    font-size: 11px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #25d078, #16a34a);
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.featured-discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ef4444;
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+/* Grid product card (2-column) */
+.grid-product-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: transform 0.2s ease;
+    position: relative;
+}
+
+.grid-product-card:active {
+    transform: scale(0.97);
+}
+
+.grid-product-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f8fafc;
+    position: relative;
+}
+
+.grid-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.grid-product-card:hover .grid-product-img {
+    transform: scale(1.04);
+}
+
+.grid-product-body {
+    padding: 10px 10px 12px;
+}
+
+.grid-product-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.grid-product-price {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.grid-product-orig-price {
+    font-size: 10px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.grid-discount-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ef4444;
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 20px;
+}
+
+.grid-out-of-stock-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   PRODUCT DETAIL — FULL DESCRIPTION CARD
+   ========================================= */
+
+.product-full-desc-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    padding: 18px;
+    margin: 0 16px 16px;
+    border-left: 4px solid #25d078;
+}
+
+.product-full-desc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.product-full-desc-text {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.7;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.product-usage-card {
+    background: #ecfdf5;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 0 16px 16px;
+    border-left: 4px solid #10b981;
+}
+
+.product-usage-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #065f46;
+    margin-bottom: 10px;
+}
+
+.product-usage-text {
+    font-size: 13px;
+    color: #047857;
+    line-height: 1.6;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* =========================================
+   CAROUSEL SCROLL INDICATOR DOTS
+   ========================================= */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 0 8px;
+}
+
+.carousel-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.carousel-dot.active {
+    background: #25d078;
+    width: 18px;
+    border-radius: 3px;
+}
+
+/* =========================================
+   REMOVE UNNECESSARY HOVER/ACTIVE FROM OLD CARDS
+   ========================================= */
+.modern-product-card { transition: transform 0.2s ease; }
+
 /* Add fadeOut animation */
 @keyframes fadeOut {
     to {
@@ -3360,16 +4057,21 @@
     
         <!-- Bottom Nav - Preserved -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="loadDashboard()">
+            <div class="nav-item active" id="nav-home" onclick="loadDashboard()">
                 <span class="material-symbols-outlined nav-icon">home</span>
                 <span class="nav-label">Nyumbani</span>
             </div>
-            <!-- REMOVED MAUZO AND AI NAV ITEMS -->
+            <!-- CENTER ADD BUTTON -->
             <div class="nav-item center-action" onclick="goToAddProduct()">
                 <div class="floating-add-btn">
                     <span class="material-symbols-outlined" style="font-size:32px;">add</span>
                 </div>
                 <span class="nav-label add-label">Ongeza</span>
+            </div>
+            <!-- ANALYTICS BUTTON -->
+            <div class="nav-item" id="nav-analytics" onclick="goToAnalytics()">
+                <span class="material-symbols-outlined nav-icon">insights</span>
+                <span class="nav-label">Analytics</span>
             </div>
         </div>
     </div>
@@ -3775,12 +4477,56 @@
                 </div>
             </div>
 
-            <!-- Products Section -->
-            <div class="modern-products-container" id="customer-products-section">
-                <h2 class="customer-section-title">Our Products</h2>
-                <div class="modern-grid" id="customer-products-grid">
-                    <!-- Products loaded here -->
+            <!-- Products Section — Smart Layout -->
+            <div id="customer-products-section" style="padding: 0 0 100px 0;">
+
+                <!-- FEATURED CAROUSEL (first 4 products) -->
+                <div id="featured-section" style="display:none; margin-bottom: 28px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding: 0 16px; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#25d078; margin-bottom:2px;">✨ Featured</div>
+                            <h2 style="font-size:20px; font-weight:800; color:#0f172a; margin:0;">New Arrivals</h2>
+                        </div>
+                    </div>
+                    <!-- Horizontal scroll carousel -->
+                    <div id="featured-carousel" style="
+                        display: flex;
+                        gap: 14px;
+                        overflow-x: auto;
+                        padding: 4px 16px 12px;
+                        scrollbar-width: none;
+                        -webkit-overflow-scrolling: touch;
+                        scroll-snap-type: x mandatory;
+                    "></div>
                 </div>
+
+                <!-- ALL PRODUCTS 2-COLUMN GRID -->
+                <div id="all-products-section" style="display:none; padding: 0 16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 14px;">
+                        <div>
+                            <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#64748b; margin-bottom:2px;">🛍️ Catalog</div>
+                            <h2 style="font-size:20px; font-weight:800; color:#0f172a; margin:0;">All Products</h2>
+                        </div>
+                        <div id="products-count-badge" style="
+                            background:#f1f5f9; color:#64748b;
+                            font-size:12px; font-weight:700;
+                            padding:4px 12px; border-radius:20px;
+                        "></div>
+                    </div>
+                    <div id="customer-products-grid" style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 14px;
+                    "></div>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div id="storefront-empty" style="display:none; text-align:center; padding:60px 20px;">
+                    <span class="material-symbols-outlined" style="font-size:64px; color:#e2e8f0; display:block; margin-bottom:12px;">inventory_2</span>
+                    <p style="font-size:16px; font-weight:700; color:#94a3b8;">No products yet</p>
+                    <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">Check back soon!</p>
+                </div>
+
             </div>
         </div>
     </div>
@@ -3850,17 +4596,22 @@
                 </div>
             </div>
 
-            <!-- Full Description Section -->
-            <div class="product-section">
-                <h3 class="section-title">Description</h3>
-                <div class="description-content" id="description-content">
-                    <div class="description-text" id="description-text">
-                        Loading description...
-                    </div>
-                    <button class="read-more-btn hidden" id="read-more-btn" onclick="toggleDescription()">
-                        Read More
-                    </button>
+            <!-- Usage / Maelezo ya Matumizi Card -->
+            <div class="product-usage-card" id="product-usage-section" style="display:none;">
+                <div class="product-usage-title">
+                    <span class="material-symbols-outlined" style="font-size:18px; color:#10b981;">tips_and_updates</span>
+                    Maelezo ya Matumizi
                 </div>
+                <div class="product-usage-text" id="product-usage-text"></div>
+            </div>
+
+            <!-- Full Description Card -->
+            <div class="product-full-desc-card" id="product-full-desc-section" style="display:none;">
+                <div class="product-full-desc-title">
+                    <span class="material-symbols-outlined" style="font-size:18px; color:#25d078;">description</span>
+                    Product Details
+                </div>
+                <div class="product-full-desc-text" id="product-full-desc-text"></div>
             </div>
 
             <!-- Color Variants -->
@@ -4114,6 +4865,210 @@
 
 <!-- PRODUCT EDIT MODAL -->
 <div id="product-edit-modal" style="display: none;"></div>
+
+<!-- =============================================
+     ANALYTICS SCREEN
+     ============================================= -->
+<div id="step-analytics" class="screen-wrapper hidden">
+    <div class="app-container" style="display:flex; flex-direction:column; height:100vh; overflow:hidden;">
+        
+        <!-- Header -->
+        <div class="analytics-header">
+            <div class="analytics-header-top">
+                <div>
+                    <div class="analytics-header-title">📊 Store Insights</div>
+                    <div class="analytics-header-sub" id="analytics-store-name">Your Store Performance</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="analytics-live-badge">
+                        <div class="live-dot"></div>
+                        LIVE
+                    </div>
+                    <button class="analytics-refresh-btn" onclick="loadAnalytics()" title="Refresh">
+                        <span class="material-symbols-outlined">refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hero Stats (Top 3 KPIs) -->
+            <div class="analytics-hero-stats">
+                <div class="analytics-hero-stat">
+                    <div class="analytics-hero-num" id="hero-views">-</div>
+                    <div class="analytics-hero-label">👁 Views</div>
+                </div>
+                <div class="analytics-hero-stat">
+                    <div class="analytics-hero-num" id="hero-orders">-</div>
+                    <div class="analytics-hero-label">📦 Orders</div>
+                </div>
+                <div class="analytics-hero-stat">
+                    <div class="analytics-hero-num" id="hero-rate">-</div>
+                    <div class="analytics-hero-label">🔥 Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div style="padding: 14px 16px 0;">
+            <div class="analytics-filter-tabs">
+                <div class="analytics-filter-tab active" onclick="setAnalyticsPeriod('today', this)">Leo</div>
+                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('week', this)">Wiki</div>
+                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('month', this)">Mwezi</div>
+                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('all', this)">Yote</div>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="analytics-content" id="analytics-content-area">
+
+            <!-- Store Views Card -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">
+                        <div class="ac-icon ac-icon-green">
+                            <span class="material-symbols-outlined" style="font-size:16px;">store</span>
+                        </div>
+                        Watu Walioingia Dukani
+                    </div>
+                    <span class="analytics-period-badge" id="views-period-label">Leo</span>
+                </div>
+                <div class="analytics-big-metric">
+                    <div class="analytics-big-num" id="stat-store-views">-</div>
+                    <div class="analytics-trend trend-neutral" id="views-trend">📈</div>
+                </div>
+                <div class="analytics-sub-label">Jumla ya watu waliofungua duka lako</div>
+                <!-- Bar chart for last 7 days -->
+                <div class="mini-bar-chart" id="views-bar-chart"></div>
+                <div class="mini-bar-labels" id="views-bar-labels"></div>
+            </div>
+
+            <!-- WhatsApp Orders Card -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">
+                        <div class="ac-icon ac-icon-blue">
+                            <span class="material-symbols-outlined" style="font-size:16px;">chat</span>
+                        </div>
+                        Maagizo via WhatsApp
+                    </div>
+                    <span class="analytics-period-badge" id="orders-period-label">Leo</span>
+                </div>
+                <div class="analytics-big-metric">
+                    <div class="analytics-big-num" id="stat-wa-orders">-</div>
+                    <div class="analytics-trend trend-neutral" id="orders-trend">📦</div>
+                </div>
+                <div class="analytics-sub-label">Watu waliobonyeza "Order via WhatsApp"</div>
+                <div class="mini-bar-chart" id="orders-bar-chart"></div>
+                <div class="mini-bar-labels" id="orders-bar-labels"></div>
+            </div>
+
+            <!-- Conversion Rate Card -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">
+                        <div class="ac-icon ac-icon-purple">
+                            <span class="material-symbols-outlined" style="font-size:16px;">trending_up</span>
+                        </div>
+                        Ufanisi wa Duka
+                    </div>
+                </div>
+                <div class="conversion-ring-wrap">
+                    <div class="conversion-ring">
+                        <svg viewBox="0 0 80 80" width="80" height="80">
+                            <circle class="ring-bg" cx="40" cy="40" r="32"/>
+                            <circle class="ring-fill" id="conv-ring-circle" cx="40" cy="40" r="32"
+                                stroke="#16a34a"
+                                stroke-dasharray="201"
+                                stroke-dashoffset="201"/>
+                        </svg>
+                        <div class="ring-center-text">
+                            <div class="ring-pct" id="conv-pct">0%</div>
+                            <div class="ring-pct-label">Rate</div>
+                        </div>
+                    </div>
+                    <div class="conversion-breakdown">
+                        <div class="conv-row">
+                            <span class="conv-label">
+                                <span class="conv-dot" style="background:#dcfce7; border:2px solid #16a34a;"></span>
+                                Walioingia
+                            </span>
+                            <span class="conv-val" id="conv-views">0</span>
+                        </div>
+                        <div class="conv-row">
+                            <span class="conv-label">
+                                <span class="conv-dot" style="background:#dbeafe; border:2px solid #2563eb;"></span>
+                                Walioulizia
+                            </span>
+                            <span class="conv-val" id="conv-orders">0</span>
+                        </div>
+                        <div style="margin-top:4px; font-size:11px; color:#94a3b8; font-weight:600;">
+                            Kati ya watu 100, <span id="conv-explain" style="color:#16a34a; font-weight:800;">0</span> wanaagiza
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products Card -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">
+                        <div class="ac-icon ac-icon-orange">
+                            <span class="material-symbols-outlined" style="font-size:16px;">emoji_events</span>
+                        </div>
+                        Bidhaa Maarufu
+                    </div>
+                </div>
+                <div class="top-products-list" id="top-products-list">
+                    <div class="analytics-empty">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                        <p style="font-size:13px;">Bado hakuna data</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Seen Card (Recent Activity) -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div class="analytics-card-title">
+                        <div class="ac-icon ac-icon-green">
+                            <span class="material-symbols-outlined" style="font-size:16px;">schedule</span>
+                        </div>
+                        Shughuli za Hivi Karibuni
+                    </div>
+                </div>
+                <div id="recent-activity-list">
+                    <div class="analytics-empty">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        <p style="font-size:13px;">Hakuna shughuli bado</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer note -->
+            <div style="text-align:center; padding:8px; font-size:11px; color:#94a3b8; font-weight:600;">
+                📡 Data inasasishwa kwa wakati halisi • LinkaMarket Analytics
+            </div>
+
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="loadDashboard()">
+                <span class="material-symbols-outlined nav-icon">home</span>
+                <span class="nav-label">Nyumbani</span>
+            </div>
+            <div class="nav-item center-action" onclick="goToAddProduct()">
+                <div class="floating-add-btn">
+                    <span class="material-symbols-outlined" style="font-size:32px;">add</span>
+                </div>
+                <span class="nav-label add-label">Ongeza</span>
+            </div>
+            <div class="nav-item active" onclick="goToAnalytics()">
+                <span class="material-symbols-outlined nav-icon">insights</span>
+                <span class="nav-label">Analytics</span>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     // --- SUPABASE CONFIG ---
@@ -4381,7 +5336,7 @@
     
     function showScreen(stepId, animate) {
         // Removed 'step-11', 'step-ai', 'step-analytics' from this list
-        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile', 'step-analytics'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(stepId);
         if(target) { target.classList.remove('hidden'); if (animate) { target.classList.remove('fade-in'); void target.offsetWidth; target.classList.add('fade-in'); } }
     }
@@ -4610,7 +5565,93 @@
         return css;
     }
 
-    // REPLACE existing handleStep4Click function
+    // ============================================================
+    // CUSTOMER STOREFRONT LOADING FUNCTIONS
+    // ============================================================
+
+    let CURRENT_MERCHANT_DATA = null;
+
+    async function loadCustomerStorefrontBySlug(slug) {
+        try {
+            const { data: profile, error } = await sb
+                .from('profiles')
+                .select('id, business_name, whatsapp_number, phone_number, selected_template_id')
+                .eq('store_slug', slug)
+                .single();
+            if (error || !profile) { showScreen('step-auth', true); return; }
+            CURRENT_MERCHANT_DATA = profile;
+            IS_CUSTOMER_MODE = true;
+            CUSTOMER_MERCHANT_ID = profile.id;
+            await loadCustomerStorefrontData(profile);
+            trackStoreView(profile.id);
+        } catch(e) { console.error('Slug storefront error:', e); showScreen('step-auth', true); }
+    }
+
+    async function loadCustomerStorefront(merchantId) {
+        try {
+            const { data: profile, error } = await sb
+                .from('profiles')
+                .select('id, business_name, whatsapp_number, phone_number, selected_template_id')
+                .eq('id', merchantId)
+                .single();
+            if (error || !profile) { showScreen('step-auth', true); return; }
+            CURRENT_MERCHANT_DATA = profile;
+            IS_CUSTOMER_MODE = true;
+            CUSTOMER_MERCHANT_ID = profile.id;
+            await loadCustomerStorefrontData(profile);
+            trackStoreView(profile.id);
+        } catch(e) { console.error('Merchant storefront error:', e); showScreen('step-auth', true); }
+    }
+
+    async function loadCustomerStorefrontData(profile) {
+        if (!profile) return;
+        showScreen('customer-storefront', true);
+
+        // Set store name
+        const name = profile.business_name || 'Welcome';
+        const nameEl = document.getElementById('customer-store-name');
+        const heroNameEl = document.getElementById('customer-hero-store-name');
+        if (nameEl) nameEl.textContent = name;
+        if (heroNameEl) heroNameEl.textContent = name;
+
+        // Start hero typewriter
+        startCustomerTypewriter(name);
+
+        // Load products
+        const { data: products } = await sb
+            .from('products')
+            .select('*')
+            .eq('merchant_id', profile.id)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
+
+        renderSmartStorefront(products || []);
+    }
+
+    function startCustomerTypewriter(storeName) {
+        const phrases = [`Karibu ${storeName}! 👋`, 'Browse our products 🛍️', 'Order via WhatsApp 💬'];
+        let phraseIdx = 0, charIdx = 0, deleting = false;
+        const el = document.getElementById('customer-typewriter');
+        if (!el) return;
+        function type() {
+            const phrase = phrases[phraseIdx];
+            if (!deleting) { el.textContent = phrase.slice(0, ++charIdx); if (charIdx === phrase.length) { deleting = true; setTimeout(type, 1800); return; } }
+            else { el.textContent = phrase.slice(0, --charIdx); if (charIdx === 0) { deleting = false; phraseIdx = (phraseIdx + 1) % phrases.length; } }
+            setTimeout(type, deleting ? 40 : 70);
+        }
+        type();
+    }
+
+    function scrollToProducts() {
+        document.getElementById('customer-products-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function contactMerchantWhatsApp() {
+        if (!CURRENT_MERCHANT_DATA) return;
+        const phone = (CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number || '').replace(/[^0-9]/g, '');
+        if (!phone) return alert('Contact not available');
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Hi! I found your store on LinkaMarket 👋')}`, '_blank');
+    }
     async function handleStep4Click() { 
         const whatsapp = document.getElementById('whatsapp-input').value.trim();
         const lipa = document.getElementById('lipa-input').value.trim();
@@ -4890,7 +5931,102 @@
     async function shareToTwitter() { const storeUrl = await getStoreUrl(); const text = `Check out my store!`; window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(storeUrl)}`, '_blank'); closeShareModal(); }
     async function shareToInstagram() { await copyLinkFromModal(); alert('Link copied! Open Instagram and paste it in your bio or story 📸'); }
 
-    function getProductImage(product) { if (product.image_path) { const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path); return data.publicUrl; } if (product.product_images && product.product_images.length > 0) { return product.product_images[0].image_url; } return 'https://via.placeholder.com/150'; }
+    function getProductImage(product) {
+        if (product.image_path) {
+            const { data } = sb.storage.from('post-images').getPublicUrl(product.image_path);
+            return data.publicUrl;
+        }
+        if (product.product_images && product.product_images.length > 0) return product.product_images[0].image_url;
+        return 'https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image';
+    }
+
+    // ============================================================
+    // SMART STOREFRONT RENDERER
+    // Carousel (first 4) + 2-column grid (remaining)
+    // ============================================================
+    function renderSmartStorefront(products) {
+        const featuredSection  = document.getElementById('featured-section');
+        const allSection       = document.getElementById('all-products-section');
+        const emptyState       = document.getElementById('storefront-empty');
+        const featuredCarousel = document.getElementById('featured-carousel');
+        const gridContainer    = document.getElementById('customer-products-grid');
+        const countBadge       = document.getElementById('products-count-badge');
+
+        if (!products || products.length === 0) {
+            if (featuredSection)  featuredSection.style.display  = 'none';
+            if (allSection)       allSection.style.display       = 'none';
+            if (emptyState)       emptyState.style.display       = 'block';
+            return;
+        }
+
+        if (emptyState) emptyState.style.display = 'none';
+
+        const featured = products.slice(0, 4);
+        const rest     = products.slice(4);
+
+        // ---- FEATURED CAROUSEL ----
+        if (featuredSection && featuredCarousel) {
+            featuredCarousel.innerHTML = featured.map(p => {
+                const img         = getProductImage(p);
+                const safeName    = (p.name || 'Product').replace(/'/g, "\\'");
+                const price       = p.selling_price || 0;
+                const origPrice   = p.original_price;
+                const discount    = p.discount_percent;
+                const stock       = p.total_stock ?? 0;
+                const desc        = (p.full_description || p.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                return `
+                <div class="featured-card" onclick="openProductDetailPage('${p.id}','${safeName}','${price}','${stock}','${img}','${desc}')">
+                    <img src="${img}" class="featured-card-img" loading="lazy" onerror="this.src='https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image'">
+                    <span class="featured-badge">Featured</span>
+                    ${discount ? `<span class="featured-discount-badge">-${discount}%</span>` : ''}
+                    ${stock === 0 ? `<div style="position:absolute;inset:0;background:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#ef4444;border-radius:20px;">OUT OF STOCK</div>` : ''}
+                    <div class="featured-card-body">
+                        <div class="featured-card-name">${p.name || 'Product'}</div>
+                        <div style="display:flex;align-items:baseline;">
+                            <span class="featured-card-price">Tsh ${Number(price).toLocaleString()}</span>
+                            ${origPrice ? `<span class="featured-card-orig">Tsh ${Number(origPrice).toLocaleString()}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            featuredSection.style.display = 'block';
+        }
+
+        // ---- ALL PRODUCTS GRID ----
+        if (allSection && gridContainer) {
+            if (countBadge) countBadge.textContent = `${products.length} items`;
+
+            gridContainer.innerHTML = products.map((p, i) => {
+                const img      = getProductImage(p);
+                const safeName = (p.name || 'Product').replace(/'/g, "\\'");
+                const price    = p.selling_price || 0;
+                const origPrice= p.original_price;
+                const discount = p.discount_percent;
+                const stock    = p.total_stock ?? 0;
+                const desc     = (p.full_description || p.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                return `
+                <div class="grid-product-card" style="animation: fadeInUp 0.5s ease ${i * 0.05}s both;"
+                     onclick="openProductDetailPage('${p.id}','${safeName}','${price}','${stock}','${img}','${desc}')">
+                    <div class="grid-product-img-wrap">
+                        <img src="${img}" class="grid-product-img" loading="lazy" onerror="this.src='https://placehold.co/400x400/f1f5f9/94a3b8?text=No+Image'">
+                        ${discount ? `<div class="grid-discount-tag">-${discount}%</div>` : ''}
+                        ${stock === 0 ? `<div class="grid-out-of-stock-overlay">Sold Out</div>` : ''}
+                    </div>
+                    <div class="grid-product-body">
+                        <div class="grid-product-name">${p.name || 'Product'}</div>
+                        <div style="display:flex;align-items:baseline;">
+                            <span class="grid-product-price">Tsh ${Number(price).toLocaleString()}</span>
+                            ${origPrice ? `<span class="grid-product-orig-price">Tsh ${Number(origPrice).toLocaleString()}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            allSection.style.display = 'block';
+        }
+    }
 
     // --- ADD PRODUCT LOGIC ---
     function goToAddProduct() {
@@ -5031,104 +6167,96 @@
 
 // ✅ NEW: Fallback renderer for basic product info
 function renderProductDetailBasic(product) {
-    console.log('📦 Using basic product data');
     document.getElementById('product-detail-title').textContent = product.name || 'Product';
     document.getElementById('product-category-badge').classList.add('hidden');
-    document.getElementById('product-detail-price').textContent = `Tsh ${product.price.toLocaleString()}`;
+    document.getElementById('product-detail-price').textContent = `Tsh ${Number(product.price || 0).toLocaleString()}`;
     document.getElementById('original-price').classList.add('hidden');
     document.getElementById('discount-badge').classList.add('hidden');
-    
-    // ✅ ADDED: Set short description fallback
-    document.getElementById('product-short-desc').textContent = product.description || '';
-    
+    document.getElementById('product-short-desc').textContent = '';
+
     const stockIndicator = document.getElementById('stock-indicator');
     const stockText = document.getElementById('stock-text');
-    if (product.stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; } else if (product.stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${product.stock} left`; } else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
+    if (product.stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; }
+    else if (product.stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${product.stock} left`; }
+    else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
+
     const slider = document.getElementById('product-image-slider');
     slider.innerHTML = `<div class="product-image-slide" style="background-image: url('${product.image || 'https://via.placeholder.com/600'}')"></div>`;
     document.getElementById('image-dots').innerHTML = '<div class="image-dot active"></div>';
-    
-    const descText = document.getElementById('description-text');
-    // For basic render, we might only have one description field
-    descText.textContent = product.description || 'No description available.';
-    
-    document.getElementById('read-more-btn').classList.add('hidden');
+
+    // Show usage (description field)
+    const usageSection = document.getElementById('product-usage-section');
+    const usageText = document.getElementById('product-usage-text');
+    if (product.description) { usageText.textContent = product.description; usageSection.style.display = 'block'; }
+    else { usageSection.style.display = 'none'; }
+
+    document.getElementById('product-full-desc-section').style.display = 'none';
     document.getElementById('color-section').classList.add('hidden');
     document.getElementById('size-section').classList.add('hidden');
     document.getElementById('material-section').classList.add('hidden');
     renderReviews([]);
 }
 
-// ✅ FIXED: RENDER PRODUCT DETAIL (Full Version)
+// RENDER PRODUCT DETAIL (Full Version)
 function renderProductDetail(product) {
-    console.log('🎨 Rendering full product detail:', product);
+    // Title
     document.getElementById('product-detail-title').textContent = product.name || 'Product';
-    
+
+    // Category badge
     const categoryBadge = document.getElementById('product-category-badge');
-    if (product.category) { 
-        categoryBadge.textContent = product.category; 
-        categoryBadge.classList.remove('hidden'); 
-    } else { 
-        categoryBadge.classList.add('hidden'); 
-    }
-    
-    // ✅ ADDED: Render Short Description in Info Card
-    const shortDescEl = document.getElementById('product-short-desc');
-    if (product.description) {
-        shortDescEl.textContent = product.description;
-        shortDescEl.classList.remove('hidden');
+    if (product.category) { categoryBadge.textContent = product.category; categoryBadge.classList.remove('hidden'); }
+    else { categoryBadge.classList.add('hidden'); }
+
+    // Short desc (product-short-desc) — hidden on detail page since we have full cards below
+    document.getElementById('product-short-desc').textContent = '';
+
+    // Price
+    const price = product.selling_price || product.price || 0;
+    document.getElementById('product-detail-price').textContent = `Tsh ${Number(price).toLocaleString()}`;
+    if (product.original_price && product.discount_percent) {
+        document.getElementById('original-price').textContent = `Tsh ${Number(product.original_price).toLocaleString()}`;
+        document.getElementById('original-price').classList.remove('hidden');
+        document.getElementById('discount-badge').textContent = `-${product.discount_percent}% OFF`;
+        document.getElementById('discount-badge').classList.remove('hidden');
     } else {
-        shortDescEl.classList.add('hidden');
+        document.getElementById('original-price').classList.add('hidden');
+        document.getElementById('discount-badge').classList.add('hidden');
     }
 
-    const currentPriceEl = document.getElementById('product-detail-price');
-    const originalPriceEl = document.getElementById('original-price');
-    const discountBadgeEl = document.getElementById('discount-badge');
-    
-    currentPriceEl.textContent = `Tsh ${(product.selling_price || product.price || 0).toLocaleString()}`;
-    
-    if (product.original_price && product.discount_percent) { 
-        originalPriceEl.textContent = `Tsh ${product.original_price.toLocaleString()}`; 
-        originalPriceEl.classList.remove('hidden'); 
-        discountBadgeEl.textContent = `-${product.discount_percent}% OFF`; 
-        discountBadgeEl.classList.remove('hidden'); 
-    } else { 
-        originalPriceEl.classList.add('hidden'); 
-        discountBadgeEl.classList.add('hidden'); 
-    }
-    
+    // Stock
     const stockIndicator = document.getElementById('stock-indicator');
     const stockText = document.getElementById('stock-text');
-    const stock = product.total_stock || product.stock || 0;
-    
-    if (stock === 0) { 
-        stockIndicator.classList.add('out-of-stock'); 
-        stockText.textContent = 'Out of Stock'; 
-    } else if (stock <= 5) { 
-        stockIndicator.classList.remove('out-of-stock'); 
-        stockText.textContent = `Only ${stock} left`; 
-    } else { 
-        stockIndicator.classList.remove('out-of-stock'); 
-        stockText.textContent = 'In Stock'; 
-    }
-    
+    const stock = product.total_stock ?? product.stock ?? 0;
+    if (stock === 0) { stockIndicator.classList.add('out-of-stock'); stockText.textContent = 'Out of Stock'; }
+    else if (stock <= 5) { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = `Only ${stock} left!`; }
+    else { stockIndicator.classList.remove('out-of-stock'); stockText.textContent = 'In Stock'; }
+
+    // Images
     renderImageGallery(product);
-    
-    // ✅ ADDED: Render Full Description in Bottom Section
-    const descText = document.getElementById('description-text');
-    const readMoreBtn = document.getElementById('read-more-btn');
-    // Prefer full_description for the long text area, fallback to description if missing
-    const fullDesc = product.full_description || product.description || 'No additional details available.';
-    
-    descText.textContent = fullDesc;
-    
-    if (fullDesc.length > 300) { 
-        descText.classList.remove('expanded'); 
-        readMoreBtn.classList.remove('hidden'); 
-    } else { 
-        descText.classList.add('expanded'); 
-        readMoreBtn.classList.add('hidden'); 
-    }renderVariants(product);
+
+    // ---- TWO DESCRIPTION CARDS ----
+    // Card 1: Usage / Maelezo ya Matumizi (description column)
+    const usageSection = document.getElementById('product-usage-section');
+    const usageText = document.getElementById('product-usage-text');
+    if (product.description && product.description.trim()) {
+        usageText.textContent = product.description.trim();
+        usageSection.style.display = 'block';
+    } else {
+        usageSection.style.display = 'none';
+    }
+
+    // Card 2: Full Product Description (full_description column)
+    const fullDescSection = document.getElementById('product-full-desc-section');
+    const fullDescText = document.getElementById('product-full-desc-text');
+    if (product.full_description && product.full_description.trim()) {
+        fullDescText.textContent = product.full_description.trim();
+        fullDescSection.style.display = 'block';
+    } else {
+        fullDescSection.style.display = 'none';
+    }
+
+    // Variants
+    renderVariants(product);
 }
 
 // ✅ FIXED: Render ALL images with auto-scroll
@@ -5241,10 +6369,10 @@ async function openProductEditModal(productId) {
     modalContainer.style.display = 'block';
 
     try {
-        // Fetch full product details including images and variants
+        // Fetch full product details from products table only
         const { data: product, error } = await sb
             .from('products')
-            .select(`*, product_images(id, image_url, display_order)`)
+            .select('*')
             .eq('id', productId)
             .single();
 
@@ -5252,13 +6380,9 @@ async function openProductEditModal(productId) {
 
         // Initialize Edit State
         EDIT_DRAFT_PRODUCT = product;
+        EDIT_DRAFT_PRODUCT.product_images = []; // All images stored in products table via image_path
         DELETED_IMAGES = [];
         NEW_EDIT_IMAGES = []; // Array of File objects
-
-        // Sort existing images
-        if (EDIT_DRAFT_PRODUCT.product_images) {
-            EDIT_DRAFT_PRODUCT.product_images.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-        }
 
         renderEditModalHTML();
 
@@ -5495,7 +6619,7 @@ function renderEditImagesHTML() {
     }
 
     // Existing DB Images (Gallery)
-    if (EDIT_DRAFT_PRODUCT.product_images) {
+    if (EDIT_DRAFT_PRODUCT.product_images && Array.isArray(EDIT_DRAFT_PRODUCT.product_images) && EDIT_DRAFT_PRODUCT.product_images.length > 0) {
         EDIT_DRAFT_PRODUCT.product_images.forEach(img => {
             if (!DELETED_IMAGES.includes(img.id)) {
                 html += `
@@ -5802,12 +6926,7 @@ function selectVariant(type, value, element) {
     CURRENT_PRODUCT_DETAIL.selectedVariants[type] = value; 
 }
 
-function toggleDescription() { 
-    const descText = document.getElementById('description-text'); 
-    const btn = document.getElementById('read-more-btn'); 
-    const isExpanded = descText.classList.contains('expanded'); 
-    if (isExpanded) { descText.classList.remove('expanded'); btn.textContent = 'Read More'; } else { descText.classList.add('expanded'); btn.textContent = 'Read Less'; } 
-}
+function toggleDescription() { /* Deprecated - using full description cards now */ }
 
 async function loadProductReviews(productId) { 
     try { 
@@ -5854,6 +6973,346 @@ async function orderProductViaWhatsApp() {
     const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     if (window.amp) { amp.logEvent("WhatsApp Order Initiated", { product_name: CURRENT_PRODUCT_DETAIL.name, price: CURRENT_PRODUCT_DETAIL.price }); }
+
+    // ✅ ANALYTICS: Track WhatsApp order click
+    const merchantId = CURRENT_PRODUCT_DETAIL.merchantId || (await sb.auth.getUser()).data.user?.id;
+    if (merchantId) {
+        trackWhatsAppOrder(merchantId, CURRENT_PRODUCT_DETAIL.id, CURRENT_PRODUCT_DETAIL.name);
+    }
+}
+
+// =======================================================
+// ANALYTICS FEATURE — REAL-TIME STORE INSIGHTS
+// =======================================================
+
+let ANALYTICS_PERIOD = 'today';
+let ANALYTICS_REALTIME_CHANNEL = null;
+
+// ---- Navigate to Analytics ----
+async function goToAnalytics() {
+    history.pushState({ step: 'analytics' }, 'Analytics', '?step=analytics');
+    showScreen('step-analytics', true);
+    // Set nav active
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#step-analytics .nav-item').forEach((el, i) => {
+        if(i === 2) el.classList.add('active');
+    });
+    await loadAnalytics();
+    subscribeToRealtimeAnalytics();
+}
+
+// ---- Period Filter ----
+function setAnalyticsPeriod(period, el) {
+    ANALYTICS_PERIOD = period;
+    document.querySelectorAll('.analytics-filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    const labelMap = { today: 'Leo', week: 'Wiki hii', month: 'Mwezi huu', all: 'Wakati wote' };
+    document.getElementById('views-period-label').textContent  = labelMap[period];
+    document.getElementById('orders-period-label').textContent = labelMap[period];
+    loadAnalytics();
+}
+
+// ---- Get date range based on period ----
+function getAnalyticsDateRange(period) {
+    const now = new Date();
+    let from;
+    if (period === 'today') {
+        from = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    } else if (period === 'week') {
+        from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    } else if (period === 'month') {
+        from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    } else {
+        from = null; // all time
+    }
+    return { from, to: now.toISOString() };
+}
+
+// ---- Main Load Function ----
+async function loadAnalytics() {
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+
+        // Set store name in header
+        const { data: profile } = await sb.from('profiles').select('business_name').eq('id', user.id).single();
+        if (profile?.business_name) {
+            document.getElementById('analytics-store-name').textContent = profile.business_name;
+        }
+
+        const { from } = getAnalyticsDateRange(ANALYTICS_PERIOD);
+
+        // ---- Query store_analytics table ----
+        let viewsQuery  = sb.from('store_analytics').select('*', { count: 'exact' })
+            .eq('merchant_id', user.id).eq('event_type', 'store_view');
+        let ordersQuery = sb.from('store_analytics').select('*', { count: 'exact' })
+            .eq('merchant_id', user.id).eq('event_type', 'whatsapp_order');
+        let allEventsQuery = sb.from('store_analytics').select('*')
+            .eq('merchant_id', user.id).order('created_at', { ascending: false }).limit(50);
+
+        if (from) {
+            viewsQuery  = viewsQuery.gte('created_at', from);
+            ordersQuery = ordersQuery.gte('created_at', from);
+            allEventsQuery = allEventsQuery.gte('created_at', from);
+        }
+
+        const [viewsRes, ordersRes, allRes] = await Promise.all([
+            viewsQuery, ordersQuery, allEventsQuery
+        ]);
+
+        const totalViews  = viewsRes.count  || 0;
+        const totalOrders = ordersRes.count || 0;
+        const allEvents   = allRes.data || [];
+
+        // ---- Update Hero Stats ----
+        animateNumber('hero-views',  totalViews);
+        animateNumber('hero-orders', totalOrders);
+        const rate = totalViews > 0 ? Math.round((totalOrders / totalViews) * 100) : 0;
+        document.getElementById('hero-rate').textContent = rate + '%';
+
+        // ---- Update Big Numbers ----
+        animateNumber('stat-store-views', totalViews);
+        animateNumber('stat-wa-orders',   totalOrders);
+
+        // ---- Trend badges ----
+        document.getElementById('views-trend').className  = 'analytics-trend ' + (totalViews  > 0 ? 'trend-up' : 'trend-neutral');
+        document.getElementById('views-trend').textContent = totalViews > 0 ? '↑ Nzuri!' : '— Kawaida';
+        document.getElementById('orders-trend').className  = 'analytics-trend ' + (totalOrders > 0 ? 'trend-up' : 'trend-neutral');
+        document.getElementById('orders-trend').textContent = totalOrders > 0 ? '↑ Vizuri!' : '— Subiri';
+
+        // ---- Conversion Ring ----
+        updateConversionRing(totalViews, totalOrders);
+
+        // ---- Bar Charts (last 7 days) ----
+        renderBarChart(allEvents, 'store_view',      'views-bar-chart',  'views-bar-labels');
+        renderBarChart(allEvents, 'whatsapp_order',  'orders-bar-chart', 'orders-bar-labels');
+
+        // ---- Top Products ----
+        renderTopProducts(allEvents);
+
+        // ---- Recent Activity ----
+        renderRecentActivity(allEvents.slice(0, 8));
+
+    } catch (err) {
+        console.error('Analytics load error:', err);
+    }
+}
+
+// ---- Animate counting numbers ----
+function animateNumber(elId, target) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const start = parseInt(el.textContent) || 0;
+    const duration = 800;
+    const startTime = performance.now();
+    function step(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// ---- Conversion ring ----
+function updateConversionRing(views, orders) {
+    const pct = views > 0 ? Math.round((orders / views) * 100) : 0;
+    const circumference = 201;
+    const offset = circumference - (pct / 100) * circumference;
+    const circle = document.getElementById('conv-ring-circle');
+    if (circle) {
+        circle.style.strokeDashoffset = offset;
+        // Color based on rate
+        if (pct >= 20) circle.style.stroke = '#16a34a';
+        else if (pct >= 10) circle.style.stroke = '#f59e0b';
+        else circle.style.stroke = '#94a3b8';
+    }
+    document.getElementById('conv-pct').textContent    = pct + '%';
+    document.getElementById('conv-views').textContent  = views;
+    document.getElementById('conv-orders').textContent = orders;
+    document.getElementById('conv-explain').textContent = pct;
+}
+
+// ---- Bar chart (7 day breakdown) ----
+function renderBarChart(events, eventType, chartId, labelsId) {
+    const chart  = document.getElementById(chartId);
+    const labels = document.getElementById(labelsId);
+    if (!chart || !labels) return;
+
+    // Build last 7 days buckets
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push({
+            label: ['J','P','A','J','K','S','N'][d.getDay()],
+            date:  d.toISOString().split('T')[0],
+            count: 0
+        });
+    }
+
+    events.forEach(ev => {
+        if (ev.event_type !== eventType) return;
+        const day = ev.created_at?.split('T')[0];
+        const bucket = days.find(d => d.date === day);
+        if (bucket) bucket.count++;
+    });
+
+    const maxCount = Math.max(...days.map(d => d.count), 1);
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    chart.innerHTML = days.map(d => `
+        <div class="mini-bar ${d.date === todayStr ? 'highlight' : ''}"
+             style="height: ${Math.round((d.count / maxCount) * 44) + 4}px;"
+             title="${d.count} ${eventType === 'store_view' ? 'views' : 'orders'}">
+        </div>`).join('');
+
+    labels.innerHTML = days.map(d => `<div class="mini-bar-label">${d.label}</div>`).join('');
+}
+
+// ---- Top Products ----
+function renderTopProducts(events) {
+    const container = document.getElementById('top-products-list');
+    if (!container) return;
+
+    // Count orders per product_id
+    const productCounts = {};
+    events.forEach(ev => {
+        if (ev.event_type !== 'whatsapp_order' || !ev.product_id) return;
+        productCounts[ev.product_id] = (productCounts[ev.product_id] || { count: 0, name: ev.product_name || ev.product_id });
+        productCounts[ev.product_id].count++;
+    });
+
+    const sorted = Object.values(productCounts).sort((a, b) => b.count - a.count).slice(0, 5);
+
+    if (sorted.length === 0) {
+        container.innerHTML = `<div class="analytics-empty">
+            <span class="material-symbols-outlined">inventory_2</span>
+            <p style="font-size:13px;">Bado hakuna maagizo</p>
+        </div>`;
+        return;
+    }
+
+    const maxCount = sorted[0].count;
+    const rankClasses = ['gold', 'silver', 'bronze'];
+
+    container.innerHTML = sorted.map((p, i) => `
+        <div class="top-product-row">
+            <div class="top-product-rank ${rankClasses[i] || ''}">${i + 1}</div>
+            <div class="top-product-info">
+                <div class="top-product-name">${p.name}</div>
+                <div class="top-product-clicks">${p.count} agizo${p.count !== 1 ? '' : ''}</div>
+            </div>
+            <div>
+                <div class="top-product-bar-wrap">
+                    <div class="top-product-bar" style="width:${Math.round((p.count / maxCount) * 100)}%"></div>
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+// ---- Recent Activity Feed ----
+function renderRecentActivity(events) {
+    const container = document.getElementById('recent-activity-list');
+    if (!container) return;
+
+    if (events.length === 0) {
+        container.innerHTML = `<div class="analytics-empty">
+            <span class="material-symbols-outlined">hourglass_empty</span>
+            <p style="font-size:13px;">Hakuna shughuli bado</p>
+        </div>`;
+        return;
+    }
+
+    const iconMap = {
+        store_view:      { icon: 'store',    color: '#dcfce7', textColor: '#16a34a', label: 'Mtu alifungua duka' },
+        whatsapp_order:  { icon: 'chat',     color: '#dbeafe', textColor: '#2563eb', label: 'Agizo via WhatsApp' },
+        product_view:    { icon: 'inventory', color: '#ede9fe', textColor: '#7c3aed', label: 'Bidhaa iliangaliwa' }
+    };
+
+    container.innerHTML = events.map(ev => {
+        const info = iconMap[ev.event_type] || { icon: 'notifications', color: '#f1f5f9', textColor: '#64748b', label: ev.event_type };
+        const timeAgo = getTimeAgo(ev.created_at);
+        const extraLabel = ev.product_name ? ` — ${ev.product_name}` : '';
+        return `
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+            <div style="width:36px; height:36px; border-radius:10px; background:${info.color}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px; color:${info.textColor};">${info.icon}</span>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:13px; font-weight:700; color:#0f172a;">${info.label}${extraLabel}</div>
+                <div style="font-size:11px; color:#94a3b8; font-weight:600;">${timeAgo}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function getTimeAgo(isoDate) {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1)  return 'Sasa hivi';
+    if (mins < 60) return `Dakika ${mins} zilizopita`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)  return `Saa ${hrs} zilizopita`;
+    const days = Math.floor(hrs / 24);
+    return `Siku ${days} zilizopita`;
+}
+
+// ---- Realtime subscription ----
+function subscribeToRealtimeAnalytics() {
+    // Remove previous subscription if any
+    if (ANALYTICS_REALTIME_CHANNEL) {
+        sb.removeChannel(ANALYTICS_REALTIME_CHANNEL);
+        ANALYTICS_REALTIME_CHANNEL = null;
+    }
+
+    sb.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        ANALYTICS_REALTIME_CHANNEL = sb
+            .channel('analytics-realtime')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'store_analytics',
+                filter: `merchant_id=eq.${user.id}`
+            }, (payload) => {
+                console.log('📡 New analytics event:', payload.new.event_type);
+                // Reload analytics silently
+                loadAnalytics();
+            })
+            .subscribe();
+    });
+}
+
+// ---- TRACK: Store View (call this when customer opens the storefront) ----
+async function trackStoreView(merchantId) {
+    try {
+        if (!merchantId) return;
+        await sb.from('store_analytics').insert({
+            merchant_id:  merchantId,
+            event_type:   'store_view',
+            product_id:   null,
+            product_name: null
+        });
+    } catch (err) {
+        // Silent fail — don't block UI
+        console.warn('Track store view failed:', err.message);
+    }
+}
+
+// ---- TRACK: WhatsApp Order Click ----
+async function trackWhatsAppOrder(merchantId, productId, productName) {
+    try {
+        if (!merchantId) return;
+        await sb.from('store_analytics').insert({
+            merchant_id:  merchantId,
+            event_type:   'whatsapp_order',
+            product_id:   productId || null,
+            product_name: productName || null
+        });
+    } catch (err) {
+        console.warn('Track WA order failed:', err.message);
+    }
 }
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); } 
