@@ -1,0 +1,21 @@
+{
+  "name": "linkamarket-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "bot-server.js",
+  "scripts": {
+    "start": "node bot-server.js",
+    "dev":   "node --watch bot-server.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "@supabase/supabase-js":   "^2.39.0",
+    "express":                 "^4.18.2",
+    "cors":                    "^2.8.5",
+    "pino":                    "^8.17.0",
+    "pino-pretty":             "^11.0.0",
+    "dotenv":                  "^16.4.1",
+    "node-cache":              "^5.1.2"
+  },
+  "engines": { "node": ">=18.0.0" }
+}
