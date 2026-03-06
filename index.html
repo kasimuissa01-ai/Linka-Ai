@@ -3788,7 +3788,68 @@
     gap: 16px;
     transition: opacity 0.3s;
 }
-</style>
+
+    /* ── BOT SETUP CARD ── */
+    .bot-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 16px;
+        border: 1.5px solid #e2e8f0;
+    }
+    .bot-card-header {
+        background: linear-gradient(135deg, #075e54, #128c7e);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+    .bot-status-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: #94a3b8; flex-shrink: 0;
+    }
+    .bot-status-dot.online     { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulse 2s infinite; }
+    .bot-status-dot.connecting { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.3);  animation: pulse 1s infinite; }
+    .bot-status-dot.error      { background: #f87171; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .bot-card-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .bot-input {
+        width: 100%; padding: 13px 14px; border: 1.5px solid #e2e8f0;
+        border-radius: 12px; font-size: 15px; font-weight: 600;
+        outline: none; box-sizing: border-box; background: #f8fafc;
+    }
+    .bot-input:focus { border-color: #075e54; background: white; }
+    .bot-connected-banner {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border: 1.5px solid #4ade80;
+        border-radius: 14px; padding: 14px 16px;
+        display: flex; align-items: center; gap: 12px;
+    }
+    .ramp-bar-track { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .ramp-bar-fill  { height: 100%; background: linear-gradient(90deg, #075e54, #25d078); border-radius: 99px; transition: width 1s ease; }
+    .bot-toggle-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .toggle-sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-sw input { opacity: 0; width: 0; height: 0; }
+    .toggle-sl {
+        position: absolute; inset: 0; background: #cbd5e1;
+        border-radius: 99px; cursor: pointer; transition: 0.3s;
+    }
+    .toggle-sl:before {
+        content: ""; position: absolute;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: white; left: 3px; top: 3px; transition: 0.3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-sw input:checked + .toggle-sl { background: #075e54; }
+    .toggle-sw input:checked + .toggle-sl:before { transform: translateX(20px); }
+    @keyframes botSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    </style>
 </head>
 <body>
     <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
@@ -5042,6 +5103,185 @@
                     </div>
                 </div>
             </div>
+
+
+            <!-- ══════════════════════════════════════
+                 WHATSAPP AI BOT CARD
+                 Merchant just enters phone number
+            ══════════════════════════════════════ -->
+            <div class="bot-card" id="bot-main-card">
+
+                <!-- Header -->
+                <div class="bot-card-header" onclick="toggleBotCard()">
+                    <div class="bot-status-dot" id="bot-status-dot"></div>
+                    <div style="flex:1;">
+                        <div style="font-size:14px;font-weight:800;color:white;">🤖 WhatsApp AI Bot</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:600;" id="bot-card-subtitle">Bonyeza kuweka mipangilio</div>
+                    </div>
+                    <span class="material-symbols-outlined" style="color:white;font-size:20px;" id="bot-status-text-icon">expand_more</span>
+                </div>
+
+                <!-- Body -->
+                <div class="bot-card-body" id="bot-card-body">
+
+                    <!-- CONNECTED STATE -->
+                    <div id="bot-connected-state" style="display:none;">
+                        <div class="bot-connected-banner">
+                            <span style="font-size:28px;">📱</span>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;font-weight:800;color:#15803d;">Bot Inafanya Kazi! ✅</div>
+                                <div style="font-size:12px;color:#4b7c59;font-weight:600;" id="bot-connected-number">Inapakia...</div>
+                            </div>
+                            <button onclick="disconnectBot()" style="background:#fee2e2;border:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#ef4444;cursor:pointer;">Kata</button>
+                        </div>
+
+                        <!-- Stats -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div style="background:#f0fdf4;border-radius:12px;padding:12px;text-align:center;border:1px solid #bbf7d0;">
+                                <div style="font-size:28px;font-weight:900;color:#15803d;" id="bot-today-count">0</div>
+                                <div style="font-size:10px;color:#4b7c59;font-weight:700;">MAJIBU LEO</div>
+                                <div style="font-size:10px;color:#94a3b8;font-weight:600;" id="bot-daily-max">/ 10 max</div>
+                            </div>
+                            <div style="background:#f0f9ff;border-radius:12px;padding:12px;text-align:center;border:1px solid #bae6fd;">
+                                <div style="font-size:28px;font-weight:900;color:#0369a1;" id="bot-age-days">0</div>
+                                <div style="font-size:10px;color:#0369a1;font-weight:700;">SIKU ZILIZOPITA</div>
+                                <div style="font-size:10px;color:#94a3b8;font-weight:600;">tangu kuunganisha</div>
+                            </div>
+                        </div>
+
+                        <!-- Ramp -->
+                        <div style="background:#f8fafc;border-radius:12px;padding:12px;border:1px solid #e2e8f0;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <span style="font-size:12px;font-weight:700;color:#374151;">📈 Ukuaji wa Usalama</span>
+                                <span style="font-size:11px;font-weight:700;color:#15803d;" id="ramp-description">10/siku</span>
+                            </div>
+                            <div class="ramp-bar-track"><div class="ramp-bar-fill" id="ramp-bar" style="width:10%;"></div></div>
+                            <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Siku 1 (10)</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Wiki 1 (25)</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Wiki 2 (50)</span>
+                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Siku 15+ (100)</span>
+                            </div>
+                        </div>
+
+                        <!-- Toggles -->
+                        <div class="bot-toggle-row">
+                            <div>
+                                <div style="font-size:13px;font-weight:700;color:#0f172a;">🤖 AI Auto-Reply</div>
+                                <div style="font-size:11px;color:#94a3b8;font-weight:500;">Jibu otomatiki dakika 1-30</div>
+                            </div>
+                            <label class="toggle-sw">
+                                <input type="checkbox" id="bot-auto-toggle" checked onchange="saveBotSetting('auto_reply', this.checked)">
+                                <span class="toggle-sl"></span>
+                            </label>
+                        </div>
+                        <div class="bot-toggle-row" style="border:none;">
+                            <div>
+                                <div style="font-size:13px;font-weight:700;color:#0f172a;">🌙 Pumzika Usiku</div>
+                                <div style="font-size:11px;color:#94a3b8;font-weight:500;">Hakuna jibu 11pm – 6am</div>
+                            </div>
+                            <label class="toggle-sw">
+                                <input type="checkbox" id="bot-quiet-toggle" checked onchange="saveBotSetting('quiet_hours', this.checked)">
+                                <span class="toggle-sl"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- SETUP STATE -->
+                    <div id="bot-setup-state">
+
+                        <!-- Explainer -->
+                        <div style="background:#f0fdf4;border-radius:12px;padding:12px 14px;border:1px solid #bbf7d0;">
+                            <div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:4px;">🤖 Bot itafanya nini?</div>
+                            <div style="font-size:12px;color:#374151;line-height:1.6;font-weight:500;">
+                                Wateja watakapotuma ujumbe WhatsApp kwako, AI itawajibu <strong>otomatiki</strong> kwa Kiswahili — ikijua bidhaa zako na bei zake.
+                            </div>
+                        </div>
+
+                        <!-- Phone input -->
+                        <div>
+                            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;">📱 Namba yako ya WhatsApp</div>
+                            <input type="tel" id="bot-wa-number" class="bot-input"
+                                placeholder="255712345678"
+                                style="font-size:20px;font-weight:800;letter-spacing:3px;text-align:center;">
+                            <div style="font-size:11px;color:#94a3b8;margin-top:5px;text-align:center;font-weight:500;">
+                                Andika namba kamili ukianza na 255
+                            </div>
+                        </div>
+
+                        <!-- Warning -->
+                        <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:10px 12px;display:flex;gap:8px;">
+                            <span style="flex-shrink:0;">⚠️</span>
+                            <div style="font-size:11px;color:#713f12;font-weight:600;line-height:1.5;">
+                                Tumia namba yenye <strong>umri wa miezi 2+</strong> na mazungumzo ya kawaida. Namba mpya zina hatari ya kubaniwa.
+                            </div>
+                        </div>
+
+                        <!-- Connect button -->
+                        <button id="btn-connect-bot" onclick="requestPairCode()"
+                            style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(37,208,120,0.3);">
+                            <span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span>
+                            Unganisha WhatsApp Yangu
+                        </button>
+
+                        <!-- Safety badges -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Hakuna spam</div>
+                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ AI kwa Kiswahili</div>
+                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Inajua bei zako</div>
+                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Ngao 8 za usalama</div>
+                        </div>
+                    </div>
+
+                    <!-- PAIR CODE STATE -->
+                    <div id="bot-pair-state" style="display:none;">
+
+                        <!-- Code display -->
+                        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:16px;padding:20px;text-align:center;border:2px solid #4ade80;">
+                            <div style="font-size:11px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">🔑 Code Yako ya Kuunganisha</div>
+                            <div id="pair-code-value" style="font-size:42px;font-weight:900;color:#075e54;font-family:monospace;letter-spacing:8px;">----</div>
+                            <div id="pair-code-timer" style="font-size:13px;font-weight:700;color:#64748b;margin-top:8px;">Inaisha kwa sekunde 60...</div>
+                        </div>
+
+                        <!-- Steps -->
+                        <div style="background:white;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
+                            <div style="background:#075e54;padding:10px 14px;">
+                                <div style="font-size:12px;font-weight:800;color:white;">Fuata hatua hizi kwenye WhatsApp yako:</div>
+                            </div>
+                            <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Fungua <strong>WhatsApp</strong></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Gonga ⋮ → <strong>Linked Devices</strong></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;"><strong>Link a Device</strong> → <strong>Link with phone number</strong></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#25d078;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Ingiza code <strong id="pair-code-inline" style="color:#075e54;letter-spacing:2px;">----</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Waiting -->
+                        <div id="bot-waiting-msg" style="background:#f8fafc;border-radius:12px;padding:14px;text-align:center;border:1.5px solid #e2e8f0;">
+                            <div style="font-size:13px;color:#475569;font-weight:700;">⏳ Inasubiri uunganisho...</div>
+                            <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Utaunganishwa <strong>otomatiki</strong> ukishaingia code</div>
+                        </div>
+
+                        <button onclick="resetBotSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
+                            ← Badilisha namba / omba code mpya
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            <!-- END WHATSAPP AI BOT CARD -->
 
             <!-- Footer note -->
             <div style="text-align:center; padding:8px; font-size:11px; color:#94a3b8; font-weight:600;">
@@ -6992,13 +7232,13 @@ let ANALYTICS_REALTIME_CHANNEL = null;
 async function goToAnalytics() {
     history.pushState({ step: 'analytics' }, 'Analytics', '?step=analytics');
     showScreen('step-analytics', true);
-    // Set nav active
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('#step-analytics .nav-item').forEach((el, i) => {
         if(i === 2) el.classList.add('active');
     });
     await loadAnalytics();
     subscribeToRealtimeAnalytics();
+    setTimeout(loadBotConfig, 300); // Load bot status
 }
 
 // ---- Period Filter ----
@@ -7314,6 +7554,309 @@ async function trackWhatsAppOrder(merchantId, productId, productName) {
         console.warn('Track WA order failed:', err.message);
     }
 }
+
+
+// ════════════════════════════════════════════════════════
+// WHATSAPP AI BOT
+// Merchant enters phone number only — no technical config
+// Railway URL is hardcoded here — change after deploying
+// ════════════════════════════════════════════════════════
+
+const BOT_SERVER_URL = 'https://linkamarket-bot.up.railway.app'; // ← change this after Railway deploy
+const AI_EDGE_URL    = 'https://vqgnxqabvmmpfoiceass.supabase.co/functions/v1/ai-reply';
+
+let BOT_CONFIG      = { wa_number: '', auto_reply: true, quiet_hours: true };
+let BOT_STATUS      = 'offline';
+let BOT_STATUS_POLL = null;
+let PAIR_CODE_TIMER = null;
+let PAIR_POLL_INT   = null;
+
+function toggleBotCard() {
+    const body = document.getElementById('bot-card-body');
+    const icon = document.getElementById('bot-status-text-icon');
+    if (!body) return;
+    const isHidden = body.style.display === 'none';
+    body.style.display = isHidden ? 'flex' : 'none';
+    if (icon) icon.textContent = isHidden ? 'expand_less' : 'expand_more';
+}
+
+function resetBotSetup() {
+    clearInterval(PAIR_CODE_TIMER);
+    clearInterval(PAIR_POLL_INT);
+    document.getElementById('bot-setup-state').style.display = 'block';
+    document.getElementById('bot-pair-state').style.display  = 'none';
+    const btn = document.getElementById('btn-connect-bot');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Unganisha WhatsApp Yangu';
+    }
+}
+
+// Called when analytics screen opens
+async function loadBotConfig() {
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+
+        const { data } = await sb.from('profiles')
+            .select('bot_config, bot_connection_status, bot_connected_at, whatsapp_number')
+            .eq('id', user.id).single();
+
+        if (data?.bot_config) BOT_CONFIG = { ...BOT_CONFIG, ...data.bot_config };
+
+        const nEl = document.getElementById('bot-wa-number');
+        if (nEl) nEl.value = BOT_CONFIG.wa_number || data?.whatsapp_number || '';
+
+        const arT = document.getElementById('bot-auto-toggle');
+        const qhT = document.getElementById('bot-quiet-toggle');
+        if (arT) arT.checked = BOT_CONFIG.auto_reply !== false;
+        if (qhT) qhT.checked = BOT_CONFIG.quiet_hours !== false;
+
+        if (data?.bot_connection_status === 'connected') {
+            showBotConnectedState(data?.whatsapp_number || BOT_CONFIG.wa_number, data?.bot_connected_at);
+            startStatusPolling();
+        } else {
+            showBotSetupState();
+        }
+    } catch (e) {
+        console.warn('loadBotConfig:', e.message);
+    }
+}
+
+async function flushBotConfig() {
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        await sb.from('profiles').update({ bot_config: BOT_CONFIG }).eq('id', user.id);
+    } catch (e) {}
+}
+
+async function saveBotSetting(setting, value) {
+    BOT_CONFIG[setting] = value;
+    await flushBotConfig();
+    if (BOT_STATUS === 'online') {
+        try {
+            const { data: { user } } = await sb.auth.getUser();
+            await fetch(BOT_SERVER_URL + '/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-merchant-id': user?.id || '' },
+                body: JSON.stringify({ setting, value })
+            });
+        } catch(e) {}
+    }
+}
+
+// Merchant taps "Unganisha WhatsApp Yangu"
+async function requestPairCode() {
+    const phone = (document.getElementById('bot-wa-number').value || '').trim().replace(/[^0-9]/g, '');
+
+    if (!phone || phone.length < 10) {
+        showBotToast('⚠️ Ingiza namba kamili (mfano: 255712345678)', 'error');
+        return;
+    }
+
+    BOT_CONFIG.wa_number = phone;
+    await flushBotConfig();
+
+    const btn = document.getElementById('btn-connect-bot');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;animation:botSpin 1s linear infinite;">sync</span> Inaomba code...';
+    }
+    setBotStatus('connecting', 'Inaomba code...');
+
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('Tafadhali ingia kwanza');
+
+        const res = await fetch(BOT_SERVER_URL + '/pair', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, merchant_id: user.id })
+        });
+
+        let resp;
+        try { resp = await res.json(); } catch(e) { throw new Error('Seva haitoi jibu sahihi.'); }
+        if (!res.ok) throw new Error(resp?.error || 'Kosa la seva: ' + res.status);
+        if (!resp.code) throw new Error('Seva haikutoa code.');
+
+        const fmt = formatPairCode(resp.code);
+        document.getElementById('pair-code-value').textContent  = fmt;
+        document.getElementById('pair-code-inline').textContent = fmt;
+
+        // Show pair code screen
+        document.getElementById('bot-setup-state').style.display = 'none';
+        document.getElementById('bot-pair-state').style.display  = 'block';
+
+        startPairCodeCountdown();
+        startPollForConnection(user.id);
+
+    } catch (err) {
+        setBotStatus('error', 'Imeshindwa');
+        showBotToast('❌ ' + err.message, 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Jaribu Tena';
+        }
+    }
+}
+
+function formatPairCode(code) {
+    const c = (code || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    return c.length === 8 ? c.slice(0,4) + '-' + c.slice(4) : code;
+}
+
+function startPairCodeCountdown() {
+    clearInterval(PAIR_CODE_TIMER);
+    let secs = 60;
+    PAIR_CODE_TIMER = setInterval(() => {
+        secs--;
+        const el = document.getElementById('pair-code-timer');
+        if (!el) { clearInterval(PAIR_CODE_TIMER); return; }
+        if (secs > 0) {
+            el.textContent = 'Inaisha kwa sekunde ' + secs + '...';
+            el.style.color = secs <= 15 ? '#ef4444' : '#64748b';
+        } else {
+            clearInterval(PAIR_CODE_TIMER);
+            el.textContent = '⚠️ Code imeisha — omba mpya';
+            el.style.color = '#ef4444';
+        }
+    }, 1000);
+}
+
+function startPollForConnection(merchantId) {
+    clearInterval(PAIR_POLL_INT);
+    let tries = 0;
+    PAIR_POLL_INT = setInterval(async () => {
+        tries++;
+        try {
+            const res = await fetch(BOT_SERVER_URL + '/status?merchant=' + merchantId, { signal: AbortSignal.timeout(4000) });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.connected) {
+                clearInterval(PAIR_POLL_INT);
+                clearInterval(PAIR_CODE_TIMER);
+                const { data: { user } } = await sb.auth.getUser();
+                if (user) {
+                    await sb.from('profiles').update({
+                        bot_connection_status: 'connected',
+                        bot_connected_at: new Date().toISOString(),
+                        whatsapp_number: BOT_CONFIG.wa_number
+                    }).eq('id', user.id);
+                }
+                showBotToast('✅ WhatsApp imefanikiwa kuunganishwa!', 'success');
+                showBotConnectedState(BOT_CONFIG.wa_number, new Date().toISOString());
+                startStatusPolling();
+            }
+        } catch(e) {}
+        if (tries >= 36) {
+            clearInterval(PAIR_POLL_INT);
+            const w = document.getElementById('bot-waiting-msg');
+            if (w) w.innerHTML = '<div style="font-size:12px;color:#ef4444;font-weight:700;text-align:center;">⏰ Muda umeisha. Omba code mpya.</div>';
+            setBotStatus('error', 'Muda umeisha');
+        }
+    }, 5000);
+}
+
+function startStatusPolling() {
+    if (BOT_STATUS_POLL) clearInterval(BOT_STATUS_POLL);
+    BOT_STATUS_POLL = setInterval(async () => {
+        try {
+            const { data: { user } } = await sb.auth.getUser();
+            if (!user) return;
+            const res = await fetch(BOT_SERVER_URL + '/status?merchant=' + user.id, { signal: AbortSignal.timeout(5000) });
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            if (d.connected) {
+                setBotStatus('online', 'Inafanya kazi ✅');
+                const c = document.getElementById('bot-today-count');
+                const m = document.getElementById('bot-daily-max');
+                const a = document.getElementById('bot-age-days');
+                if (c) c.textContent = d.today_count || 0;
+                if (m) m.textContent = '/ ' + (d.daily_limit || 10) + ' max';
+                if (a) a.textContent = d.bot_age_days || 0;
+            } else {
+                setBotStatus('offline', 'Imezimwa — itarejea');
+            }
+        } catch(e) { setBotStatus('error', 'Seva haifiki'); }
+    }, 15000);
+}
+
+async function disconnectBot() {
+    if (!confirm('Una uhakika unataka kukata bot?')) return;
+    clearInterval(BOT_STATUS_POLL);
+    clearInterval(PAIR_POLL_INT);
+    clearInterval(PAIR_CODE_TIMER);
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) {
+            await fetch(BOT_SERVER_URL + '/disconnect', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchant_id: user.id })
+            }).catch(() => {});
+            await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', user.id);
+        }
+    } catch(e) {}
+    showBotSetupState();
+    resetBotSetup();
+    setBotStatus('offline', 'Imekatwa');
+    showBotToast('Bot imekatwa', 'info');
+}
+
+function showBotConnectedState(phone, connectedAt) {
+    document.getElementById('bot-setup-state').style.display     = 'none';
+    document.getElementById('bot-pair-state').style.display      = 'none';
+    document.getElementById('bot-connected-state').style.display = 'block';
+    document.getElementById('bot-card-subtitle').textContent     = '+' + (phone || '').replace(/[^0-9]/g,'');
+    setBotStatus('online', 'Inafanya kazi ✅');
+    if (connectedAt) {
+        const days = Math.floor((Date.now() - new Date(connectedAt)) / 86400000);
+        let max = 10, pct = 10;
+        if (days >= 15) { max = 100; pct = 100; }
+        else if (days >= 8)  { max = 50;  pct = 75; }
+        else if (days >= 4)  { max = 25;  pct = 40; }
+        const bar = document.getElementById('ramp-bar');
+        if (bar) bar.style.width = pct + '%';
+        const desc = document.getElementById('ramp-description');
+        if (desc) desc.textContent = max + '/siku';
+        const maxEl = document.getElementById('bot-daily-max');
+        if (maxEl) maxEl.textContent = '/ ' + max + ' max';
+        const ageEl = document.getElementById('bot-age-days');
+        if (ageEl) ageEl.textContent = days;
+    }
+    const numEl = document.getElementById('bot-connected-number');
+    if (numEl) numEl.textContent = '+' + (phone||'').replace(/[^0-9]/g,'') + ' • Inajibu wateja otomatiki';
+    const arT = document.getElementById('bot-auto-toggle');
+    const qhT = document.getElementById('bot-quiet-toggle');
+    if (arT) arT.checked = BOT_CONFIG.auto_reply !== false;
+    if (qhT) qhT.checked = BOT_CONFIG.quiet_hours !== false;
+}
+
+function showBotSetupState() {
+    document.getElementById('bot-setup-state').style.display     = 'block';
+    document.getElementById('bot-pair-state').style.display      = 'none';
+    document.getElementById('bot-connected-state').style.display = 'none';
+    document.getElementById('bot-card-subtitle').textContent     = 'Bonyeza kuweka mipangilio';
+}
+
+function setBotStatus(status, text) {
+    BOT_STATUS = status;
+    const dot = document.getElementById('bot-status-dot');
+    const sub = document.getElementById('bot-card-subtitle');
+    if (dot) dot.className = 'bot-status-dot ' + ({'online':'online','connecting':'connecting','error':'error'}[status]||'');
+    if (sub && status !== 'online') sub.textContent = text;
+}
+
+function showBotToast(message, type) {
+    const colors = { success:'#16a34a', error:'#ef4444', info:'#0f172a' };
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + (colors[type]||'#0f172a') + ';color:white;padding:12px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:88vw;text-align:center;';
+    t.textContent = message;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+
+// END BOT CODE
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); } 
 </script>
