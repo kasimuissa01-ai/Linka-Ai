@@ -262,7 +262,7 @@ async function handleMessage(sock, merchantId, msg) {
   if (m.config.quiet_hours !== false && isQuietHours()) {
     const delay = getQuietHoursDelay()
     logger.info(`🌙 Quiet hours — queued for ${Math.round(delay/60000)}min`)
-    setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId), delay)
+    setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), delay)
     return
   }
 
@@ -279,14 +279,16 @@ async function handleMessage(sock, merchantId, msg) {
     return  // merchant sees msg in app, replies manually
   }
 
-  // ── SHIELD 3: Smart random delay ─────────────────────────
-  const delay = calculateSmartDelay()
-  logger.info(`⏱  [${merchantId}] Delaying ${Math.round(delay/60000)}min`)
-  setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId), delay)
+  // ── SHIELD 3: Human reading delay before typing starts ───────────────────
+  // Simulates a person picking up their phone, reading the message, then typing.
+  // Total reply time (read + type + send) stays within 45 seconds.
+  const readDelay = humanReadDelay(text)
+  logger.info(`⏱️  [${merchantId}] Read pause ${(readDelay/1000).toFixed(1)}s → then typing...`)
+  setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), readDelay)
 }
 
 // ── Generate reply via Edge Function and send ─────────────────
-async function processReply(sock, merchantId, jid, customerPhone, text, savedId) {
+async function processReply(sock, merchantId, jid, customerPhone, text, savedId, msgKeyId) {
   const m = merchants.get(merchantId)
   if (!m?.connected) {
     logger.warn(`[${merchantId}] Skipping reply — disconnected`)
@@ -317,19 +319,33 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId)
 
     logger.info(`💬 [${merchantId}] Reply ready (${reply.length} chars)`)
 
-    // ── SHIELD 2: Dynamic typing simulator ───────────────────
-    // Realistic typing duration based on reply length
-    const typingMs = Math.max(2500, Math.min(reply.length * 42, 9000))
+    // ── SHIELD 2: Professional typing simulation ─────────────
+    // Full sequence mimics a real person reading and replying:
+    //   1. Mark message as read (shows blue ticks — real humans do this first)
+    //   2. Brief "opening chat" pause (200–600ms)
+    //   3. "Available" presence — they just opened the app
+    //   4. "Composing" for realistic duration based on reply length:
+    //      • Short reply  (<80 chars)  → 4–8 seconds typing
+    //      • Medium reply (<180 chars) → 7–14 seconds typing
+    //      • Long reply   (180+ chars) → 12–22 seconds typing
+    //   5. "Paused" briefly — they're re-reading before send
+    //   6. Message delivered
+    // All within the 45s total window (readDelay + typing)
+    await sock.readMessages([{ remoteJid: jid, id: msgKeyId || 'latest', fromMe: false }])
+    await sleep(randomBetween(200, 600))                        // open chat
     await sock.sendPresenceUpdate('available', jid)
-    await sleep(randomBetween(500, 1200))        // "opening the chat"
+    await sleep(randomBetween(400, 900))                        // settle in
+
+    const typingMs = replyTypingDuration(reply)
     await sock.sendPresenceUpdate('composing', jid)
-    await sleep(typingMs)                        // "typing the reply"
+    logger.info(`✍️  [${merchantId}] Typing for ${(typingMs/1000).toFixed(1)}s...`)
+    await sleep(typingMs)                                       // typing...
+
     await sock.sendPresenceUpdate('paused', jid)
-    await sleep(randomBetween(300, 800))         // "pausing before send"
+    await sleep(randomBetween(350, 750))                        // re-reading before send
 
     // Send the message
     await sock.sendMessage(jid, { text: reply })
-    await sock.readMessages([{ remoteJid: jid, id: 'latest', fromMe: false }])
 
     // Increment daily counter
     const dayKey = `daily:${merchantId}:${today()}`
@@ -381,13 +397,38 @@ function extractText(msg) {
     || ''
 }
 
-// SHIELD 3: Weighted random delay — not a flat timer
-function calculateSmartDelay() {
-  const r = Math.random()
-  if (r < 0.40) return randomBetween(60_000,   180_000)   // 40%: 1-3 min
-  if (r < 0.75) return randomBetween(180_000,  420_000)   // 35%: 3-7 min
-  if (r < 0.95) return randomBetween(420_000,  900_000)   // 20%: 7-15 min
-  return              randomBetween(900_000, 1_800_000)    //  5%: 15-30 min
+// ── SHIELD 3: Human reading delay before typing starts ───────
+// Simulates: person picks up phone, unlocks, opens WhatsApp, reads.
+// Based on message length — longer message = more reading time.
+// Total budget: we aim for the whole reply to land within 45s.
+// readDelay + typingDuration + overhead must stay under 45s.
+//
+// readDelay ranges:
+//   Short msg  (≤30 chars):  8–16 seconds
+//   Medium msg (≤80 chars): 10–20 seconds
+//   Long msg   (80+ chars): 12–23 seconds
+function humanReadDelay(incomingText) {
+  const len = (incomingText || '').length
+  if (len <= 30) return randomBetween(8_000,  16_000)
+  if (len <= 80) return randomBetween(10_000, 20_000)
+  return             randomBetween(12_000, 23_000)
+}
+
+// ── SHIELD 2: Realistic typing duration based on reply length ─
+// Humans type ~40–55 wpm on mobile. We simulate that pace.
+// We also add small jitter so it never looks like an exact timer.
+//
+// Short  reply (<80 chars):  4–8  seconds  (quick answer)
+// Medium reply (<180 chars): 7–14 seconds  (normal reply)
+// Long   reply (180+ chars): 12–22 seconds (detailed response)
+//
+// Max is capped at 22s so total always stays under 45s.
+function replyTypingDuration(replyText) {
+  const len     = (replyText || '').length
+  const jitter  = randomBetween(-800, 800)       // ±0.8s human variation
+  if (len < 80)  return Math.max(4_000,  randomBetween(4_000,  8_000)  + jitter)
+  if (len < 180) return Math.max(7_000,  randomBetween(7_000,  14_000) + jitter)
+  return               Math.max(12_000, Math.min(randomBetween(12_000, 22_000) + jitter, 22_000))
 }
 
 // SHIELD 4: Ramp up slowly over first 2 weeks
