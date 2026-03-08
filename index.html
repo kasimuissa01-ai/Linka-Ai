@@ -1257,66 +1257,87 @@
     .luxe-trust-sub { font-size: 10px; color: #9ca3af; }
 
 
-    /* --- BOTTOM NAV --- */
+    /* ─── BOTTOM NAV ─── */
     .bottom-nav {
-        flex-shrink: 0; 
+        flex-shrink: 0;
         width: 100%;
-        background: white;
-        border-top: 1px solid #f1f5f9;
+        background: #ffffff;
+        border-top: 2px solid #e8f5e9;
         display: flex;
         justify-content: space-around;
-        align-items: flex-end;
-        padding-bottom: env(safe-area-inset-bottom);
-        height: 75px; 
+        align-items: stretch;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        height: 62px;
         z-index: 200;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
-        position: relative; 
+        box-shadow: 0 -4px 24px rgba(0,0,0,0.07);
+        position: relative;
     }
-
     .nav-item {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100%;
-        padding-bottom: 8px;
-        color: #9ca3af;
+        gap: 3px;
+        color: #b0bec5;
         cursor: pointer;
-        transition: color 0.2s;
+        transition: color 0.18s;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
     }
-
     .nav-item.active { color: #16a34a; }
-    .nav-icon { font-size: 26px; margin-bottom: 4px; }
-    .nav-label { font-size: 11px; font-weight: 700; }
-
-    /* CENTER "ONGEZA" BUTTON */
+    .nav-item.active .nav-icon {
+        font-variation-settings: 'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24;
+    }
+    /* green top pip on active */
+    .nav-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 0; height: 3px;
+        background: #16a34a;
+        border-radius: 0 0 4px 4px;
+        transition: width 0.22s cubic-bezier(.34,1.4,.64,1);
+    }
+    .nav-item.active::before { width: 32px; }
+    .nav-icon {
+        font-size: 23px;
+        line-height: 1;
+        font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+        transition: font-variation-settings 0.18s;
+    }
+    .nav-label { font-size: 10px; font-weight: 700; line-height: 1; letter-spacing: 0.1px; }
+    /* notification dot */
+    .nav-dot {
+        position: absolute; top: 9px; right: calc(50% - 19px);
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #ef4444; border: 1.5px solid white;
+        display: none;
+    }
+    .nav-dot.on { display: block; }
+    /* CENTER ADD */
     .nav-item.center-action { position: relative; overflow: visible; }
-
+    .nav-item.center-action::before { display: none; }
     .floating-add-btn {
         position: absolute;
-        top: -25px; 
-        left: 50%;
+        top: -20px; left: 50%;
         transform: translateX(-50%);
-        width: 60px;
-        height: 60px;
-        background-color: #58cc02;
+        width: 52px; height: 52px;
+        background: linear-gradient(135deg, #25d078, #16a34a);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         color: white;
-        box-shadow: 0 6px 15px rgba(88, 204, 2, 0.4);
-        border: 4px solid #f8f7f6; 
-        transition: transform 0.1s;
+        box-shadow: 0 4px 18px rgba(22,163,74,0.45);
+        border: 3px solid white;
+        transition: transform 0.15s, box-shadow 0.15s;
     }
-
     .nav-item.center-action:active .floating-add-btn {
-        transform: translateX(-50%) scale(0.95);
-        box-shadow: 0 2px 8px rgba(88, 204, 2, 0.4);
+        transform: translateX(-50%) scale(0.93);
+        box-shadow: 0 2px 8px rgba(22,163,74,0.3);
     }
-
-    .add-label { margin-top: 32px; color: #16a34a; font-weight: 800; }
+    .add-label { margin-top: 26px; color: #16a34a; font-weight: 800; font-size: 10px; }
 
     /* ADDED: PWA Install Card Styles (Used in Logic) */
     .pwa-install-card {
@@ -3065,9 +3086,7 @@
    ANALYTICS SCREEN STYLES
    ========================================= */
 
-#step-analytics {
-    background: #f0fdf4;
-}
+
 
 .analytics-header {
     background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
@@ -3849,7 +3868,58 @@
     .toggle-sw input:checked + .toggle-sl:before { transform: translateX(20px); }
     @keyframes botSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
-    </style>
+        @keyframes spin360 { to { transform: rotate(360deg); } }
+    @keyframes botCodeGlow {
+        0%,100% { text-shadow: 0 0 20px rgba(74,222,128,0.3); }
+        50% { text-shadow: 0 0 40px rgba(74,222,128,0.7), 0 0 60px rgba(74,222,128,0.3); }
+    }
+
+    /* ─── PRIVACY MODAL ─── */
+    @keyframes pvCardPop {
+        from { opacity:0; transform:scale(0.88) translateY(14px); }
+        to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    @keyframes pvSlideIn {
+        from { opacity:0; transform:translateX(-16px); }
+        to   { opacity:1; transform:translateX(0); }
+    }
+    @keyframes pvSheetUp {
+        from { transform:translateY(100%); }
+        to   { transform:translateY(0); }
+    }
+    @keyframes pvOverlayIn {
+        from { opacity:0; }
+        to   { opacity:1; }
+    }
+    @keyframes pvBadgePop {
+        0%  { transform:scale(0.5) rotate(-10deg); opacity:0; }
+        70% { transform:scale(1.1) rotate(3deg); }
+        100%{ transform:scale(1) rotate(0); opacity:1; }
+    }
+    /* ─── CHATS PANEL ─── */
+    @keyframes chSlideUp {
+        from { transform:translateY(100%); }
+        to   { transform:translateY(0); }
+    }
+    @keyframes chRowIn {
+        from { opacity:0; transform:translateY(8px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes chDotPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+    /* ─── SIGN-OFF SHEET ─── */
+    @keyframes soSheetIn {
+        from { opacity:0; transform:translateY(16px) scale(0.96); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    /* shared toggle */
+    .lm-toggle { position:relative; width:44px; height:25px; cursor:pointer; display:inline-block; flex-shrink:0; }
+    .lm-toggle input { display:none; }
+    .lm-toggle-sl { position:absolute; inset:0; background:#e2e8f0; border-radius:99px; transition:background 0.25s; border:1px solid rgba(0,0,0,0.05); }
+    .lm-toggle input:checked + .lm-toggle-sl { background:#25d078; }
+    .lm-toggle-sl::after { content:''; position:absolute; width:19px; height:19px; background:white; border-radius:50%; top:2px; left:2px; transition:left 0.22s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+    .lm-toggle input:checked + .lm-toggle-sl::after { left:23px; }
+
+</style>
 </head>
 <body>
     <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
@@ -4116,23 +4186,27 @@
 
         </div>
     
-        <!-- Bottom Nav - Preserved -->
+        <!-- Bottom Nav -->
         <div class="bottom-nav">
-            <div class="nav-item active" id="nav-home" onclick="loadDashboard()">
+            <div class="nav-item active" id="nb-home" onclick="nbGo('home')">
                 <span class="material-symbols-outlined nav-icon">home</span>
                 <span class="nav-label">Nyumbani</span>
             </div>
-            <!-- CENTER ADD BUTTON -->
+            <!-- CENTER ADD -->
             <div class="nav-item center-action" onclick="goToAddProduct()">
                 <div class="floating-add-btn">
-                    <span class="material-symbols-outlined" style="font-size:32px;">add</span>
+                    <span class="material-symbols-outlined" style="font-size:26px;">add</span>
                 </div>
                 <span class="nav-label add-label">Ongeza</span>
             </div>
-            <!-- ANALYTICS BUTTON -->
-            <div class="nav-item" id="nav-analytics" onclick="goToAnalytics()">
-                <span class="material-symbols-outlined nav-icon">insights</span>
-                <span class="nav-label">Analytics</span>
+            <div class="nav-item" id="nb-chats" onclick="nbGo('chats')">
+                <div class="nav-dot" id="chats-dot"></div>
+                <span class="material-symbols-outlined nav-icon">forum</span>
+                <span class="nav-label">Chats</span>
+            </div>
+            <div class="nav-item" id="nb-settings" onclick="nbGo('settings')">
+                <span class="material-symbols-outlined nav-icon">manage_accounts</span>
+                <span class="nav-label">Settings</span>
             </div>
         </div>
     </div>
@@ -4226,6 +4300,169 @@
                 <span class="material-symbols-outlined">save</span>
                 Save Changes
             </button>
+
+            <!-- ═══════════════════════════════════════
+                 WHATSAPP AI BOT — IN SETTINGS
+            ═══════════════════════════════════════ -->
+            <div id="bot-section" style="margin-top:8px;">
+
+                <!-- Section header -->
+                <div style="display:flex;align-items:center;gap:10px;padding:16px 0 10px;">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#075e54,#128c7e);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span class="material-symbols-outlined" style="font-size:20px;color:white;">smart_toy</span>
+                    </div>
+                    <div>
+                        <div style="font-size:15px;font-weight:900;color:#0f172a;">WhatsApp AI Bot</div>
+                        <div style="font-size:11px;color:#64748b;font-weight:500;">Jibu wateja otomatiki 24/7</div>
+                    </div>
+                    <div id="bot-status-badge" style="margin-left:auto;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:99px;padding:4px 10px;font-size:10px;font-weight:800;color:#94a3b8;display:flex;align-items:center;gap:4px;">
+                        <span id="bot-status-dot" style="width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block;"></span>
+                        <span id="bot-status-label">Offline</span>
+                    </div>
+                </div>
+
+                <!-- Bot card -->
+                <div style="background:white;border:1.5px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+
+                    <!-- STATE: Not connected -->
+                    <div id="bot-setup-view" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;display:flex;gap:10px;">
+                            <span style="font-size:20px;flex-shrink:0;">🤖</span>
+                            <div style="font-size:12px;color:#15803d;font-weight:600;line-height:1.5;">
+                                Bot itajibu wateja wanaokutumia WhatsApp <strong>otomatiki</strong> — ikijua bidhaa zako na bei.
+                            </div>
+                        </div>
+
+                        <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:10px 12px;display:flex;gap:8px;">
+                            <span style="flex-shrink:0;font-size:14px;">⚠️</span>
+                            <div style="font-size:11px;color:#713f12;font-weight:600;line-height:1.6;">
+                                Tumia namba yenye <strong>umri wa miezi 2+</strong>. Namba mpya zina hatari ya kubaniwa.<br>
+                                <span style="color:#92400e;margin-top:3px;display:inline-block;">⏱️ Bot itajibu kwa dakika <strong>1–30</strong> — kawaida kabisa, ni ngao ya anti-ban.</span>
+                            </div>
+                        </div>
+
+                        <!-- Privacy link -->
+                        <button onclick="pvOpen()" style="width:100%;background:none;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:700;color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+                            <span class="material-symbols-outlined" style="font-size:17px;color:#16a34a;">shield</span>
+                            Jinsi Bot Inavyolinda Data Yako →
+                        </button>
+
+                        <button id="btn-get-bot-code" onclick="getBotCode()" style="
+                            width:100%;background:linear-gradient(135deg,#25d078,#16a34a);
+                            color:white;border:none;border-radius:14px;padding:15px;
+                            font-size:15px;font-weight:800;cursor:pointer;
+                            display:flex;align-items:center;justify-content:center;gap:8px;
+                            box-shadow:0 4px 20px rgba(37,208,120,0.3);
+                            transition:opacity 0.2s;
+                        ">
+                            <span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span>
+                            Pata Code ya WhatsApp Bot
+                        </button>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:10px;color:#475569;font-weight:700;display:flex;align-items:center;gap:5px;">🛡️ Anti-ban shields</div>
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:10px;color:#475569;font-weight:700;display:flex;align-items:center;gap:5px;">🤖 AI Kiswahili</div>
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:10px;color:#475569;font-weight:700;display:flex;align-items:center;gap:5px;">⚡ Jibu 1–30 min</div>
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:10px;color:#475569;font-weight:700;display:flex;align-items:center;gap:5px;">🔒 Ngao 8 za ban</div>
+                        </div>
+                    </div>
+
+                    <!-- STATE: Code shown -->
+                    <div id="bot-code-view" style="display:none;padding:16px;display:none;flex-direction:column;gap:12px;">
+
+                        <!-- Big code -->
+                        <div style="background:linear-gradient(135deg,#064e44,#075e54);border-radius:14px;padding:22px 16px;text-align:center;position:relative;overflow:hidden;">
+                            <div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:rgba(255,255,255,0.04);border-radius:50%;"></div>
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">🔑 CODE YAKO</div>
+                            <div id="bot-pair-code" style="font-size:44px;font-weight:900;color:#4ade80;font-family:monospace;letter-spacing:8px;text-shadow:0 0 30px rgba(74,222,128,0.4);">----</div>
+                            <div id="bot-code-timer" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;font-weight:600;">Inaisha kwa sekunde 60...</div>
+                        </div>
+
+                        <!-- Steps -->
+                        <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                            <div style="background:#075e54;padding:10px 14px;">
+                                <div style="font-size:12px;font-weight:800;color:white;">Fuata hatua hizi kwenye WhatsApp:</div>
+                            </div>
+                            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Fungua <strong>WhatsApp</strong> kwenye simu yako</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Gonga <strong>⋮ menu</strong> → <strong>Settings</strong></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Gonga <strong>Linked Devices</strong> → <strong>Link a Device</strong></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:26px;height:26px;border-radius:50%;background:#25d078;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
+                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Chagua <strong>Link with phone number</strong> → ingiza code hii</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Waiting -->
+                        <div id="bot-waiting-row" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <div style="width:16px;height:16px;border:2.5px solid #bbf7d0;border-top-color:#16a34a;border-radius:50%;animation:spin360 0.7s linear infinite;"></div>
+                            <div style="font-size:13px;font-weight:700;color:#15803d;">Inasubiri uunganisho otomatiki...</div>
+                        </div>
+
+                        <button onclick="botResetSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
+                            ← Omba code mpya
+                        </button>
+                    </div>
+
+                    <!-- STATE: Connected -->
+                    <div id="bot-connected-view" style="display:none;padding:16px;flex-direction:column;gap:12px;">
+
+                        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #4ade80;border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;">
+                            <div style="width:44px;height:44px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✅</div>
+                            <div>
+                                <div style="font-size:14px;font-weight:900;color:#15803d;">Bot Inafanya Kazi!</div>
+                                <div id="bot-conn-phone" style="font-size:12px;color:#4b7c59;font-weight:600;margin-top:2px;">+255... • Inajibu wateja</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;gap:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+                                <div>
+                                    <div style="font-size:13px;font-weight:800;color:#0f172a;">🤖 Auto-reply</div>
+                                    <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Jibu otomatiki kila ujumbe</div>
+                                </div>
+                                <label style="position:relative;width:44px;height:24px;cursor:pointer;">
+                                    <input type="checkbox" id="bot-tog-auto" checked onchange="botSaveSetting('auto_reply',this.checked)" style="display:none;">
+                                    <span id="bot-tog-auto-sl" onclick="toggleBotSwitch('bot-tog-auto','bot-tog-auto-sl')" style="position:absolute;inset:0;background:#25d078;border-radius:99px;transition:background 0.3s;cursor:pointer;border:1px solid rgba(0,0,0,0.05);">
+                                        <span style="position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:22px;transition:left 0.25s;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+                                <div>
+                                    <div style="font-size:13px;font-weight:800;color:#0f172a;">🌙 Pumzika usiku</div>
+                                    <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Pause 11 PM – 6 AM EAT</div>
+                                </div>
+                                <label style="position:relative;width:44px;height:24px;cursor:pointer;">
+                                    <input type="checkbox" id="bot-tog-quiet" checked onchange="botSaveSetting('quiet_hours',this.checked)" style="display:none;">
+                                    <span id="bot-tog-quiet-sl" onclick="toggleBotSwitch('bot-tog-quiet','bot-tog-quiet-sl')" style="position:absolute;inset:0;background:#25d078;border-radius:99px;transition:background 0.3s;cursor:pointer;border:1px solid rgba(0,0,0,0.05);">
+                                        <span style="position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:22px;transition:left 0.25s;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button onclick="botDisconnect()" style="width:100%;background:white;border:1.5px solid #fee2e2;border-radius:12px;padding:12px;font-size:13px;font-weight:800;color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">link_off</span>
+                            Kata Uunganisho wa Bot
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            <!-- END BOT SECTION -->
+
         </div>
     </div>
 </div>
@@ -4930,385 +5167,7 @@
 <!-- =============================================
      ANALYTICS SCREEN
      ============================================= -->
-<div id="step-analytics" class="screen-wrapper hidden">
-    <div class="app-container" style="display:flex; flex-direction:column; height:100vh; overflow:hidden;">
-        
-        <!-- Header -->
-        <div class="analytics-header">
-            <div class="analytics-header-top">
-                <div>
-                    <div class="analytics-header-title">📊 Store Insights</div>
-                    <div class="analytics-header-sub" id="analytics-store-name">Your Store Performance</div>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <div class="analytics-live-badge">
-                        <div class="live-dot"></div>
-                        LIVE
-                    </div>
-                    <button class="analytics-refresh-btn" onclick="loadAnalytics()" title="Refresh">
-                        <span class="material-symbols-outlined">refresh</span>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Hero Stats (Top 3 KPIs) -->
-            <div class="analytics-hero-stats">
-                <div class="analytics-hero-stat">
-                    <div class="analytics-hero-num" id="hero-views">-</div>
-                    <div class="analytics-hero-label">👁 Views</div>
-                </div>
-                <div class="analytics-hero-stat">
-                    <div class="analytics-hero-num" id="hero-orders">-</div>
-                    <div class="analytics-hero-label">📦 Orders</div>
-                </div>
-                <div class="analytics-hero-stat">
-                    <div class="analytics-hero-num" id="hero-rate">-</div>
-                    <div class="analytics-hero-label">🔥 Rate</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter Tabs -->
-        <div style="padding: 14px 16px 0;">
-            <div class="analytics-filter-tabs">
-                <div class="analytics-filter-tab active" onclick="setAnalyticsPeriod('today', this)">Leo</div>
-                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('week', this)">Wiki</div>
-                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('month', this)">Mwezi</div>
-                <div class="analytics-filter-tab" onclick="setAnalyticsPeriod('all', this)">Yote</div>
-            </div>
-        </div>
-
-        <!-- Scrollable Content -->
-        <div class="analytics-content" id="analytics-content-area">
-
-            <!-- Store Views Card -->
-            <div class="analytics-card">
-                <div class="analytics-card-header">
-                    <div class="analytics-card-title">
-                        <div class="ac-icon ac-icon-green">
-                            <span class="material-symbols-outlined" style="font-size:16px;">store</span>
-                        </div>
-                        Watu Walioingia Dukani
-                    </div>
-                    <span class="analytics-period-badge" id="views-period-label">Leo</span>
-                </div>
-                <div class="analytics-big-metric">
-                    <div class="analytics-big-num" id="stat-store-views">-</div>
-                    <div class="analytics-trend trend-neutral" id="views-trend">📈</div>
-                </div>
-                <div class="analytics-sub-label">Jumla ya watu waliofungua duka lako</div>
-                <!-- Bar chart for last 7 days -->
-                <div class="mini-bar-chart" id="views-bar-chart"></div>
-                <div class="mini-bar-labels" id="views-bar-labels"></div>
-            </div>
-
-            <!-- WhatsApp Orders Card -->
-            <div class="analytics-card">
-                <div class="analytics-card-header">
-                    <div class="analytics-card-title">
-                        <div class="ac-icon ac-icon-blue">
-                            <span class="material-symbols-outlined" style="font-size:16px;">chat</span>
-                        </div>
-                        Maagizo via WhatsApp
-                    </div>
-                    <span class="analytics-period-badge" id="orders-period-label">Leo</span>
-                </div>
-                <div class="analytics-big-metric">
-                    <div class="analytics-big-num" id="stat-wa-orders">-</div>
-                    <div class="analytics-trend trend-neutral" id="orders-trend">📦</div>
-                </div>
-                <div class="analytics-sub-label">Watu waliobonyeza "Order via WhatsApp"</div>
-                <div class="mini-bar-chart" id="orders-bar-chart"></div>
-                <div class="mini-bar-labels" id="orders-bar-labels"></div>
-            </div>
-
-            <!-- Conversion Rate Card -->
-            <div class="analytics-card">
-                <div class="analytics-card-header">
-                    <div class="analytics-card-title">
-                        <div class="ac-icon ac-icon-purple">
-                            <span class="material-symbols-outlined" style="font-size:16px;">trending_up</span>
-                        </div>
-                        Ufanisi wa Duka
-                    </div>
-                </div>
-                <div class="conversion-ring-wrap">
-                    <div class="conversion-ring">
-                        <svg viewBox="0 0 80 80" width="80" height="80">
-                            <circle class="ring-bg" cx="40" cy="40" r="32"/>
-                            <circle class="ring-fill" id="conv-ring-circle" cx="40" cy="40" r="32"
-                                stroke="#16a34a"
-                                stroke-dasharray="201"
-                                stroke-dashoffset="201"/>
-                        </svg>
-                        <div class="ring-center-text">
-                            <div class="ring-pct" id="conv-pct">0%</div>
-                            <div class="ring-pct-label">Rate</div>
-                        </div>
-                    </div>
-                    <div class="conversion-breakdown">
-                        <div class="conv-row">
-                            <span class="conv-label">
-                                <span class="conv-dot" style="background:#dcfce7; border:2px solid #16a34a;"></span>
-                                Walioingia
-                            </span>
-                            <span class="conv-val" id="conv-views">0</span>
-                        </div>
-                        <div class="conv-row">
-                            <span class="conv-label">
-                                <span class="conv-dot" style="background:#dbeafe; border:2px solid #2563eb;"></span>
-                                Walioulizia
-                            </span>
-                            <span class="conv-val" id="conv-orders">0</span>
-                        </div>
-                        <div style="margin-top:4px; font-size:11px; color:#94a3b8; font-weight:600;">
-                            Kati ya watu 100, <span id="conv-explain" style="color:#16a34a; font-weight:800;">0</span> wanaagiza
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Products Card -->
-            <div class="analytics-card">
-                <div class="analytics-card-header">
-                    <div class="analytics-card-title">
-                        <div class="ac-icon ac-icon-orange">
-                            <span class="material-symbols-outlined" style="font-size:16px;">emoji_events</span>
-                        </div>
-                        Bidhaa Maarufu
-                    </div>
-                </div>
-                <div class="top-products-list" id="top-products-list">
-                    <div class="analytics-empty">
-                        <span class="material-symbols-outlined">inventory_2</span>
-                        <p style="font-size:13px;">Bado hakuna data</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Last Seen Card (Recent Activity) -->
-            <div class="analytics-card">
-                <div class="analytics-card-header">
-                    <div class="analytics-card-title">
-                        <div class="ac-icon ac-icon-green">
-                            <span class="material-symbols-outlined" style="font-size:16px;">schedule</span>
-                        </div>
-                        Shughuli za Hivi Karibuni
-                    </div>
-                </div>
-                <div id="recent-activity-list">
-                    <div class="analytics-empty">
-                        <span class="material-symbols-outlined">hourglass_empty</span>
-                        <p style="font-size:13px;">Hakuna shughuli bado</p>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- ══════════════════════════════════════
-                 WHATSAPP AI BOT CARD
-                 Merchant just enters phone number
-            ══════════════════════════════════════ -->
-            <div class="bot-card" id="bot-main-card">
-
-                <!-- Header -->
-                <div class="bot-card-header" onclick="toggleBotCard()">
-                    <div class="bot-status-dot" id="bot-status-dot"></div>
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:800;color:white;">🤖 WhatsApp AI Bot</div>
-                        <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:600;" id="bot-card-subtitle">Bonyeza kuweka mipangilio</div>
-                    </div>
-                    <span class="material-symbols-outlined" style="color:white;font-size:20px;" id="bot-status-text-icon">expand_more</span>
-                </div>
-
-                <!-- Body -->
-                <div class="bot-card-body" id="bot-card-body">
-
-                    <!-- CONNECTED STATE -->
-                    <div id="bot-connected-state" style="display:none;">
-                        <div class="bot-connected-banner">
-                            <span style="font-size:28px;">📱</span>
-                            <div style="flex:1;">
-                                <div style="font-size:14px;font-weight:800;color:#15803d;">Bot Inafanya Kazi! ✅</div>
-                                <div style="font-size:12px;color:#4b7c59;font-weight:600;" id="bot-connected-number">Inapakia...</div>
-                            </div>
-                            <button onclick="disconnectBot()" style="background:#fee2e2;border:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#ef4444;cursor:pointer;">Kata</button>
-                        </div>
-
-                        <!-- Stats -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                            <div style="background:#f0fdf4;border-radius:12px;padding:12px;text-align:center;border:1px solid #bbf7d0;">
-                                <div style="font-size:28px;font-weight:900;color:#15803d;" id="bot-today-count">0</div>
-                                <div style="font-size:10px;color:#4b7c59;font-weight:700;">MAJIBU LEO</div>
-                                <div style="font-size:10px;color:#94a3b8;font-weight:600;" id="bot-daily-max">/ 10 max</div>
-                            </div>
-                            <div style="background:#f0f9ff;border-radius:12px;padding:12px;text-align:center;border:1px solid #bae6fd;">
-                                <div style="font-size:28px;font-weight:900;color:#0369a1;" id="bot-age-days">0</div>
-                                <div style="font-size:10px;color:#0369a1;font-weight:700;">SIKU ZILIZOPITA</div>
-                                <div style="font-size:10px;color:#94a3b8;font-weight:600;">tangu kuunganisha</div>
-                            </div>
-                        </div>
-
-                        <!-- Ramp -->
-                        <div style="background:#f8fafc;border-radius:12px;padding:12px;border:1px solid #e2e8f0;">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                                <span style="font-size:12px;font-weight:700;color:#374151;">📈 Ukuaji wa Usalama</span>
-                                <span style="font-size:11px;font-weight:700;color:#15803d;" id="ramp-description">10/siku</span>
-                            </div>
-                            <div class="ramp-bar-track"><div class="ramp-bar-fill" id="ramp-bar" style="width:10%;"></div></div>
-                            <div style="display:flex;justify-content:space-between;margin-top:4px;">
-                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Siku 1 (10)</span>
-                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Wiki 1 (25)</span>
-                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Wiki 2 (50)</span>
-                                <span style="font-size:9px;color:#94a3b8;font-weight:600;">Siku 15+ (100)</span>
-                            </div>
-                        </div>
-
-                        <!-- Toggles -->
-                        <div class="bot-toggle-row">
-                            <div>
-                                <div style="font-size:13px;font-weight:700;color:#0f172a;">🤖 AI Auto-Reply</div>
-                                <div style="font-size:11px;color:#94a3b8;font-weight:500;">Jibu otomatiki dakika 1-30</div>
-                            </div>
-                            <label class="toggle-sw">
-                                <input type="checkbox" id="bot-auto-toggle" checked onchange="saveBotSetting('auto_reply', this.checked)">
-                                <span class="toggle-sl"></span>
-                            </label>
-                        </div>
-                        <div class="bot-toggle-row" style="border:none;">
-                            <div>
-                                <div style="font-size:13px;font-weight:700;color:#0f172a;">🌙 Pumzika Usiku</div>
-                                <div style="font-size:11px;color:#94a3b8;font-weight:500;">Hakuna jibu 11pm – 6am</div>
-                            </div>
-                            <label class="toggle-sw">
-                                <input type="checkbox" id="bot-quiet-toggle" checked onchange="saveBotSetting('quiet_hours', this.checked)">
-                                <span class="toggle-sl"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- SETUP STATE -->
-                    <div id="bot-setup-state">
-
-                        <!-- Explainer -->
-                        <div style="background:#f0fdf4;border-radius:12px;padding:12px 14px;border:1px solid #bbf7d0;">
-                            <div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:4px;">🤖 Bot itafanya nini?</div>
-                            <div style="font-size:12px;color:#374151;line-height:1.6;font-weight:500;">
-                                Wateja watakapotuma ujumbe WhatsApp kwako, AI itawajibu <strong>otomatiki</strong> kwa Kiswahili — ikijua bidhaa zako na bei zake.
-                            </div>
-                        </div>
-
-                        <!-- Phone input -->
-                        <div>
-                            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;">📱 Namba yako ya WhatsApp</div>
-                            <input type="tel" id="bot-wa-number" class="bot-input"
-                                placeholder="255712345678"
-                                style="font-size:20px;font-weight:800;letter-spacing:3px;text-align:center;">
-                            <div style="font-size:11px;color:#94a3b8;margin-top:5px;text-align:center;font-weight:500;">
-                                Andika namba kamili ukianza na 255
-                            </div>
-                        </div>
-
-                        <!-- Warning -->
-                        <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:10px 12px;display:flex;gap:8px;">
-                            <span style="flex-shrink:0;">⚠️</span>
-                            <div style="font-size:11px;color:#713f12;font-weight:600;line-height:1.5;">
-                                Tumia namba yenye <strong>umri wa miezi 2+</strong> na mazungumzo ya kawaida. Namba mpya zina hatari ya kubaniwa.
-                            </div>
-                        </div>
-
-                        <!-- Connect button -->
-                        <button id="btn-connect-bot" onclick="requestPairCode()"
-                            style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(37,208,120,0.3);">
-                            <span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span>
-                            Unganisha WhatsApp Yangu
-                        </button>
-
-                        <!-- Safety badges -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Hakuna spam</div>
-                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ AI kwa Kiswahili</div>
-                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Inajua bei zako</div>
-                            <div style="background:#f8fafc;border-radius:8px;padding:7px 10px;border:1px solid #e2e8f0;font-size:10px;color:#475569;font-weight:600;">✅ Ngao 8 za usalama</div>
-                        </div>
-                    </div>
-
-                    <!-- PAIR CODE STATE -->
-                    <div id="bot-pair-state" style="display:none;">
-
-                        <!-- Code display -->
-                        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:16px;padding:20px;text-align:center;border:2px solid #4ade80;">
-                            <div style="font-size:11px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">🔑 Code Yako ya Kuunganisha</div>
-                            <div id="pair-code-value" style="font-size:42px;font-weight:900;color:#075e54;font-family:monospace;letter-spacing:8px;">----</div>
-                            <div id="pair-code-timer" style="font-size:13px;font-weight:700;color:#64748b;margin-top:8px;">Inaisha kwa sekunde 60...</div>
-                        </div>
-
-                        <!-- Steps -->
-                        <div style="background:white;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
-                            <div style="background:#075e54;padding:10px 14px;">
-                                <div style="font-size:12px;font-weight:800;color:white;">Fuata hatua hizi kwenye WhatsApp yako:</div>
-                            </div>
-                            <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
-                                <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
-                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Fungua <strong>WhatsApp</strong></div>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
-                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Gonga ⋮ → <strong>Linked Devices</strong></div>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:26px;height:26px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
-                                    <div style="font-size:13px;color:#0f172a;font-weight:600;"><strong>Link a Device</strong> → <strong>Link with phone number</strong></div>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:26px;height:26px;border-radius:50%;background:#25d078;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
-                                    <div style="font-size:13px;color:#0f172a;font-weight:600;">Ingiza code <strong id="pair-code-inline" style="color:#075e54;letter-spacing:2px;">----</strong></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Waiting -->
-                        <div id="bot-waiting-msg" style="background:#f8fafc;border-radius:12px;padding:14px;text-align:center;border:1.5px solid #e2e8f0;">
-                            <div style="font-size:13px;color:#475569;font-weight:700;">⏳ Inasubiri uunganisho...</div>
-                            <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Utaunganishwa <strong>otomatiki</strong> ukishaingia code</div>
-                        </div>
-
-                        <button onclick="resetBotSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
-                            ← Badilisha namba / omba code mpya
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-            <!-- END WHATSAPP AI BOT CARD -->
-
-            <!-- Footer note -->
-            <div style="text-align:center; padding:8px; font-size:11px; color:#94a3b8; font-weight:600;">
-                📡 Data inasasishwa kwa wakati halisi • LinkaMarket Analytics
-            </div>
-
-        </div>
-
-        <!-- Bottom Nav -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="loadDashboard()">
-                <span class="material-symbols-outlined nav-icon">home</span>
-                <span class="nav-label">Nyumbani</span>
-            </div>
-            <div class="nav-item center-action" onclick="goToAddProduct()">
-                <div class="floating-add-btn">
-                    <span class="material-symbols-outlined" style="font-size:32px;">add</span>
-                </div>
-                <span class="nav-label add-label">Ongeza</span>
-            </div>
-            <div class="nav-item active" onclick="goToAnalytics()">
-                <span class="material-symbols-outlined nav-icon">insights</span>
-                <span class="nav-label">Analytics</span>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
     // --- SUPABASE CONFIG ---
@@ -5575,8 +5434,8 @@
     }
     
     function showScreen(stepId, animate) {
-        // Removed 'step-11', 'step-ai', 'step-analytics' from this list
-        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile', 'step-analytics'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+        // Screen list
+        ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(stepId);
         if(target) { target.classList.remove('hidden'); if (animate) { target.classList.remove('fade-in'); void target.offsetWidth; target.classList.add('fade-in'); } }
     }
@@ -6099,6 +5958,7 @@
     async function openProfileSettings() {
         document.querySelectorAll('.screen-wrapper').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-profile').classList.remove('hidden');
+        loadBotStatus();
         const { data: { user } } = await sb.auth.getUser();
         if(!user) return;
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -7229,17 +7089,6 @@ let ANALYTICS_PERIOD = 'today';
 let ANALYTICS_REALTIME_CHANNEL = null;
 
 // ---- Navigate to Analytics ----
-async function goToAnalytics() {
-    history.pushState({ step: 'analytics' }, 'Analytics', '?step=analytics');
-    showScreen('step-analytics', true);
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('#step-analytics .nav-item').forEach((el, i) => {
-        if(i === 2) el.classList.add('active');
-    });
-    await loadAnalytics();
-    subscribeToRealtimeAnalytics();
-    setTimeout(loadBotConfig, 300); // Load bot status
-}
 
 // ---- Period Filter ----
 function setAnalyticsPeriod(period, el) {
@@ -7562,303 +7411,743 @@ async function trackWhatsAppOrder(merchantId, productId, productName) {
 // Railway URL is hardcoded here — change after deploying
 // ════════════════════════════════════════════════════════
 
-const BOT_SERVER_URL = 'https://linkamarket-bot.up.railway.app'; // ← change this after Railway deploy
-const AI_EDGE_URL    = 'https://vqgnxqabvmmpfoiceass.supabase.co/functions/v1/ai-reply';
 
-let BOT_CONFIG      = { wa_number: '', auto_reply: true, quiet_hours: true };
-let BOT_STATUS      = 'offline';
-let BOT_STATUS_POLL = null;
-let PAIR_CODE_TIMER = null;
-let PAIR_POLL_INT   = null;
 
-function toggleBotCard() {
-    const body = document.getElementById('bot-card-body');
-    const icon = document.getElementById('bot-status-text-icon');
-    if (!body) return;
-    const isHidden = body.style.display === 'none';
-    body.style.display = isHidden ? 'flex' : 'none';
-    if (icon) icon.textContent = isHidden ? 'expand_less' : 'expand_more';
-}
+// ═══════════════════════════════════════════════════════
+// WHATSAPP AI BOT — SETTINGS PAGE
+// Server: https://linka-ai-1.onrender.com
+// ═══════════════════════════════════════════════════════
+const BOT_URL = 'https://linka-ai-1.onrender.com';
+let BOT_CFG   = { auto_reply: true, quiet_hours: true };
+let BOT_TIMER = null;
+let BOT_POLL  = null;
+let BOT_CONNECTED = false;
 
-function resetBotSetup() {
-    clearInterval(PAIR_CODE_TIMER);
-    clearInterval(PAIR_POLL_INT);
-    document.getElementById('bot-setup-state').style.display = 'block';
-    document.getElementById('bot-pair-state').style.display  = 'none';
-    const btn = document.getElementById('btn-connect-bot');
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Unganisha WhatsApp Yangu';
-    }
-}
-
-// Called when analytics screen opens
-async function loadBotConfig() {
+// ── Load bot state when Settings page opens ─────────────
+async function loadBotStatus() {
     try {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) return;
-
         const { data } = await sb.from('profiles')
-            .select('bot_config, bot_connection_status, bot_connected_at, whatsapp_number')
+            .select('bot_connection_status, bot_connected_at, whatsapp_number, bot_config')
             .eq('id', user.id).single();
 
-        if (data?.bot_config) BOT_CONFIG = { ...BOT_CONFIG, ...data.bot_config };
+        if (data?.bot_config) BOT_CFG = { ...BOT_CFG, ...data.bot_config };
 
-        const nEl = document.getElementById('bot-wa-number');
-        if (nEl) nEl.value = BOT_CONFIG.wa_number || data?.whatsapp_number || '';
-
-        const arT = document.getElementById('bot-auto-toggle');
-        const qhT = document.getElementById('bot-quiet-toggle');
-        if (arT) arT.checked = BOT_CONFIG.auto_reply !== false;
-        if (qhT) qhT.checked = BOT_CONFIG.quiet_hours !== false;
+        const autoEl  = document.getElementById('bot-tog-auto');
+        const quietEl = document.getElementById('bot-tog-quiet');
+        const autoSl  = document.getElementById('bot-tog-auto-sl');
+        const quietSl = document.getElementById('bot-tog-quiet-sl');
+        if (autoEl)  autoEl.checked  = BOT_CFG.auto_reply !== false;
+        if (quietEl) quietEl.checked = BOT_CFG.quiet_hours !== false;
+        if (autoSl)  syncToggleStyle(autoSl, BOT_CFG.auto_reply !== false);
+        if (quietSl) syncToggleStyle(quietSl, BOT_CFG.quiet_hours !== false);
 
         if (data?.bot_connection_status === 'connected') {
-            showBotConnectedState(data?.whatsapp_number || BOT_CONFIG.wa_number, data?.bot_connected_at);
-            startStatusPolling();
+            BOT_CONNECTED = true;
+            showBotConnected(data?.whatsapp_number || '');
+            startBotStatusPoll();
         } else {
-            showBotSetupState();
+            BOT_CONNECTED = false;
+            showBotSetup();
         }
-    } catch (e) {
-        console.warn('loadBotConfig:', e.message);
-    }
+    } catch(e) { console.warn('loadBotStatus:', e.message); showBotSetup(); }
 }
 
-async function flushBotConfig() {
-    try {
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) return;
-        await sb.from('profiles').update({ bot_config: BOT_CONFIG }).eq('id', user.id);
-    } catch (e) {}
-}
+// ── Get pair code ────────────────────────────────────────
+async function getBotCode() {
+    // Use the WhatsApp number already entered in the profile form
+    const phoneInput  = document.getElementById('prof-phone');
+    const countryCode = document.getElementById('country-code-select');
+    const rawPhone    = (phoneInput?.value || '').replace(/[^0-9]/g, '');
+    const code        = (countryCode?.value || '+255').replace('+', '');
+    const fullPhone   = rawPhone.startsWith(code) ? rawPhone : code + rawPhone;
 
-async function saveBotSetting(setting, value) {
-    BOT_CONFIG[setting] = value;
-    await flushBotConfig();
-    if (BOT_STATUS === 'online') {
-        try {
-            const { data: { user } } = await sb.auth.getUser();
-            await fetch(BOT_SERVER_URL + '/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-merchant-id': user?.id || '' },
-                body: JSON.stringify({ setting, value })
-            });
-        } catch(e) {}
-    }
-}
-
-// Merchant taps "Unganisha WhatsApp Yangu"
-async function requestPairCode() {
-    const phone = (document.getElementById('bot-wa-number').value || '').trim().replace(/[^0-9]/g, '');
-
-    if (!phone || phone.length < 10) {
-        showBotToast('⚠️ Ingiza namba kamili (mfano: 255712345678)', 'error');
+    if (!fullPhone || fullPhone.length < 10) {
+        showToastMsg('⚠️ Ingiza namba yako ya WhatsApp kwanza!', 'warn');
+        phoneInput?.focus();
         return;
     }
 
-    BOT_CONFIG.wa_number = phone;
-    await flushBotConfig();
-
-    const btn = document.getElementById('btn-connect-bot');
+    const btn = document.getElementById('btn-get-bot-code');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;animation:botSpin 1s linear infinite;">sync</span> Inaomba code...';
+        btn.innerHTML = '<span style="width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span>&nbsp; Inaomba...';
     }
-    setBotStatus('connecting', 'Inaomba code...');
+    setBotStatus('loading', 'Inaomba...');
 
     try {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) throw new Error('Tafadhali ingia kwanza');
 
-        const res = await fetch(BOT_SERVER_URL + '/pair', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, merchant_id: user.id })
-        });
+        let code_value = null;
+        try {
+            const res = await fetch(BOT_URL + '/pair', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhone, merchant_id: user.id }),
+                signal: AbortSignal.timeout(12000)
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json?.error || 'Kosa la seva: ' + res.status);
+            code_value = json.code || json.pairingCode || json.pairing_code;
+        } catch(e) {
+            // If Render server is sleeping (cold start), show helpful message
+            if (e.name === 'TimeoutError' || e.message.includes('fetch')) {
+                throw new Error('Seva inaanza (cold start)... subiri sekunde 30 kisha jaribu tena.');
+            }
+            throw e;
+        }
 
-        let resp;
-        try { resp = await res.json(); } catch(e) { throw new Error('Seva haitoi jibu sahihi.'); }
-        if (!res.ok) throw new Error(resp?.error || 'Kosa la seva: ' + res.status);
-        if (!resp.code) throw new Error('Seva haikutoa code.');
+        if (!code_value) throw new Error('Code haikuja — jaribu tena.');
 
-        const fmt = formatPairCode(resp.code);
-        document.getElementById('pair-code-value').textContent  = fmt;
-        document.getElementById('pair-code-inline').textContent = fmt;
+        // Format code ABCDEFGH → ABCD-EFGH
+        const fmt = botFmtCode(code_value);
+        const codeEl = document.getElementById('bot-pair-code');
+        if (codeEl) {
+            codeEl.textContent = fmt;
+            codeEl.style.animation = 'botCodeGlow 2s ease-in-out infinite';
+        }
 
-        // Show pair code screen
-        document.getElementById('bot-setup-state').style.display = 'none';
-        document.getElementById('bot-pair-state').style.display  = 'block';
+        showBotCodeView();
+        startBotCodeTimer();
+        startBotPairPoll(user.id);
 
-        startPairCodeCountdown();
-        startPollForConnection(user.id);
-
-    } catch (err) {
-        setBotStatus('error', 'Imeshindwa');
-        showBotToast('❌ ' + err.message, 'error');
+    } catch(err) {
+        setBotStatus('', 'Imeshindwa');
+        showToastMsg('❌ ' + err.message, 'error');
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Jaribu Tena';
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;">phonelink_ring</span> Pata Code ya WhatsApp Bot';
         }
     }
 }
 
-function formatPairCode(code) {
-    const c = (code || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
-    return c.length === 8 ? c.slice(0,4) + '-' + c.slice(4) : code;
+function botFmtCode(raw) {
+    const c = (raw || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    return c.length >= 8 ? c.slice(0,4) + '-' + c.slice(4,8) : raw;
 }
 
-function startPairCodeCountdown() {
-    clearInterval(PAIR_CODE_TIMER);
+// ── 60s countdown timer ──────────────────────────────────
+function startBotCodeTimer() {
+    clearInterval(BOT_TIMER);
     let secs = 60;
-    PAIR_CODE_TIMER = setInterval(() => {
-        secs--;
-        const el = document.getElementById('pair-code-timer');
-        if (!el) { clearInterval(PAIR_CODE_TIMER); return; }
+    const tick = () => {
+        const el = document.getElementById('bot-code-timer');
+        if (!el) { clearInterval(BOT_TIMER); return; }
         if (secs > 0) {
             el.textContent = 'Inaisha kwa sekunde ' + secs + '...';
-            el.style.color = secs <= 15 ? '#ef4444' : '#64748b';
+            el.style.color = secs <= 15 ? '#ef4444' : 'rgba(255,255,255,0.5)';
+            secs--;
         } else {
-            clearInterval(PAIR_CODE_TIMER);
-            el.textContent = '⚠️ Code imeisha — omba mpya';
+            clearInterval(BOT_TIMER);
+            el.textContent = '⏰ Code imeisha — omba nyingine';
             el.style.color = '#ef4444';
         }
-    }, 1000);
+    };
+    tick();
+    BOT_TIMER = setInterval(tick, 1000);
 }
 
-function startPollForConnection(merchantId) {
-    clearInterval(PAIR_POLL_INT);
+// ── Poll for connection after code shown ─────────────────
+function startBotPairPoll(merchantId) {
+    clearInterval(BOT_POLL);
     let tries = 0;
-    PAIR_POLL_INT = setInterval(async () => {
+    BOT_POLL = setInterval(async () => {
         tries++;
         try {
-            const res = await fetch(BOT_SERVER_URL + '/status?merchant=' + merchantId, { signal: AbortSignal.timeout(4000) });
+            const res = await fetch(BOT_URL + '/status?merchant=' + merchantId, {
+                signal: AbortSignal.timeout(5000)
+            });
             if (!res.ok) return;
-            const data = await res.json();
-            if (data.connected) {
-                clearInterval(PAIR_POLL_INT);
-                clearInterval(PAIR_CODE_TIMER);
+            const d = await res.json();
+            if (d.connected) {
+                clearInterval(BOT_POLL);
+                clearInterval(BOT_TIMER);
+                // Save connected status
                 const { data: { user } } = await sb.auth.getUser();
                 if (user) {
+                    const phone = document.getElementById('prof-phone')?.value?.replace(/[^0-9]/g, '') || '';
+                    const cc    = (document.getElementById('country-code-select')?.value || '+255').replace('+','');
+                    const full  = phone.startsWith(cc) ? phone : cc + phone;
                     await sb.from('profiles').update({
                         bot_connection_status: 'connected',
                         bot_connected_at: new Date().toISOString(),
-                        whatsapp_number: BOT_CONFIG.wa_number
-                    }).eq('id', user.id);
+                        whatsapp_number: full || undefined
+                    }).eq('id', user.id).catch(() => {});
                 }
-                showBotToast('✅ WhatsApp imefanikiwa kuunganishwa!', 'success');
-                showBotConnectedState(BOT_CONFIG.wa_number, new Date().toISOString());
-                startStatusPolling();
+                BOT_CONNECTED = true;
+                showToastMsg('✅ Bot imefanikiwa kuunganishwa!', 'success');
+                showBotConnected(
+                    document.getElementById('prof-phone')?.value || ''
+                );
+                startBotStatusPoll();
             }
         } catch(e) {}
         if (tries >= 36) {
-            clearInterval(PAIR_POLL_INT);
-            const w = document.getElementById('bot-waiting-msg');
-            if (w) w.innerHTML = '<div style="font-size:12px;color:#ef4444;font-weight:700;text-align:center;">⏰ Muda umeisha. Omba code mpya.</div>';
-            setBotStatus('error', 'Muda umeisha');
+            clearInterval(BOT_POLL);
+            const wait = document.getElementById('bot-waiting-row');
+            if (wait) wait.innerHTML = '<div style="font-size:12px;color:#ef4444;font-weight:700;text-align:center;">⏰ Muda umeisha. Omba code mpya.</div>';
         }
     }, 5000);
 }
 
-function startStatusPolling() {
-    if (BOT_STATUS_POLL) clearInterval(BOT_STATUS_POLL);
-    BOT_STATUS_POLL = setInterval(async () => {
+// ── Poll status every 15s once connected ─────────────────
+function startBotStatusPoll() {
+    clearInterval(BOT_POLL);
+    BOT_POLL = setInterval(async () => {
         try {
             const { data: { user } } = await sb.auth.getUser();
             if (!user) return;
-            const res = await fetch(BOT_SERVER_URL + '/status?merchant=' + user.id, { signal: AbortSignal.timeout(5000) });
-            if (!res.ok) throw new Error();
-            const d = await res.json();
-            if (d.connected) {
-                setBotStatus('online', 'Inafanya kazi ✅');
-                const c = document.getElementById('bot-today-count');
-                const m = document.getElementById('bot-daily-max');
-                const a = document.getElementById('bot-age-days');
-                if (c) c.textContent = d.today_count || 0;
-                if (m) m.textContent = '/ ' + (d.daily_limit || 10) + ' max';
-                if (a) a.textContent = d.bot_age_days || 0;
-            } else {
-                setBotStatus('offline', 'Imezimwa — itarejea');
+            const res = await fetch(BOT_URL + '/status?merchant=' + user.id, { signal: AbortSignal.timeout(6000) });
+            if (res.ok) {
+                const d = await res.json();
+                setBotStatus(d.connected ? 'online' : '', d.connected ? 'Online ✅' : 'Imezimwa');
             }
         } catch(e) { setBotStatus('error', 'Seva haifiki'); }
     }, 15000);
 }
 
-async function disconnectBot() {
-    if (!confirm('Una uhakika unataka kukata bot?')) return;
-    clearInterval(BOT_STATUS_POLL);
-    clearInterval(PAIR_POLL_INT);
-    clearInterval(PAIR_CODE_TIMER);
+// ── Disconnect ───────────────────────────────────────────
+async function botDisconnect() {
+    if (!confirm('Una uhakika? Bot itaacha kujibu wateja.')) return;
+    clearInterval(BOT_POLL); clearInterval(BOT_TIMER);
     try {
         const { data: { user } } = await sb.auth.getUser();
         if (user) {
-            await fetch(BOT_SERVER_URL + '/disconnect', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+            fetch(BOT_URL + '/disconnect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ merchant_id: user.id })
             }).catch(() => {});
             await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', user.id);
         }
     } catch(e) {}
-    showBotSetupState();
-    resetBotSetup();
-    setBotStatus('offline', 'Imekatwa');
-    showBotToast('Bot imekatwa', 'info');
+    BOT_CONNECTED = false;
+    showBotSetup();
+    setBotStatus('', 'Offline');
+    showToastMsg('Bot imekatwa', 'info');
 }
 
-function showBotConnectedState(phone, connectedAt) {
-    document.getElementById('bot-setup-state').style.display     = 'none';
-    document.getElementById('bot-pair-state').style.display      = 'none';
-    document.getElementById('bot-connected-state').style.display = 'block';
-    document.getElementById('bot-card-subtitle').textContent     = '+' + (phone || '').replace(/[^0-9]/g,'');
-    setBotStatus('online', 'Inafanya kazi ✅');
-    if (connectedAt) {
-        const days = Math.floor((Date.now() - new Date(connectedAt)) / 86400000);
-        let max = 10, pct = 10;
-        if (days >= 15) { max = 100; pct = 100; }
-        else if (days >= 8)  { max = 50;  pct = 75; }
-        else if (days >= 4)  { max = 25;  pct = 40; }
-        const bar = document.getElementById('ramp-bar');
-        if (bar) bar.style.width = pct + '%';
-        const desc = document.getElementById('ramp-description');
-        if (desc) desc.textContent = max + '/siku';
-        const maxEl = document.getElementById('bot-daily-max');
-        if (maxEl) maxEl.textContent = '/ ' + max + ' max';
-        const ageEl = document.getElementById('bot-age-days');
-        if (ageEl) ageEl.textContent = days;
+function botResetSetup() {
+    clearInterval(BOT_TIMER); clearInterval(BOT_POLL);
+    const btn = document.getElementById('btn-get-bot-code');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;">phonelink_ring</span> Pata Code ya WhatsApp Bot';
     }
-    const numEl = document.getElementById('bot-connected-number');
-    if (numEl) numEl.textContent = '+' + (phone||'').replace(/[^0-9]/g,'') + ' • Inajibu wateja otomatiki';
-    const arT = document.getElementById('bot-auto-toggle');
-    const qhT = document.getElementById('bot-quiet-toggle');
-    if (arT) arT.checked = BOT_CONFIG.auto_reply !== false;
-    if (qhT) qhT.checked = BOT_CONFIG.quiet_hours !== false;
+    showBotSetup();
 }
 
-function showBotSetupState() {
-    document.getElementById('bot-setup-state').style.display     = 'block';
-    document.getElementById('bot-pair-state').style.display      = 'none';
-    document.getElementById('bot-connected-state').style.display = 'none';
-    document.getElementById('bot-card-subtitle').textContent     = 'Bonyeza kuweka mipangilio';
+async function botSaveSetting(key, val) {
+    BOT_CFG[key] = val;
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) await sb.from('profiles').update({ bot_config: BOT_CFG }).eq('id', user.id);
+        fetch(BOT_URL + '/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ setting: key, value: val })
+        }).catch(() => {});
+    } catch(e) {}
 }
 
-function setBotStatus(status, text) {
-    BOT_STATUS = status;
-    const dot = document.getElementById('bot-status-dot');
-    const sub = document.getElementById('bot-card-subtitle');
-    if (dot) dot.className = 'bot-status-dot ' + ({'online':'online','connecting':'connecting','error':'error'}[status]||'');
-    if (sub && status !== 'online') sub.textContent = text;
+// ── UI show/hide helpers ─────────────────────────────────
+function showBotSetup() {
+    setDisplay('bot-setup-view', 'flex');
+    setDisplay('bot-code-view', 'none');
+    setDisplay('bot-connected-view', 'none');
+    setBotStatus('', 'Offline');
+}
+function showBotCodeView() {
+    setDisplay('bot-setup-view', 'none');
+    setDisplay('bot-code-view', 'flex');
+    setDisplay('bot-connected-view', 'none');
+    setBotStatus('loading', 'Inasubiri...');
+}
+function showBotConnected(phone) {
+    setDisplay('bot-setup-view', 'none');
+    setDisplay('bot-code-view', 'none');
+    setDisplay('bot-connected-view', 'flex');
+    setBotStatus('online', 'Online ✅');
+    const el = document.getElementById('bot-conn-phone');
+    if (el && phone) el.textContent = '+' + phone.replace(/[^0-9]/g,'') + ' • Inajibu wateja';
+}
+function setDisplay(id, val) {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = val; if (val === 'flex') el.style.flexDirection = 'column'; }
+}
+function setBotStatus(type, label) {
+    const dot   = document.getElementById('bot-status-dot');
+    const lbl   = document.getElementById('bot-status-label');
+    const badge = document.getElementById('bot-status-badge');
+    const colors = { online: '#22c55e', loading: '#f59e0b', error: '#ef4444', '': '#94a3b8' };
+    const c = colors[type] || '#94a3b8';
+    if (dot)   { dot.style.background = c; dot.style.boxShadow = type === 'online' ? '0 0 6px ' + c : 'none'; if (type === 'online') dot.style.animation = 'spin360 0s linear'; }
+    if (lbl)   lbl.textContent = label;
+    if (badge) badge.style.color = c;
 }
 
-function showBotToast(message, type) {
-    const colors = { success:'#16a34a', error:'#ef4444', info:'#0f172a' };
+// ── Toggle switch helper ─────────────────────────────────
+function toggleBotSwitch(inputId, slId) {
+    const input = document.getElementById(inputId);
+    const sl    = document.getElementById(slId);
+    if (!input || !sl) return;
+    input.checked = !input.checked;
+    syncToggleStyle(sl, input.checked);
+    botSaveSetting(inputId === 'bot-tog-auto' ? 'auto_reply' : 'quiet_hours', input.checked);
+}
+function syncToggleStyle(sl, checked) {
+    if (!sl) return;
+    const thumb = sl.querySelector('span');
+    sl.style.background = checked ? '#25d078' : '#e2e8f0';
+    if (thumb) thumb.style.left = checked ? '22px' : '2px';
+}
+
+// ── Toast helper (reuse existing or create minimal one) ──
+function showToastMsg(msg, type) {
+    // Try existing toast system first
+    if (typeof showToast === 'function') { showToast(msg); return; }
     const t = document.createElement('div');
-    t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + (colors[type]||'#0f172a') + ';color:white;padding:12px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:88vw;text-align:center;';
-    t.textContent = message;
+    const colors = { success:'#16a34a', error:'#ef4444', warn:'#d97706', info:'#0f172a' };
+    t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${colors[type]||'#0f172a'};color:white;border-radius:50px;padding:11px 20px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.25);animation:none;max-width:88vw;text-align:center;`;
+    t.textContent = msg;
     document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; }, 3000);
     setTimeout(() => t.remove(), 3500);
 }
 
-// END BOT CODE
+
+// ═══════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════
+function nbGo(page) {
+    ['nb-home','nb-chats','nb-settings'].forEach(id => {
+        document.getElementById(id)?.classList.remove('active');
+    });
+    if (page === 'home') {
+        document.getElementById('nb-home')?.classList.add('active');
+        loadDashboard();
+    } else if (page === 'chats') {
+        chOpen();
+    } else if (page === 'settings') {
+        document.getElementById('nb-settings')?.classList.add('active');
+        goToProfile();
+    }
+}
+
+// ═══════════════════════════════════════════════════
+// PRIVACY MODAL
+// ═══════════════════════════════════════════════════
+function pvOpen() {
+    const ov = document.getElementById('pv-overlay');
+    if (!ov) return;
+    ov.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function pvClose() {
+    const ov = document.getElementById('pv-overlay');
+    if (!ov) return;
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity 0.25s';
+    const sh = document.getElementById('pv-sheet');
+    if (sh) { sh.style.transition = 'transform 0.3s ease'; sh.style.transform = 'translateY(100%)'; }
+    setTimeout(() => {
+        ov.style.display = 'none';
+        ov.style.opacity = '';
+        ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+    }, 310);
+}
+
+// ═══════════════════════════════════════════════════
+// CHATS PANEL
+// ═══════════════════════════════════════════════════
+let _chAllData = [];
+let _chFilter  = 'all';
+
+async function chOpen() {
+    const ov = document.getElementById('ch-overlay');
+    if (!ov) return;
+    ov.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    await chLoadBotStatus();
+    await chLoadData();
+}
+function chClose() {
+    const ov = document.getElementById('ch-overlay');
+    const sh = document.getElementById('ch-sheet');
+    if (!ov) return;
+    if (sh) { sh.style.transition='transform 0.3s ease'; sh.style.transform='translateY(100%)'; }
+    ov.style.opacity = '0'; ov.style.transition = 'opacity 0.28s';
+    setTimeout(() => {
+        ov.style.display = 'none';
+        ov.style.opacity = ''; ov.style.transition = '';
+        if (sh) { sh.style.transition=''; sh.style.transform=''; }
+        document.body.style.overflow = '';
+        // restore home active
+        document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+        document.getElementById('nb-home')?.classList.add('active');
+    }, 300);
+}
+
+async function chLoadBotStatus() {
+    try {
+        const { data:{ user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data } = await sb.from('profiles')
+            .select('bot_connection_status,whatsapp_number')
+            .eq('id', user.id).single();
+        const on = data?.bot_connection_status === 'connected';
+        const dot   = document.getElementById('ch-dot');
+        const label = document.getElementById('ch-bot-label');
+        const phone = document.getElementById('ch-bot-phone');
+        const bar   = document.getElementById('ch-bot-bar');
+        if (dot) {
+            dot.style.background  = on ? '#22c55e' : '#94a3b8';
+            dot.style.boxShadow   = on ? '0 0 7px #22c55e' : 'none';
+            dot.style.animation   = on ? 'chDotPulse 2s infinite' : 'none';
+        }
+        if (label) { label.textContent = on ? 'Bot Inafanya Kazi ✅' : 'Bot Haijaunganishwa'; label.style.color = on ? '#15803d' : '#64748b'; }
+        if (phone) phone.textContent = on && data?.whatsapp_number ? '+' + String(data.whatsapp_number).replace(/\D/g,'') + ' • Inajibu' : 'Nenda Settings kuunganisha bot';
+        if (bar)   { bar.style.background = on ? '#f0fdf4' : '#f8fafc'; bar.style.borderColor = on ? '#bbf7d0' : '#e2e8f0'; }
+    } catch(e) {}
+}
+
+async function chLoadData() {
+    const listEl = document.getElementById('ch-list');
+    if (listEl) listEl.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600;">Inapakia mazungumzo...</div>';
+    try {
+        const { data } = await sb.from('Ai-reply')
+            .select('*').order('created_at', { ascending: false }).limit(300);
+        _chAllData = data || [];
+        chCalcStats(_chAllData);
+        chRender(_chAllData);
+        // show dot on nav if messages exist
+        const dot = document.getElementById('chats-dot');
+        if (dot && _chAllData.length > 0) dot.classList.add('on');
+    } catch(e) {
+        if (listEl) listEl.innerHTML = '<div style="padding:32px;text-align:center;color:#ef4444;font-size:13px;">Imeshindwa kupakia — angalia muunganisho wa intaneti</div>';
+    }
+}
+
+function chCalcStats(data) {
+    const now  = new Date();
+    const tod  = data.filter(r => new Date(r.created_at).toDateString() === now.toDateString());
+    const wk   = data.filter(r => (now - new Date(r.created_at)) < 7*864e5);
+    const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    setEl('ch-stat-all',   data.length);
+    setEl('ch-stat-today', tod.length);
+    setEl('ch-stat-week',  wk.length);
+}
+
+function chFilter(f) {
+    _chFilter = f;
+    ['all','today','week'].forEach(k => {
+        const btn = document.getElementById('chtab-'+k);
+        if (!btn) return;
+        const active = k === f;
+        btn.style.background   = active ? 'rgba(22,163,74,0.12)' : 'white';
+        btn.style.color        = active ? '#16a34a' : '#64748b';
+        btn.style.border       = active ? 'none' : '1px solid #e2e8f0';
+    });
+    const now = new Date();
+    let filtered = _chAllData;
+    if (f === 'today') filtered = _chAllData.filter(r => new Date(r.created_at).toDateString() === now.toDateString());
+    if (f === 'week')  filtered = _chAllData.filter(r => (now - new Date(r.created_at)) < 7*864e5);
+    chRender(filtered);
+}
+
+function chRender(data) {
+    const el = document.getElementById('ch-list');
+    if (!el) return;
+    if (!data || data.length === 0) {
+        el.innerHTML = '<div style="padding:40px 20px;text-align:center;"><div style="font-size:44px;opacity:0.2;margin-bottom:10px;">💬</div><div style="font-size:14px;font-weight:700;color:#94a3b8;">Hakuna mazungumzo bado</div><div style="font-size:12px;color:#cbd5e1;margin-top:4px;max-width:220px;margin-left:auto;margin-right:auto;">Wateja watakaokupelekea WhatsApp wataonekana hapa</div></div>';
+        return;
+    }
+    // group by phone
+    const groups = {};
+    data.forEach(r => {
+        const k = r.phone || r.from || r.number || 'Unknown';
+        if (!groups[k]) groups[k] = [];
+        groups[k].push(r);
+    });
+    const rows = Object.entries(groups).slice(0, 80).map(([phone, msgs], i) => {
+        const last    = msgs[0];
+        const name    = last.customer_name || phone;
+        const init    = xEsc(name.slice(0,2).toUpperCase());
+        const preview = xEsc((last.message || last.question || last.customer_message || '—').slice(0, 65));
+        const reply   = xEsc((last.reply   || last.response  || last.bot_reply || '').slice(0, 55));
+        const t       = chFmtTime(last.created_at);
+        const delay   = Math.min(i * 30, 300);
+        return `<div style="background:white;border-radius:14px;margin-bottom:9px;border:1.5px solid #f1f5f9;overflow:hidden;animation:chRowIn 0.3s ease ${delay}ms both;box-shadow:0 1px 6px rgba(0,0,0,0.04);">
+          <div style="display:flex;align-items:center;gap:11px;padding:12px 14px 8px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#065f46;flex-shrink:0;">${init}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:800;color:#0f172a;">${xEsc(name)}</div>
+              <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${preview}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:10px;color:#cbd5e1;font-weight:600;">${t}</div>
+              ${msgs.length>1 ? `<div style="background:#16a34a;color:white;border-radius:99px;font-size:9px;font-weight:800;padding:2px 6px;margin-top:3px;display:inline-block;">${msgs.length}</div>` : ''}
+            </div>
+          </div>
+          ${reply ? `<div style="margin:0 14px 10px;background:#f0fdf4;border-radius:8px;padding:8px 10px;font-size:11px;color:#166534;font-weight:600;border-left:3px solid #22c55e;">🤖 ${reply}${reply.length>=55?'…':''}</div>` : ''}
+        </div>`;
+    }).join('');
+    el.innerHTML = rows;
+}
+
+function chFmtTime(iso) {
+    try {
+        const diff = Date.now() - new Date(iso);
+        if (diff < 60e3)   return 'Sasa hivi';
+        if (diff < 3600e3) return Math.floor(diff/60e3) + 'm';
+        if (diff < 864e5)  return Math.floor(diff/3600e3) + 'h';
+        return new Date(iso).toLocaleDateString('sw-TZ',{day:'numeric',month:'short'});
+    } catch { return ''; }
+}
+
+function xEsc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════
+// SIGN-OFF CONFIRM
+// ═══════════════════════════════════════════════════
+function chSignOffConfirm() { document.getElementById('so-overlay').style.display='flex'; }
+function soClose()           { document.getElementById('so-overlay').style.display='none'; }
+async function soConfirm() {
+    soClose(); chClose();
+    if (typeof botDisconnect === 'function') {
+        await botDisconnect();
+    } else {
+        try {
+            const { data:{user} } = await sb.auth.getUser();
+            if (user) await sb.from('profiles').update({bot_connection_status:'disconnected'}).eq('id',user.id);
+        } catch(e) {}
+        if (typeof showToastMsg === 'function') showToastMsg('Bot imekatwa ✓','info');
+    }
+}
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); } 
 </script>
+
+<!-- ═══════════ PRIVACY POLICY MODAL ═══════════ -->
+<div id="pv-overlay" onclick="if(event.target===this)pvClose()" style="
+    display:none; position:fixed; inset:0; z-index:1100;
+    background:rgba(4,18,8,0.72); backdrop-filter:blur(8px);
+    align-items:flex-end; justify-content:center;
+    animation:pvOverlayIn 0.3s ease;
+">
+  <div id="pv-sheet" style="
+    width:100%; max-width:480px; max-height:92vh;
+    background:#ffffff; border-radius:28px 28px 0 0;
+    display:flex; flex-direction:column; overflow:hidden;
+    animation:pvSheetUp 0.42s cubic-bezier(0.34,1.15,0.64,1);
+    box-shadow:0 -16px 60px rgba(0,0,0,0.25);
+  ">
+    <!-- GREEN HEADER -->
+    <div style="background:linear-gradient(140deg,#064e44 0%,#075e54 55%,#0e9472 100%);
+                padding:26px 20px 22px; flex-shrink:0; position:relative; overflow:hidden;">
+      <div style="position:absolute;top:-60px;right:-60px;width:180px;height:180px;
+                  background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-40px;left:-40px;width:130px;height:130px;
+                  background:rgba(37,208,120,0.07);border-radius:50%;pointer-events:none;"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;">
+        <div>
+          <div style="font-size:36px;margin-bottom:8px;animation:pvBadgePop 0.5s ease 0.2s both;display:inline-block;">🔒</div>
+          <div style="font-size:20px;font-weight:900;color:#ffffff;line-height:1.2;">Data yako iko salama</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:5px;font-weight:500;">LinkaMarket · Bot &amp; Privacy Policy</div>
+        </div>
+        <button onclick="pvClose()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);
+          border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:4px;">
+          <span class="material-symbols-outlined" style="font-size:19px;color:white;">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCROLLABLE BODY -->
+    <div style="flex:1;overflow-y:auto;padding:20px 18px;scrollbar-width:none;">
+
+      <!-- 4 card grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;">
+        <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:16px;padding:14px;animation:pvCardPop 0.4s ease 0.15s both;">
+          <div style="font-size:24px;margin-bottom:6px;">🚫</div>
+          <div style="font-size:12px;font-weight:900;color:#15803d;margin-bottom:3px;">Hatushirikishi</div>
+          <div style="font-size:11px;color:#166534;line-height:1.55;">Namba na data yako haziendi kwa mtu yeyote wa tatu. Kamwe.</div>
+        </div>
+        <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:16px;padding:14px;animation:pvCardPop 0.4s ease 0.22s both;">
+          <div style="font-size:24px;margin-bottom:6px;">🤖</div>
+          <div style="font-size:12px;font-weight:900;color:#0369a1;margin-bottom:3px;">Bot Salama</div>
+          <div style="font-size:11px;color:#0c4a6e;line-height:1.55;">AI inajua bidhaa zako tu — si nywila, si benki, si chochote.</div>
+        </div>
+        <div style="background:#fefce8;border:1.5px solid #fde047;border-radius:16px;padding:14px;animation:pvCardPop 0.4s ease 0.29s both;">
+          <div style="font-size:24px;margin-bottom:6px;">🛡️</div>
+          <div style="font-size:12px;font-weight:900;color:#854d0e;margin-bottom:3px;">Anti-Spam</div>
+          <div style="font-size:11px;color:#713f12;line-height:1.55;">Ngao 8 zinazuia spam. Bot inajibu wateja wanaokupelekea tu.</div>
+        </div>
+        <div style="background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:16px;padding:14px;animation:pvCardPop 0.4s ease 0.36s both;">
+          <div style="font-size:24px;margin-bottom:6px;">🔓</div>
+          <div style="font-size:12px;font-weight:900;color:#6b21a8;margin-bottom:3px;">Chaguo Lako</div>
+          <div style="font-size:11px;color:#581c87;line-height:1.55;">Kata bot wakati wowote. Hakuna adhabu, hakuna ujumbe wa mwisho.</div>
+        </div>
+      </div>
+
+      <!-- Detail rows -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <div style="background:#f8fafc;border-radius:14px;padding:14px 16px;border-left:4px solid #16a34a;animation:pvSlideIn 0.38s ease 0.28s both;">
+          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:7px;">📱 Bot Inafanya Nini Hasa?</div>
+          <div style="font-size:12px;color:#374151;line-height:1.75;">
+            Inajibu wateja wanaokupelekea WhatsApp kwa kujibu maswali kuhusu bidhaa na bei.
+            <strong>Haijawahi kutuma ujumbe bila wateja kukuandikia kwanza.</strong>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc;border-radius:14px;padding:14px 16px;border-left:4px solid #f59e0b;animation:pvSlideIn 0.38s ease 0.35s both;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">⏱️ Kwa Nini Inajibu Polepole? (1–30 min)</div>
+          </div>
+          <div style="font-size:12px;color:#374151;line-height:1.75;">
+            Hii ni <strong>kwa makusudi kabisa</strong> — si tatizo. Bot inangoja muda wa nasibu kati ya majibu ili WhatsApp isione kama spam.
+            Jibu la haraka sana = <span style="color:#ef4444;font-weight:700;">hatari ya ban ya namba yako</span>.
+            Tunakupendelea kupata jibu la dakika 15 kuliko kupoteza namba yako.
+          </div>
+        </div>
+
+        <div style="background:#f8fafc;border-radius:14px;padding:14px 16px;border-left:4px solid #3b82f6;animation:pvSlideIn 0.38s ease 0.42s both;">
+          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:7px;">🔐 Tunalinda Nini?</div>
+          <div style="font-size:12px;color:#374151;line-height:1.85;">
+            ✔ Namba yako ya WhatsApp — haishirikishwi<br>
+            ✔ Mazungumzo ya wateja — seva salama (SSL/TLS)<br>
+            ✔ Taarifa za biashara — zinasimbwa<br>
+            ✔ Akaunti yako — inalindwa na Supabase Auth
+          </div>
+        </div>
+
+        <div style="background:#fef2f2;border-radius:14px;padding:14px 16px;border-left:4px solid #ef4444;animation:pvSlideIn 0.38s ease 0.49s both;">
+          <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:7px;">🚪 Haki Zako Kamili</div>
+          <div style="font-size:12px;color:#374151;line-height:1.85;">
+            ✔ Kata bot wakati wowote kutoka Settings → Bot section<br>
+            ✔ Omba kufutwa kwa data yako yote — siku 7<br>
+            ✔ Maswali: <strong>support@linkamarket.co.tz</strong>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="text-align:center;margin-top:18px;font-size:10px;color:#cbd5e1;font-weight:500;">
+        LinkaMarket · Privacy Policy v1.0 · Machi 2026
+      </div>
+    </div>
+
+    <!-- STICKY FOOTER CTA -->
+    <div style="padding:14px 18px 18px;border-top:1px solid #f1f5f9;background:white;flex-shrink:0;">
+      <button onclick="pvClose()" style="
+        width:100%;background:linear-gradient(135deg,#25d078,#16a34a);
+        color:white;border:none;border-radius:16px;padding:16px;
+        font-size:15px;font-weight:900;cursor:pointer;
+        box-shadow:0 4px 20px rgba(22,163,74,0.35);
+        display:flex;align-items:center;justify-content:center;gap:8px;
+      ">
+        <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
+        Nimeelewa — Endelea
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CHATS PANEL ═══════════ -->
+<div id="ch-overlay" onclick="if(event.target===this)chClose()" style="
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(4,18,8,0.65); backdrop-filter:blur(6px);
+    align-items:flex-end; justify-content:center;
+    animation:pvOverlayIn 0.25s ease;
+">
+  <div id="ch-sheet" style="
+    width:100%; max-width:480px; max-height:88vh;
+    background:#f8fafc; border-radius:24px 24px 0 0;
+    display:flex; flex-direction:column; overflow:hidden;
+    animation:chSlideUp 0.38s cubic-bezier(0.34,1.15,0.64,1);
+    box-shadow:0 -12px 50px rgba(0,0,0,0.2);
+  ">
+    <!-- HEADER -->
+    <div style="background:white;padding:12px 18px 0;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+      <div style="width:38px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 14px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-size:17px;font-weight:900;color:#0f172a;">💬 Mazungumzo ya Wateja</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">Majibu yote ya Bot yako</div>
+        </div>
+        <button onclick="chClose()" style="background:#f1f5f9;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <span class="material-symbols-outlined" style="font-size:18px;color:#64748b;">close</span>
+        </button>
+      </div>
+
+      <!-- Bot status pill -->
+      <div id="ch-bot-bar" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div id="ch-dot" style="width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 7px #22c55e;animation:chDotPulse 2s infinite;flex-shrink:0;"></div>
+          <div>
+            <div id="ch-bot-label" style="font-size:13px;font-weight:800;color:#15803d;">Bot Inafanya Kazi ✅</div>
+            <div id="ch-bot-phone" style="font-size:11px;color:#4b7c59;font-weight:600;margin-top:1px;">Inajibu wateja...</div>
+          </div>
+        </div>
+        <button onclick="chSignOffConfirm()" style="background:white;border:1.5px solid #fecaca;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:800;color:#ef4444;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">link_off</span>Sign Off
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:#f8fafc;border-radius:12px;padding:10px;text-align:center;">
+          <div id="ch-stat-all" style="font-size:22px;font-weight:900;color:#0f172a;">—</div>
+          <div style="font-size:9px;font-weight:700;color:#94a3b8;letter-spacing:0.4px;text-transform:uppercase;">Jumla</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:12px;padding:10px;text-align:center;">
+          <div id="ch-stat-today" style="font-size:22px;font-weight:900;color:#16a34a;">—</div>
+          <div style="font-size:9px;font-weight:700;color:#4b7c59;letter-spacing:0.4px;text-transform:uppercase;">Leo</div>
+        </div>
+        <div style="background:#fefce8;border-radius:12px;padding:10px;text-align:center;">
+          <div id="ch-stat-week" style="font-size:22px;font-weight:900;color:#92400e;">—</div>
+          <div style="font-size:9px;font-weight:700;color:#92400e;letter-spacing:0.4px;text-transform:uppercase;">Wiki Hii</div>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <button id="chtab-all"   onclick="chFilter('all')"   style="flex:1;padding:7px 4px;border-radius:9px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:rgba(22,163,74,0.12);color:#16a34a;transition:all 0.18s;">All</button>
+        <button id="chtab-today" onclick="chFilter('today')" style="flex:1;padding:7px 4px;border-radius:9px;font-size:12px;font-weight:700;border:1px solid #e2e8f0;cursor:pointer;background:white;color:#64748b;transition:all 0.18s;">Leo</button>
+        <button id="chtab-week"  onclick="chFilter('week')"  style="flex:1;padding:7px 4px;border-radius:9px;font-size:12px;font-weight:700;border:1px solid #e2e8f0;cursor:pointer;background:white;color:#64748b;transition:all 0.18s;">Wiki Hii</button>
+      </div>
+    </div>
+
+    <!-- CHAT LIST -->
+    <div id="ch-list" style="flex:1;overflow-y:auto;padding:14px 18px 20px;scrollbar-width:none;"></div>
+  </div>
+</div>
+
+<!-- ═══════════ SIGN-OFF CONFIRM ═══════════ -->
+<div id="so-overlay" onclick="if(event.target===this)soClose()" style="
+    display:none; position:fixed; inset:0; z-index:1200;
+    background:rgba(0,0,0,0.55); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:24px;
+    animation:pvOverlayIn 0.2s ease;
+">
+  <div style="background:white;border-radius:22px;padding:26px 22px;width:100%;max-width:330px;animation:soSheetIn 0.3s ease;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:44px;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:17px;font-weight:900;color:#0f172a;margin-bottom:7px;">Kata Uunganisho wa Bot?</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.6;">Bot itaacha kujibu wateja. Unaweza kuiunganisha tena wakati wowote kutoka Settings bila kupoteza data.</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="soClose()" style="flex:1;padding:14px;border:1.5px solid #e2e8f0;border-radius:13px;font-size:14px;font-weight:700;color:#475569;background:white;cursor:pointer;">Hapana</button>
+      <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,0.3);">Kata Bot</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
