@@ -104,6 +104,15 @@ app.post('/pair', async (req, res) => {
 
   try {
     const code = await initBot(merchant_id, phone)
+
+    // BUG 1 FIX: 'already_registered' means the session exists and the socket
+    // is reconnecting in the background. Don't treat this as an error —
+    // tell the frontend the bot is reconnecting so it keeps polling /status.
+    if (code === 'already_registered') {
+      logger.info(`[${merchant_id}] Session exists — reconnecting in background`)
+      return res.json({ code: null, reconnecting: true, message: 'Bot inaungana tena — subiri sekunde 15 kisha angalia hali.' })
+    }
+
     logger.info(`Pair code for ${merchant_id}: ${code}`)
     res.json({ code, message: 'Enter this code in WhatsApp → Linked Devices' })
   } catch (err) {
@@ -166,6 +175,16 @@ async function initBot(merchantId, phone) {
     getMessage: async () => undefined,
   })
 
+  // ── BUG 4 FIX: Always ensure the merchants entry exists before using it ──
+  // This handles the case where merchants.delete() was called on logout
+  // and then initBot is called again on reconnect — the entry is gone.
+  if (!merchants.has(merchantId)) {
+    merchants.set(merchantId, {
+      connected:   false,
+      connectedAt: null,
+      config: { wa_number: phone, auto_reply: true, quiet_hours: true }
+    })
+  }
   merchants.get(merchantId).sock = sock
 
   // ── Connection events ──────────────────────────────────────
@@ -200,7 +219,12 @@ async function initBot(merchantId, phone) {
       if (code !== DisconnectReason.loggedOut) {
         const delay = randomBetween(8000, 25000)
         logger.info(`⏳ Reconnecting [${merchantId}] in ${Math.round(delay/1000)}s`)
-        setTimeout(() => initBot(merchantId, phone), delay)
+        // BUG 3 FIX: wrap in async IIFE so errors are caught, not silently dropped
+        setTimeout(async () => {
+          try { await initBot(merchantId, phone) } catch(e) {
+            logger.error(`Reconnect failed for [${merchantId}]: ${e.message}`)
+          }
+        }, delay)
       } else {
         logger.warn(`[${merchantId}] Logged out — requires manual re-pair`)
         merchants.delete(merchantId)
@@ -218,7 +242,10 @@ async function initBot(merchantId, phone) {
     }
   })
 
-  // ── Request pair code (only if not already registered) ────
+  // ── BUG 1 FIX: Request pair code if not registered.
+  // If already registered, do NOT return early — the socket is already
+  // reconnecting in the background via connection.update events above.
+  // We return 'already_registered' as a signal to the /pair route only.
   if (!state.creds.registered) {
     await sleep(1500)
     const code = await sock.requestPairingCode(phone)
@@ -470,7 +497,52 @@ process.on('SIGINT', async () => {
 })
 
 // ── Start ─────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`🤖 LinkaMarket Bot Server on port ${PORT}`)
   logger.info(`🧠 AI powered by Supabase Edge Function: ${AI_EDGE_URL}`)
+  // BUG 1 FIX: Reconnect all previously-active merchants on startup
+  await restoreSessions()
 })
+// ── BUG 1 FIX: Restore sessions on server restart ────────────────────────────
+// When Render/Railway restarts, the in-memory `merchants` map is wiped but
+// session files remain on disk. This reads Supabase for merchants marked
+// 'connected' and re-initialises their socket so the bot replies again
+// without the merchant needing to re-scan or re-pair.
+async function restoreSessions() {
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('id, whatsapp_number, bot_config')
+      .eq('bot_connection_status', 'connected')
+
+    if (error) { logger.warn('restoreSessions query error:', error.message); return }
+    if (!data?.length) { logger.info('No sessions to restore'); return }
+
+    logger.info(`🔄 Restoring ${data.length} merchant session(s) after restart...`)
+    for (const row of data) {
+      const phone = row.whatsapp_number
+      if (!phone) { logger.warn(`[${row.id}] No phone stored — skipping restore`); continue }
+
+      merchants.set(row.id, {
+        connected:   false,
+        connectedAt: null,
+        config: {
+          wa_number:   phone,
+          auto_reply:  row.bot_config?.auto_reply  !== false,
+          quiet_hours: row.bot_config?.quiet_hours !== false,
+          ...(row.bot_config || {})
+        }
+      })
+      try {
+        await initBot(row.id, phone)
+        logger.info(`✅ Restore started for [${row.id}]`)
+      } catch(e) {
+        logger.error(`❌ Restore failed for [${row.id}]: ${e.message}`)
+      }
+      // Stagger restores so we don't hammer WhatsApp all at once
+      await sleep(randomBetween(3000, 7000))
+    }
+  } catch(e) {
+    logger.error('restoreSessions error:', e.message)
+  }
+}
