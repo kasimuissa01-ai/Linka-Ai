@@ -63,6 +63,45 @@ app.get('/', (req, res) => {
   })
 })
 
+// ── DEBUG: Show active merchants and their state ──────────
+app.get('/debug', (req, res) => {
+  const state = {}
+  for (const [id, m] of merchants) {
+    state[id] = {
+      connected:    m.connected,
+      connectedAt:  m.connectedAt,
+      phone:        m.config?.wa_number,
+      auto_reply:   m.config?.auto_reply,
+      quiet_hours:  m.config?.quiet_hours,
+      currentlyQuietHours: isQuietHours()
+    }
+  }
+  res.json({ merchants: state, ai_edge_url: AI_EDGE_URL })
+})
+
+// ── DEBUG: Test Edge Function directly ───────────────────
+app.post('/test-edge', async (req, res) => {
+  const { merchant_id, message } = req.body
+  if (!merchant_id || !message) return res.status(400).json({ error: 'merchant_id and message required' })
+  try {
+    const controller = new AbortController()
+    const timeout    = setTimeout(() => controller.abort(), 20000)
+    let aiRes
+    try {
+      aiRes = await fetch(AI_EDGE_URL, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ merchant_id, customer_message: message, mode: 'auto' })
+      })
+    } finally { clearTimeout(timeout) }
+    const body = await aiRes.text()
+    res.json({ status: aiRes.status, ok: aiRes.ok, body: JSON.parse(body) })
+  } catch(e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 // Merchant status check (polled every 15s by app)
 app.get('/status', (req, res) => {
   const merchantId = req.query.merchant
@@ -288,7 +327,8 @@ async function handleMessage(sock, merchantId, msg) {
   // ── SHIELD 5: Quiet hours (11pm – 6am EAT) ───────────────
   if (m.config.quiet_hours !== false && isQuietHours()) {
     const delay = getQuietHoursDelay()
-    logger.info(`🌙 Quiet hours — queued for ${Math.round(delay/60000)}min`)
+    const resumeTime = new Date(Date.now() + delay).toLocaleTimeString('en', { timeZone: 'Africa/Dar_es_Salaam' })
+    logger.info(`🌙 [${merchantId}] Quiet hours active — message from ${customerPhone} queued until ~${resumeTime} EAT`)
     setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), delay)
     return
   }
@@ -323,62 +363,69 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
   }
 
   try {
-    // ── Call Supabase Edge Function for AI reply ─────────────
-    // Your Groq key lives there — this server never touches it
     logger.info(`🤖 [${merchantId}] Calling Edge Function for reply...`)
+    logger.info(`🤖 Edge URL: ${AI_EDGE_URL}`)
 
-    const aiRes = await fetch(AI_EDGE_URL, {
-      method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      },
-      body: JSON.stringify({
-        merchant_id:      merchantId,
-        customer_message: text,
-        mode:             'auto'
+    // Add a 25s timeout so a hanging Edge Function doesn't block forever
+    const controller = new AbortController()
+    const timeout    = setTimeout(() => controller.abort(), 25000)
+
+    let aiRes
+    try {
+      aiRes = await fetch(AI_EDGE_URL, {
+        method:  'POST',
+        signal:  controller.signal,
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        },
+        body: JSON.stringify({
+          merchant_id:      merchantId,
+          customer_message: text,
+          mode:             'auto'
+        })
       })
-    })
+    } finally {
+      clearTimeout(timeout)
+    }
 
-    if (!aiRes.ok) throw new Error(`Edge Function error: ${aiRes.status}`)
-    const { reply } = await aiRes.json()
-    if (!reply) throw new Error('Empty reply from Edge Function')
+    // Log the full response for debugging
+    const rawBody = await aiRes.text()
+    logger.info(`🤖 Edge Function response [${aiRes.status}]: ${rawBody.slice(0, 300)}`)
 
-    logger.info(`💬 [${merchantId}] Reply ready (${reply.length} chars)`)
+    if (!aiRes.ok) {
+      throw new Error(`Edge Function HTTP ${aiRes.status}: ${rawBody.slice(0, 200)}`)
+    }
 
-    // ── SHIELD 2: Professional typing simulation ─────────────
-    // Full sequence mimics a real person reading and replying:
-    //   1. Mark message as read (shows blue ticks — real humans do this first)
-    //   2. Brief "opening chat" pause (200–600ms)
-    //   3. "Available" presence — they just opened the app
-    //   4. "Composing" for realistic duration based on reply length:
-    //      • Short reply  (<80 chars)  → 4–8 seconds typing
-    //      • Medium reply (<180 chars) → 7–14 seconds typing
-    //      • Long reply   (180+ chars) → 12–22 seconds typing
-    //   5. "Paused" briefly — they're re-reading before send
-    //   6. Message delivered
-    // All within the 45s total window (readDelay + typing)
+    let parsed
+    try { parsed = JSON.parse(rawBody) } catch(e) {
+      throw new Error(`Edge Function returned invalid JSON: ${rawBody.slice(0, 100)}`)
+    }
+
+    const reply = parsed?.reply || parsed?.message || parsed?.response || ''
+    if (!reply) throw new Error(`Edge Function returned no reply field. Keys: ${Object.keys(parsed).join(', ')}`)
+
+    logger.info(`💬 [${merchantId}] Reply ready (${reply.length} chars): "${reply.slice(0,60)}"`)
+
+    // ── SHIELD 2: Typing simulation ──────────────────────────
     await sock.readMessages([{ remoteJid: jid, id: msgKeyId || 'latest', fromMe: false }])
-    await sleep(randomBetween(200, 600))                        // open chat
+    await sleep(randomBetween(200, 600))
     await sock.sendPresenceUpdate('available', jid)
-    await sleep(randomBetween(400, 900))                        // settle in
+    await sleep(randomBetween(400, 900))
 
     const typingMs = replyTypingDuration(reply)
     await sock.sendPresenceUpdate('composing', jid)
     logger.info(`✍️  [${merchantId}] Typing for ${(typingMs/1000).toFixed(1)}s...`)
-    await sleep(typingMs)                                       // typing...
+    await sleep(typingMs)
 
     await sock.sendPresenceUpdate('paused', jid)
-    await sleep(randomBetween(350, 750))                        // re-reading before send
+    await sleep(randomBetween(350, 750))
 
-    // Send the message
     await sock.sendMessage(jid, { text: reply })
 
-    // Increment daily counter
     const dayKey = `daily:${merchantId}:${today()}`
     dailyCache.set(dayKey, (dailyCache.get(dayKey) || 0) + 1)
 
-    // Update inbox record
     if (savedId) {
       await sb.from('inbox_messages').update({
         ai_draft:   reply,
@@ -391,6 +438,25 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
 
   } catch (err) {
     logger.error(`❌ [${merchantId}] Reply failed: ${err.message}`)
+
+    // ── FALLBACK: Send a holding reply so customer isn't left in silence ──
+    // This fires when the Edge Function is down/misconfigured.
+    // Remove this once Edge Function is confirmed working.
+    try {
+      const fallback = 'Asante kwa ujumbe wako! 🙏 Tutakujibu hivi karibuni.'
+      await sock.sendMessage(jid, { text: fallback })
+      logger.info(`📤 [${merchantId}] Fallback reply sent to ${customerPhone}`)
+
+      if (savedId) {
+        await sb.from('inbox_messages').update({
+          ai_draft:   fallback,
+          status:     'replied',
+          replied_at: new Date().toISOString()
+        }).eq('id', savedId)
+      }
+    } catch(fallbackErr) {
+      logger.error(`❌ [${merchantId}] Even fallback failed: ${fallbackErr.message}`)
+    }
   }
 }
 
