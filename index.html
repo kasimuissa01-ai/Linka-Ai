@@ -4369,7 +4369,7 @@
                     </div>
 
                     <!-- STATE: Code shown -->
-                    <div id="bot-code-view" style="display:none;padding:16px;display:none;flex-direction:column;gap:12px;">
+                    <div id="bot-code-view" style="display:none;padding:16px;flex-direction:column;gap:12px;">
 
                         <!-- Big code -->
                         <div style="background:linear-gradient(135deg,#064e44,#075e54);border-radius:14px;padding:22px 16px;text-align:center;position:relative;overflow:hidden;">
@@ -4404,10 +4404,23 @@
                             </div>
                         </div>
 
-                        <!-- Waiting -->
-                        <div id="bot-waiting-row" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
-                            <div style="width:16px;height:16px;border:2.5px solid #bbf7d0;border-top-color:#16a34a;border-radius:50%;animation:spin360 0.7s linear infinite;"></div>
-                            <div style="font-size:13px;font-weight:700;color:#15803d;">Inasubiri uunganisho otomatiki...</div>
+                        <!-- Waiting + Manual Confirm -->
+                        <div id="bot-waiting-row" style="display:flex;flex-direction:column;gap:10px;">
+                            <!-- Manual confirm — primary action after entering code in WhatsApp -->
+                            <button onclick="botConfirmConnection()" id="btn-confirm-connect" style="
+                                width:100%;background:linear-gradient(135deg,#25d078,#16a34a);
+                                color:white;border:none;border-radius:14px;padding:15px;
+                                font-size:14px;font-weight:900;cursor:pointer;
+                                box-shadow:0 4px 18px rgba(22,163,74,0.35);
+                                display:flex;align-items:center;justify-content:center;gap:8px;">
+                                <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
+                                Nimeingiza Code — Thibitisha
+                            </button>
+                            <!-- Auto-poll fallback indicator -->
+                            <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                <div style="width:16px;height:16px;border:2.5px solid #bbf7d0;border-top-color:#16a34a;border-radius:50%;animation:spin360 0.7s linear infinite;flex-shrink:0;"></div>
+                                <div style="font-size:13px;font-weight:700;color:#15803d;">Au inasubiri uunganisho otomatiki...</div>
+                            </div>
                         </div>
 
                         <button onclick="botResetSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
@@ -7563,60 +7576,119 @@ function startBotCodeTimer() {
     BOT_TIMER = setInterval(tick, 1000);
 }
 
-// ── Poll for connection after code shown ─────────────────
+// ── Manual confirm: user taps after entering real WhatsApp code ──────────
+async function botConfirmConnection() {
+    const btn = document.getElementById('btn-confirm-connect');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span style="width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span>&nbsp; Inaangalia...';
+    }
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) throw new Error('Tafadhali ingia kwanza');
+        const res = await fetch(BOT_URL + '/status?merchant=' + user.id, {
+            signal: AbortSignal.timeout(10000)
+        });
+        if (!res.ok) throw new Error('Seva haijibu — jaribu tena');
+        const d = await res.json();
+        if (d.connected) {
+            await botFinishConnection(user);
+        } else {
+            showToastMsg('⏳ Bado haijaunganishwa. Hakikisha umeweka code sahihi kwenye WhatsApp kisha jaribu tena.', 'warn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;">refresh</span> Jaribu Tena';
+            }
+        }
+    } catch(e) {
+        showToastMsg('❌ ' + (e.message || 'Kosa — jaribu tena'), 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;">check_circle</span> Nimeingiza Code — Thibitisha';
+        }
+    }
+}
+
+// ── Shared: mark connected in UI immediately, sync DB in background ──────
+async function botFinishConnection(user) {
+    const phoneInput = document.getElementById('prof-phone');
+    const ccInput    = document.getElementById('country-code-select');
+    const rawPhone   = (phoneInput?.value || '').replace(/[^0-9]/g, '');
+    const cc         = (ccInput?.value || '+255').replace('+', '');
+    const fullPhone  = rawPhone.startsWith(cc) ? rawPhone : cc + rawPhone;
+
+    // ── Step 1: Update UI immediately — don't wait for DB ──
+    clearInterval(BOT_POLL);
+    clearInterval(BOT_TIMER);
+    BOT_CONNECTED = true;
+    showToastMsg('✅ Bot imefanikiwa kuunganishwa! Inajibu wateja sasa.', 'success');
+    showBotConnected(phoneInput?.value || fullPhone || '');
+    startBotStatusPoll();
+
+    // ── Step 2: Sync to Supabase in background — UI already updated ──
+    // Using .then() on the raw promise avoids any .catch() issues
+    const updatePromise = sb.from('profiles').update({
+        bot_connection_status: 'connected',
+        bot_connected_at:      new Date().toISOString(),
+        whatsapp_number:       fullPhone || undefined
+    }).eq('id', user.id);
+
+    updatePromise.then(({ error }) => {
+        if (error) console.warn('botFinishConnection DB sync:', error.message);
+    });
+}
+
+// ── Background auto-poll every 5s (fallback if user doesn't tap confirm) ─
 function startBotPairPoll(merchantId) {
     clearInterval(BOT_POLL);
     let tries = 0;
     BOT_POLL = setInterval(async () => {
         tries++;
+        if (tries > 60) {   // 5 minutes max
+            clearInterval(BOT_POLL);
+            const wait = document.getElementById('bot-waiting-row');
+            if (wait) wait.innerHTML = `
+                <div style="text-align:center;padding:6px;">
+                    <div style="font-size:12px;color:#ef4444;font-weight:700;margin-bottom:8px;">⏰ Muda umeisha — omba code mpya</div>
+                    <button onclick="botResetSetup()" style="background:#f1f5f9;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;color:#475569;cursor:pointer;">← Omba Code Mpya</button>
+                </div>`;
+            return;
+        }
         try {
             const res = await fetch(BOT_URL + '/status?merchant=' + merchantId, {
-                signal: AbortSignal.timeout(5000)
+                signal: AbortSignal.timeout(4000)
             });
             if (!res.ok) return;
             const d = await res.json();
-            if (d.connected) {
-                clearInterval(BOT_POLL);
-                clearInterval(BOT_TIMER);
-                // Save connected status
+            // Auto-detected connection before user tapped confirm
+            if (d.connected && !BOT_CONNECTED) {
                 const { data: { user } } = await sb.auth.getUser();
-                if (user) {
-                    const phone = document.getElementById('prof-phone')?.value?.replace(/[^0-9]/g, '') || '';
-                    const cc    = (document.getElementById('country-code-select')?.value || '+255').replace('+','');
-                    const full  = phone.startsWith(cc) ? phone : cc + phone;
-                    await sb.from('profiles').update({
-                        bot_connection_status: 'connected',
-                        bot_connected_at: new Date().toISOString(),
-                        whatsapp_number: full || undefined
-                    }).eq('id', user.id).catch(() => {});
-                }
-                BOT_CONNECTED = true;
-                showToastMsg('✅ Bot imefanikiwa kuunganishwa!', 'success');
-                showBotConnected(
-                    document.getElementById('prof-phone')?.value || ''
-                );
-                startBotStatusPoll();
+                if (user) await botFinishConnection(user);
             }
-        } catch(e) {}
-        if (tries >= 36) {
-            clearInterval(BOT_POLL);
-            const wait = document.getElementById('bot-waiting-row');
-            if (wait) wait.innerHTML = '<div style="font-size:12px;color:#ef4444;font-weight:700;text-align:center;">⏰ Muda umeisha. Omba code mpya.</div>';
-        }
+        } catch(e) { /* silent during polling */ }
     }, 5000);
 }
 
-// ── Poll status every 15s once connected ─────────────────
+// ── Poll status every 15s once fully connected ───────────────────────────
 function startBotStatusPoll() {
     clearInterval(BOT_POLL);
     BOT_POLL = setInterval(async () => {
         try {
             const { data: { user } } = await sb.auth.getUser();
             if (!user) return;
-            const res = await fetch(BOT_URL + '/status?merchant=' + user.id, { signal: AbortSignal.timeout(6000) });
+            const res = await fetch(BOT_URL + '/status?merchant=' + user.id, {
+                signal: AbortSignal.timeout(7000)
+            });
             if (res.ok) {
                 const d = await res.json();
-                setBotStatus(d.connected ? 'online' : '', d.connected ? 'Online ✅' : 'Imezimwa');
+                if (d.connected) {
+                    setBotStatus('online', 'Online ✅');
+                } else {
+                    setBotStatus('error', 'Imekatika');
+                    BOT_CONNECTED = false;
+                    sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', user.id).then(() => {});
+                    showToastMsg('⚠️ Bot imekatika — unganisha tena', 'warn');
+                }
             }
         } catch(e) { setBotStatus('error', 'Seva haifiki'); }
     }, 15000);
@@ -7833,12 +7905,17 @@ async function chLoadData() {
     const listEl = document.getElementById('ch-list');
     if (listEl) listEl.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600;">Inapakia mazungumzo...</div>';
     try {
-        const { data } = await sb.from('Ai-reply')
-            .select('*').order('created_at', { ascending: false }).limit(300);
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data, error } = await sb.from('inbox_messages')
+            .select('*')
+            .eq('merchant_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(300);
+        if (error) throw error;
         _chAllData = data || [];
         chCalcStats(_chAllData);
         chRender(_chAllData);
-        // show dot on nav if messages exist
         const dot = document.getElementById('chats-dot');
         if (dot && _chAllData.length > 0) dot.classList.add('on');
     } catch(e) {
@@ -7883,16 +7960,16 @@ function chRender(data) {
     // group by phone
     const groups = {};
     data.forEach(r => {
-        const k = r.phone || r.from || r.number || 'Unknown';
+        const k = r.customer_phone || r.phone || 'Unknown';
         if (!groups[k]) groups[k] = [];
         groups[k].push(r);
     });
     const rows = Object.entries(groups).slice(0, 80).map(([phone, msgs], i) => {
         const last    = msgs[0];
-        const name    = last.customer_name || phone;
+        const name    = last.customer_name || k;
         const init    = xEsc(name.slice(0,2).toUpperCase());
-        const preview = xEsc((last.message || last.question || last.customer_message || '—').slice(0, 65));
-        const reply   = xEsc((last.reply   || last.response  || last.bot_reply || '').slice(0, 55));
+        const preview = xEsc((last.customer_message || '—').slice(0, 65));
+        const reply   = xEsc((last.ai_draft || '').slice(0, 55));
         const t       = chFmtTime(last.created_at);
         const delay   = Math.min(i * 30, 300);
         return `<div style="background:white;border-radius:14px;margin-bottom:9px;border:1.5px solid #f1f5f9;overflow:hidden;animation:chRowIn 0.3s ease ${delay}ms both;box-shadow:0 1px 6px rgba(0,0,0,0.04);">
@@ -8158,7 +8235,7 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="soClose()" style="flex:1;padding:14px;border:1.5px solid #e2e8f0;border-radius:13px;font-size:14px;font-weight:700;color:#475569;background:white;cursor:pointer;">Hapana</button>
-      <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
         <span class="material-symbols-outlined" style="font-size:16px;">link_off</span>Ndio, Kata
       </button>
     </div>
