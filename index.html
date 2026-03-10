@@ -7490,6 +7490,20 @@ async function getBotCode() {
             });
             const json = await res.json();
             if (!res.ok) throw new Error(json?.error || 'Kosa la seva: ' + res.status);
+
+            // BUG 1 FIX: Server says session already exists and is reconnecting.
+            // No pair code needed — just poll /status until connected:true comes back.
+            if (json.reconnecting === true) {
+                showToastMsg('🔄 Session ilipatikana — inaungana tena...', 'info');
+                setBotStatus('loading', 'Inaungana tena...');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;">phonelink_ring</span> Pata Code ya WhatsApp Bot';
+                }
+                startBotPairPoll(user.id);
+                return; // exit early — polling will handle the rest
+            }
+
             code_value = json.code || json.pairingCode || json.pairing_code;
         } catch(e) {
             // If Render server is sleeping (cold start), show helpful message
@@ -8032,7 +8046,7 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
           <div style="font-size:12px;color:#374151;line-height:1.85;">
             ✔ Kata bot wakati wowote kutoka Settings → Bot section<br>
             ✔ Omba kufutwa kwa data yako yote — siku 7<br>
-            ✔ Maswali: <strong>support@linkamarket.co.tz</strong>
+            ✔ Maswali: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="42313732322d3036022e2b2c29232f23302927366c212d6c3638">[email&#160;protected]</a></strong>
           </div>
         </div>
 
@@ -8144,7 +8158,9 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="soClose()" style="flex:1;padding:14px;border:1.5px solid #e2e8f0;border-radius:13px;font-size:14px;font-weight:700;color:#475569;background:white;cursor:pointer;">Hapana</button>
-      <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);cursor:pointer;box-shadow:0 4px 14px rgba(239,68,68,0.3);">Kata Bot</button>
+      <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">link_off</span>Ndio, Kata
+      </button>
     </div>
   </div>
 </div>
