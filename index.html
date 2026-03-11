@@ -7558,13 +7558,16 @@ function botFmtCode(raw) {
 // ── 60s countdown timer ──────────────────────────────────
 function startBotCodeTimer() {
     clearInterval(BOT_TIMER);
-    let secs = 60;
+    let secs = 180;
     const tick = () => {
         const el = document.getElementById('bot-code-timer');
         if (!el) { clearInterval(BOT_TIMER); return; }
         if (secs > 0) {
-            el.textContent = 'Inaisha kwa sekunde ' + secs + '...';
-            el.style.color = secs <= 15 ? '#ef4444' : 'rgba(255,255,255,0.5)';
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            const display = m > 0 ? m + ':' + String(s).padStart(2,'0') + ' dakika' : 'sekunde ' + s;
+            el.textContent = 'Inaisha kwa ' + display + '...';
+            el.style.color = secs <= 30 ? '#ef4444' : secs <= 60 ? '#f59e0b' : 'rgba(255,255,255,0.6)';
             secs--;
         } else {
             clearInterval(BOT_TIMER);
@@ -7950,14 +7953,105 @@ function chFilter(f) {
     chRender(filtered);
 }
 
+// ── Conversation detail overlay ──────────────────────────
+function chShowConversation(phone, msgs, name) {
+    // Remove existing overlay if any
+    const existing = document.getElementById('ch-conv-overlay');
+    if (existing) existing.remove();
+
+    const initials = (name || phone).slice(0,2).toUpperCase();
+    const bubbles = msgs.slice().reverse().map((m, i) => {
+        const t = chFmtTime(m.created_at);
+        const customerMsg = xEsc(m.customer_message || '');
+        const aiReply     = xEsc(m.ai_draft || '');
+        const delay = i * 60;
+        return `
+        <div style="animation:chConvIn 0.35s ease ${delay}ms both;">
+          <!-- Customer bubble -->
+          <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:6px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#475569;flex-shrink:0;">${initials}</div>
+            <div style="max-width:78%;">
+              <div style="background:white;border:1.5px solid #e2e8f0;border-radius:18px 18px 18px 4px;padding:10px 13px;font-size:13px;color:#0f172a;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,0.06);">${customerMsg}</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:3px;margin-left:4px;">${t}</div>
+            </div>
+          </div>
+          <!-- AI reply bubble -->
+          ${aiReply ? `
+          <div style="display:flex;align-items:flex-end;gap:8px;margin-bottom:14px;flex-direction:row-reverse;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="font-size:13px;">🤖</span>
+            </div>
+            <div style="max-width:78%;">
+              <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #bbf7d0;border-radius:18px 18px 4px 18px;padding:10px 13px;font-size:13px;color:#14532d;line-height:1.5;box-shadow:0 1px 4px rgba(22,163,74,0.1);">${aiReply}</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:3px;text-align:right;margin-right:4px;">Bot · ${t}</div>
+            </div>
+          </div>` : `
+          <div style="text-align:center;margin-bottom:14px;">
+            <span style="font-size:10px;color:#94a3b8;background:#f8fafc;border-radius:99px;padding:3px 10px;border:1px solid #e2e8f0;">Inasubiri jibu...</span>
+          </div>`}
+        </div>`;
+    }).join('');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ch-conv-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:1500;background:rgba(4,18,8,0.72);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;animation:pvOverlayIn 0.25s ease;';
+    overlay.innerHTML = `
+    <div style="width:100%;max-width:480px;max-height:88vh;background:#f8fafc;border-radius:24px 24px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:chSlideUp 0.38s cubic-bezier(0.34,1.15,0.64,1);box-shadow:0 -12px 50px rgba(0,0,0,0.25);">
+      <!-- Header -->
+      <div style="background:white;padding:12px 18px 14px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+        <div style="width:38px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 14px;"></div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onclick="document.getElementById('ch-conv-overlay').remove()" style="background:#f1f5f9;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#64748b;">arrow_back</span>
+          </button>
+          <div style="width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#065f46;flex-shrink:0;">${initials}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:900;color:#0f172a;">${xEsc(name || phone)}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:1px;">📱 ${xEsc(phone)} · ${msgs.length} ujumbe</div>
+          </div>
+          <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:5px 10px;text-align:center;flex-shrink:0;">
+            <div style="font-size:15px;font-weight:900;color:#16a34a;">${msgs.length}</div>
+            <div style="font-size:9px;color:#4b7c59;font-weight:700;text-transform:uppercase;">Jumla</div>
+          </div>
+        </div>
+      </div>
+      <!-- Conversation bubbles -->
+      <div style="flex:1;overflow-y:auto;padding:16px 16px 24px;scrollbar-width:none;display:flex;flex-direction:column;">
+        <div style="font-size:10px;color:#94a3b8;text-align:center;margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Mazungumzo · Bot & Mteja</div>
+        ${bubbles || '<div style="text-align:center;padding:40px;color:#94a3b8;">Hakuna ujumbe</div>'}
+      </div>
+    </div>`;
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+
+    // Add animation keyframe if not present
+    if (!document.getElementById('ch-conv-style')) {
+        const st = document.createElement('style');
+        st.id = 'ch-conv-style';
+        st.textContent = '@keyframes chConvIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(st);
+    }
+}
+
+// ── Global store for conversation data (avoids onclick injection bugs) ──
+let _chConvStore = {};
+
+// Safe wrapper — reads from store instead of inline JSON
+function chOpenStored(key) {
+    const entry = _chConvStore[key];
+    if (!entry) return;
+    chShowConversation(entry.phone, entry.msgs, entry.name);
+}
+
 function chRender(data) {
     const el = document.getElementById('ch-list');
     if (!el) return;
+    _chConvStore = {}; // reset store each render
     if (!data || data.length === 0) {
         el.innerHTML = '<div style="padding:40px 20px;text-align:center;"><div style="font-size:44px;opacity:0.2;margin-bottom:10px;">💬</div><div style="font-size:14px;font-weight:700;color:#94a3b8;">Hakuna mazungumzo bado</div><div style="font-size:12px;color:#cbd5e1;margin-top:4px;max-width:220px;margin-left:auto;margin-right:auto;">Wateja watakaokupelekea WhatsApp wataonekana hapa</div></div>';
         return;
     }
-    // group by phone
+    // Group by phone
     const groups = {};
     data.forEach(r => {
         const k = r.customer_phone || r.phone || 'Unknown';
@@ -7966,25 +8060,52 @@ function chRender(data) {
     });
     const rows = Object.entries(groups).slice(0, 80).map(([phone, msgs], i) => {
         const last    = msgs[0];
-        const name    = last.customer_name || k;
+        const name    = last.customer_name || phone;
         const init    = xEsc(name.slice(0,2).toUpperCase());
-        const preview = xEsc((last.customer_message || '—').slice(0, 65));
-        const reply   = xEsc((last.ai_draft || '').slice(0, 55));
+        const preview = xEsc((last.customer_message || '—').slice(0, 60));
+        const reply   = xEsc((last.ai_draft || '').slice(0, 60));
         const t       = chFmtTime(last.created_at);
-        const delay   = Math.min(i * 30, 300);
-        return `<div style="background:white;border-radius:14px;margin-bottom:9px;border:1.5px solid #f1f5f9;overflow:hidden;animation:chRowIn 0.3s ease ${delay}ms both;box-shadow:0 1px 6px rgba(0,0,0,0.04);">
-          <div style="display:flex;align-items:center;gap:11px;padding:12px 14px 8px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#065f46;flex-shrink:0;">${init}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:800;color:#0f172a;">${xEsc(name)}</div>
-              <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${preview}</div>
+        const delay   = Math.min(i * 40, 320);
+        const hasReply = !!last.ai_draft;
+        // Store msgs in global object keyed by index — avoids JSON-in-onclick injection bugs
+        const storeKey = 'conv_' + i;
+        _chConvStore[storeKey] = { phone, msgs, name };
+        return `<div onclick="chOpenStored('${storeKey}')"
+          style="background:white;border-radius:16px;margin-bottom:10px;border:1.5px solid #f1f5f9;overflow:hidden;
+                 animation:chRowIn 0.35s ease ${delay}ms both;box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                 cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;"
+          onmousedown="this.style.transform='scale(0.98)'"
+          onmouseup="this.style.transform=''"
+          ontouchstart="this.style.transform='scale(0.98)'"
+          ontouchend="this.style.transform=''">
+          <!-- Top row: avatar + name + time -->
+          <div style="display:flex;align-items:center;gap:11px;padding:13px 14px 8px;">
+            <div style="position:relative;flex-shrink:0;">
+              <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#065f46;">${init}</div>
+              ${hasReply ? '<div style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;"><span style="font-size:7px;">🤖</span></div>' : ''}
             </div>
-            <div style="text-align:right;flex-shrink:0;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:2px;">${xEsc(name)}</div>
+              <div style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ${preview}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
               <div style="font-size:10px;color:#cbd5e1;font-weight:600;">${t}</div>
-              ${msgs.length>1 ? `<div style="background:#16a34a;color:white;border-radius:99px;font-size:9px;font-weight:800;padding:2px 6px;margin-top:3px;display:inline-block;">${msgs.length}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:4px;">
+                ${msgs.length>1 ? `<div style="background:#0f172a;color:white;border-radius:99px;font-size:9px;font-weight:800;padding:2px 7px;">${msgs.length}</div>` : ''}
+                <span class="material-symbols-outlined" style="font-size:14px;color:#cbd5e1;">chevron_right</span>
+              </div>
             </div>
           </div>
-          ${reply ? `<div style="margin:0 14px 10px;background:#f0fdf4;border-radius:8px;padding:8px 10px;font-size:11px;color:#166534;font-weight:600;border-left:3px solid #22c55e;">🤖 ${reply}${reply.length>=55?'…':''}</div>` : ''}
+          <!-- AI reply preview -->
+          ${hasReply
+            ? `<div style="margin:0 14px 12px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:10px;padding:8px 12px;border-left:3px solid #22c55e;display:flex;align-items:flex-start;gap:7px;">
+                <span style="font-size:14px;flex-shrink:0;">🤖</span>
+                <div style="font-size:11px;color:#166534;font-weight:600;line-height:1.5;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${reply}${reply.length>=60?'…':''}</div>
+               </div>`
+            : `<div style="margin:0 14px 12px;background:#fefce8;border-radius:10px;padding:7px 12px;border-left:3px solid #fbbf24;display:flex;align-items:center;gap:7px;">
+                <span style="font-size:12px;">⏳</span>
+                <div style="font-size:11px;color:#92400e;font-weight:600;">Inasubiri jibu la bot...</div>
+               </div>`}
         </div>`;
     }).join('');
     el.innerHTML = rows;
@@ -8243,4 +8364,4 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
 </div>
 
 </body>
-</html>
+</html>k
