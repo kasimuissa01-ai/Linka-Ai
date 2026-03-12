@@ -3919,7 +3919,42 @@
     .lm-toggle-sl::after { content:''; position:absolute; width:19px; height:19px; background:white; border-radius:50%; top:2px; left:2px; transition:left 0.22s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
     .lm-toggle input:checked + .lm-toggle-sl::after { left:23px; }
 
-</style>
+
+    /* ── PWA Install Header Button ─────────────────────── */
+    #pwa-header-btn {
+        display: none;
+        align-items: center;
+        gap: 5px;
+        background: linear-gradient(135deg, #25d078, #16a34a);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 7px 13px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 2px 12px rgba(37,208,120,0.4);
+        animation: pwaButtonPulse 2.5s ease-in-out infinite;
+        transition: transform 0.15s, box-shadow 0.15s;
+        font-family: inherit;
+    }
+    #pwa-header-btn:active { transform: scale(0.95); }
+    @keyframes pwaButtonPulse {
+        0%,100% { box-shadow: 0 2px 12px rgba(37,208,120,0.4); }
+        50%      { box-shadow: 0 2px 22px rgba(37,208,120,0.75); }
+    }
+    /* iOS Install bottom sheet */
+    #pwa-ios-sheet {
+        display: none;
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(4,18,8,0.72);
+        backdrop-filter: blur(8px);
+        align-items: flex-end; justify-content: center;
+        animation: pvOverlayIn 0.25s ease;
+    }
+    #pwa-ios-sheet.open { display: flex; }
+
+    </style>
 </head>
 <body>
     <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
@@ -4119,7 +4154,11 @@
                 <span class="material-symbols-outlined">settings</span>
             </button>
             <h1 class="luxe-logo" id="dash-business-name">LINKA.</h1>
-            <div class="luxe-header-actions">
+            <div class="luxe-header-actions" style="display:flex;align-items:center;gap:8px;">
+                <button id="pwa-header-btn" onclick="handlePWAInstall()">
+                    <span class="material-symbols-outlined" style="font-size:15px;">download</span>
+                    Install
+                </button>
                 <button class="luxe-icon" onclick="copyStorefrontLink()" style="background: #25d078; color: white; padding: 6px 14px; border-radius: 50px; display: flex; align-items: center; gap: 4px;">
                     <span class="material-symbols-outlined" style="font-size:18px;">share</span>
                     <span style="font-size: 12px; font-weight: 700;">Link</span>
@@ -5308,47 +5347,71 @@
         }
     });
 
-    let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
+    // ── PWA Install Logic ────────────────────────────────────
+    let deferredPrompt = null;
+    const _isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+    const _isStandalone = () => window.navigator.standalone === true
+                             || window.matchMedia('(display-mode: standalone)').matches;
+
+    // Show header install button when appropriate
+    function _pwaShowBtn() {
+        if (_isStandalone()) return; // already installed
+        const btn = document.getElementById('pwa-header-btn');
+        if (btn) btn.style.display = 'flex';
+        // Also keep old cards visible if present
+        document.querySelectorAll('.pwa-install-card').forEach(el => {
+            el.classList.remove('hidden'); el.style.display = 'flex';
+        });
+    }
+
+    // Android/Chrome — browser fires this when installable
+    window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.querySelectorAll(".pwa-install-card").forEach(el => { el.classList.remove("hidden"); el.style.display = "flex"; });
+        _pwaShowBtn();
     });
 
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
-    const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
-    if (isIOS && !isInStandaloneMode()) {
-        document.querySelectorAll(".pwa-install-card").forEach(el => { el.classList.remove("hidden"); el.style.display = "flex"; });
+    // iOS Safari — never fires beforeinstallprompt, show manually
+    if (_isIOS && !_isStandalone()) {
+        _pwaShowBtn();
     }
 
-    function showPWAInstallCard() {
-        const pwaCard = document.getElementById('pwa-install-auth');
-        if (pwaCard) {
-            pwaCard.style.display = 'flex';
-        }
-    }
-
-    async function handlePWAClick() {
+    // Called when user taps the Install button
+    async function handlePWAInstall() {
         if (deferredPrompt) {
+            // Android / Chrome — native prompt
             try {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    document.querySelectorAll(".pwa-install-card").forEach(el => { el.style.display = "none"; });
+                    const btn = document.getElementById('pwa-header-btn');
+                    if (btn) btn.style.display = 'none';
+                    document.querySelectorAll('.pwa-install-card').forEach(el => el.style.display = 'none');
                 }
                 deferredPrompt = null;
-            } catch (error) { console.error("PWA install error:", error); }
+            } catch(err) { console.error('PWA prompt error:', err); }
             return;
         }
-        if (isIOS) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.3s ease;`;
-            modal.innerHTML = `<div style="background: white; border-radius: 24px; padding: 32px 24px; max-width: 400px; text-align: center; animation: slideUp 0.3s ease;"><div style="font-size: 48px; margin-bottom: 16px;">📱</div><h3 style="font-size: 20px; font-weight: 800; color: #1f2937; margin-bottom: 16px;">Pakua App (iOS)</h3><div style="text-align: left; color: #4b5563; font-size: 15px; line-height: 1.6; margin-bottom: 24px;"><p style="margin-bottom: 12px;"><strong>Hatua za kupakua:</strong></p><p style="margin-bottom: 8px;">1️⃣ Bonyeza alama ya <strong>Share</strong> (⬆️) chini</p><p style="margin-bottom: 8px;">2️⃣ Chagua <strong>"Add to Home Screen"</strong></p><p style="margin-bottom: 8px;">3️⃣ Bonyeza <strong>"Add"</strong> kumaliza</p></div><button onclick="this.parentElement.parentElement.remove()" style="width: 100%; background: #22c55e; color: white; padding: 14px; border-radius: 50px; border: none; font-size: 16px; font-weight: 800; cursor: pointer;">Sawa, Nimeelewa</button></div>`;
-            document.body.appendChild(modal);
-            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        if (_isIOS) {
+            // iPhone / iPad — show step-by-step sheet
+            pwaIosOpen();
             return;
         }
-        alert("Samahani, kivinjari chako hakiwezi kupakua app. Tafadhali tumia Chrome au Safari.");
+        // Fallback — already installed or unsupported browser
+        showToastMsg('App tayari imewekwa au kivinjari chako hakisaidii install. Tumia Chrome au Safari.', 'info');
+    }
+
+    // Keep old handlePWAClick working (used by old cards)
+    function handlePWAClick() { handlePWAInstall(); }
+    function showPWAInstallCard() { _pwaShowBtn(); }
+
+    function pwaIosOpen()  {
+        const s = document.getElementById('pwa-ios-sheet');
+        if (s) { s.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    }
+    function pwaIosClose() {
+        const s = document.getElementById('pwa-ios-sheet');
+        if (s) { s.classList.remove('open'); document.body.style.overflow = ''; }
     }
 
     function toggleAuthMode(mode) {
@@ -8358,6 +8421,60 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
       <button onclick="soClose()" style="flex:1;padding:14px;border:1.5px solid #e2e8f0;border-radius:13px;font-size:14px;font-weight:700;color:#475569;background:white;cursor:pointer;">Hapana</button>
       <button onclick="soConfirm()" style="flex:1;padding:14px;border:none;border-radius:13px;font-size:14px;font-weight:800;color:white;background:linear-gradient(135deg,#ef4444,#dc2626);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
         <span class="material-symbols-outlined" style="font-size:16px;">link_off</span>Ndio, Kata
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ PWA iOS INSTALL SHEET ═══════════ -->
+<div id="pwa-ios-sheet" onclick="if(event.target===this)pwaIosClose()">
+  <div style="width:100%;max-width:480px;background:white;border-radius:28px 28px 0 0;padding:0 0 32px;animation:chSlideUp 0.38s cubic-bezier(0.34,1.15,0.64,1);box-shadow:0 -12px 50px rgba(0,0,0,0.25);">
+    <!-- Handle -->
+    <div style="padding:14px 0 0;text-align:center;">
+      <div style="width:38px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto;"></div>
+    </div>
+    <!-- Icon + Title -->
+    <div style="text-align:center;padding:22px 24px 0;">
+      <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(37,208,120,0.35);">
+        <span class="material-symbols-outlined" style="font-size:36px;color:white;">storefront</span>
+      </div>
+      <div style="font-size:20px;font-weight:900;color:#0f172a;margin-bottom:6px;">Pakua LinkaMarket</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.6;max-width:280px;margin:0 auto;">Weka app kwenye Home Screen yako kwa ufikiaji wa haraka bila mtandao</div>
+    </div>
+    <!-- Steps -->
+    <div style="margin:22px 20px 0;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">⬆️</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 1</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px;">Bonyeza kitufe cha <strong>Share</strong> (⬆️) chini ya Safari</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">➕</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 2</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px;">Chagua <strong>"Add to Home Screen"</strong> kwenye orodha</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#fef9c3,#fde68a);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 3</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px;">Bonyeza <strong>"Add"</strong> kumaliza — iko kwenye screen yako!</div>
+        </div>
+      </div>
+    </div>
+    <!-- Safari note -->
+    <div style="margin:14px 20px 0;background:#fefce8;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1.5px solid #fde68a;">
+      <span style="font-size:16px;flex-shrink:0;">⚠️</span>
+      <div style="font-size:11px;color:#92400e;font-weight:600;line-height:1.5;">Lazima utumie <strong>Safari</strong> — Chrome na Firefox hazisaidii install kwenye iPhone</div>
+    </div>
+    <!-- Close button -->
+    <div style="padding:18px 20px 0;">
+      <button onclick="pwaIosClose()" style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 20px rgba(22,163,74,0.35);font-family:inherit;">
+        Sawa, Nimeelewa ✓
       </button>
     </div>
   </div>
