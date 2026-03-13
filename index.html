@@ -4055,6 +4055,51 @@
         border:1px solid rgba(255,255,255,0.07);animation:ppRowIn 0.35s ease both;
     }
 
+    
+    /* ═══════════════════════════════════════════════
+       TERMS & CONDITIONS MODAL
+    ═══════════════════════════════════════════════ */
+    #tc-overlay {
+        display: none;
+        position: fixed; inset: 0; z-index: 4000;
+        background: rgba(4,18,8,0.8);
+        backdrop-filter: blur(10px);
+        align-items: flex-end; justify-content: center;
+        animation: pvOverlayIn 0.28s ease;
+    }
+    #tc-overlay.open { display: flex; }
+    #tc-sheet {
+        width: 100%; max-width: 480px; max-height: 94vh;
+        background: #0a1628;
+        border-radius: 28px 28px 0 0;
+        display: flex; flex-direction: column; overflow: hidden;
+        animation: chSlideUp 0.42s cubic-bezier(0.34,1.15,0.64,1);
+        box-shadow: 0 -16px 60px rgba(0,0,0,0.5);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    @keyframes tcFadeIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+    .tc-section {
+        background: rgba(255,255,255,0.05);
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,0.08);
+        animation: tcFadeIn 0.4s ease both;
+    }
+    .tc-section-title {
+        font-size: 13px; font-weight: 900; color: white;
+        margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .tc-section-body {
+        font-size: 12px; color: rgba(255,255,255,0.55);
+        line-height: 1.75;
+    }
+    .tc-highlight {
+        color: #25d078; font-weight: 700;
+    }
+    .tc-warn {
+        color: #f59e0b; font-weight: 700;
+    }
+
     </style>
 </head>
 <body>
@@ -8321,9 +8366,9 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
 // SUBSCRIPTION + TRIAL + PAYMENT PAGE LOGIC
 // Placed here so sb (Supabase client) is already defined above
 // ════════════════════════════════════════════════════════════════
-const SELAR_MONTHLY = 'https://selar.co/YOUR_MONTHLY_LINK'; // ← replace
-const SELAR_ANNUAL  = 'https://selar.co/YOUR_ANNUAL_LINK';  // ← replace
-const TRIAL_DAYS    = 7;
+const SELAR_MONTHLY = 'https://selar.com/u515159529';
+const SELAR_ANNUAL  = 'https://selar.com/36567jum26';
+const TRIAL_DAYS    = 5;
 let _ppPlan = 'monthly';
 
 async function checkSubscription() {
@@ -8411,20 +8456,38 @@ async function pwStartTrial() {
 
 async function pwCheckPayment(event) {
     const btn = event?.target;
-    const orig = btn?.textContent;
-    if (btn) btn.textContent = 'Inaangalia...';
+    const origHtml = btn?.innerHTML;
+    if (btn) btn.innerHTML = '<span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#25d078;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span>Inaangalia Selar...</span>';
     try {
-        const { data:{ user } } = await sb.auth.getUser();
-        if (!user) return;
-        const { data: p } = await sb.from('profiles')
-            .select('subscription_status').eq('id', user.id).single();
-        if (p?.subscription_status === 'active') {
-            pwHide(); showToastMsg('✅ Akaunti yako iko active!','success');
+        const { data:{ session } } = await sb.auth.getSession();
+        if (!session) { showToastMsg('Tafadhali ingia kwanza.','warn'); return; }
+
+        // Call our Edge Function which checks Selar API
+        const res = await fetch(
+            SUPABASE_URL + '/functions/v1/check-selar-payment',
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + session.access_token,
+                    'apikey': SUPABASE_KEY,
+                }
+            }
+        );
+        const result = await res.json();
+
+        if (result.activated) {
+            clearInterval(_pwPollTimer);
+            pwClosePaymentPage();
+            pwHide();
+            showToastMsg('🎉 Malipo yamepokelewa! Karibu LinkaMarket Premium.','success');
         } else {
-            showToastMsg('❌ Malipo hayajapokelewa bado.','warn');
-            if (btn) btn.textContent = orig;
+            showToastMsg('❌ Malipo hayajapatikana kwa ' + (result.email||'akaunti yako') + '. Hakikisha umetumia email ile ile ya akaunti hii.','warn');
+            if (btn) btn.innerHTML = origHtml;
         }
-    } catch(e) { if (btn) btn.textContent = orig; }
+    } catch(e) {
+        showToastMsg('Hitilafu: ' + e.message,'warn');
+        if (btn) btn.innerHTML = origHtml;
+    }
 }
 
 async function pwOpenPaymentPage() {
@@ -8514,6 +8577,27 @@ function _pwStartPoll() {
             }
         } catch(e) {}
     }, 8000);
+}
+
+
+// ── Terms & Conditions ────────────────────────────────
+function tcOpen() {
+    const ov = document.getElementById('tc-overlay');
+    if (ov) { ov.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function tcClose() {
+    const ov = document.getElementById('tc-overlay');
+    if (!ov) return;
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity 0.25s';
+    const sh = document.getElementById('tc-sheet');
+    if (sh) { sh.style.transition = 'transform 0.28s ease'; sh.style.transform = 'translateY(100%)'; }
+    setTimeout(() => {
+        ov.classList.remove('open');
+        ov.style.opacity = ''; ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+    }, 290);
 }
 
 </script>
@@ -8874,6 +8958,12 @@ function _pwStartPoll() {
     <div style="text-align:center;margin-top:18px;">
       <button onclick="pwCheckPayment(event)" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;">Tayari nimelipa — angalia hali yangu</button>
     </div>
+    <div style="text-align:center;margin-top:14px;">
+      <button onclick="tcOpen()" style="background:none;border:none;color:rgba(255,255,255,0.22);font-size:11px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;">
+        <span class="material-symbols-outlined" style="font-size:13px;">gavel</span>
+        Masharti ya Huduma &amp; Sera ya Faragha
+      </button>
+    </div>
   </div>
 </div>
 
@@ -8954,7 +9044,189 @@ function _pwStartPoll() {
         </div>
       </button>
       <div style="text-align:center;margin-top:9px;font-size:11px;color:rgba(255,255,255,0.22);">Utalipwa kupitia Selar · Salama · Hakuna data kuhifadhiwa</div>
+      <div style="text-align:center;margin-top:8px;">
+        <button onclick="tcOpen()" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:12px;">gavel</span>
+          Masharti ya Huduma
+        </button>
+      </div>
     </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TERMS & CONDITIONS MODAL
+═══════════════════════════════════════════════════════ -->
+<div id="tc-overlay" onclick="if(event.target===this)tcClose()">
+  <div id="tc-sheet">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(140deg,#0a1f10 0%,#0d2918 60%,#0a2a1a 100%);padding:26px 20px 22px;flex-shrink:0;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(37,208,120,0.06);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-40px;left:-40px;width:150px;height:150px;border-radius:50%;background:rgba(37,208,120,0.04);pointer-events:none;"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;">
+        <div>
+          <div style="font-size:34px;margin-bottom:8px;">⚖️</div>
+          <div style="font-size:20px;font-weight:900;color:white;line-height:1.2;">Masharti ya Huduma</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:5px;font-weight:500;">LinkaMarket · Terms &amp; Conditions</div>
+        </div>
+        <button onclick="tcClose()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:4px;">
+          <span class="material-symbols-outlined" style="font-size:19px;color:white;">close</span>
+        </button>
+      </div>
+      <!-- Trust badges -->
+      <div style="display:flex;gap:8px;margin-top:16px;position:relative;">
+        <div style="background:rgba(37,208,120,0.15);border:1px solid rgba(37,208,120,0.25);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:#25d078;display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:12px;">verified</span>Halisi
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:12px;">lock</span>Salama
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:12px;">calendar_month</span>Machi 2026
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable body -->
+    <div style="flex:1;overflow-y:auto;padding:20px 18px 0;scrollbar-width:none;">
+
+      <!-- Quick summary cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;">
+        <div style="background:rgba(37,208,120,0.08);border:1.5px solid rgba(37,208,120,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.1s both;">
+          <div style="font-size:22px;margin-bottom:6px;">✅</div>
+          <div style="font-size:11px;font-weight:900;color:#25d078;margin-bottom:3px;">Unaruhusiwa</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Kuuza bidhaa halisi, kupokea maagizo, kutumia bot ya AI</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.15s both;">
+          <div style="font-size:22px;margin-bottom:6px;">🚫</div>
+          <div style="font-size:11px;font-weight:900;color:#ef4444;margin-bottom:3px;">Haruhuswi</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Bidhaa haramu, udanganyifu, au matumizi mabaya ya bot</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.2s both;">
+          <div style="font-size:22px;margin-bottom:6px;">💳</div>
+          <div style="font-size:11px;font-weight:900;color:#f59e0b;margin-bottom:3px;">Malipo</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Siku 5 bure, kisha TZS 5,000/mwezi. Acha wakati wowote</div>
+        </div>
+        <div style="background:rgba(59,130,246,0.08);border:1.5px solid rgba(59,130,246,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.25s both;">
+          <div style="font-size:22px;margin-bottom:6px;">🔒</div>
+          <div style="font-size:11px;font-weight:900;color:#60a5fa;margin-bottom:3px;">Faragha</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Data yako haishirikishwi. Unaweza kufuta akaunti lolote wakati</div>
+        </div>
+      </div>
+
+      <!-- Sections -->
+      <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
+
+        <div class="tc-section" style="animation-delay:0.1s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">📋</span> 1. Huduma Tunayotoa
+          </div>
+          <div class="tc-section-body">
+            LinkaMarket ni jukwaa la <span class="tc-highlight">biashara ya kidijitali</span> linaloruhusu wafanyabiashara wadogo Tanzania kuunda duka la mtandaoni, kutumia bot ya WhatsApp ya AI, na kupokea maagizo kutoka kwa wateja moja kwa moja.<br><br>
+            Huduma inajumuisha: duka la bidhaa, bot ya AI ya WhatsApp, takwimu za mauzo, na link ya duka lako.
+          </div>
+        </div>
+
+        <div class="tc-section" style="animation-delay:0.15s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">💰</span> 2. Malipo na Usajili
+          </div>
+          <div class="tc-section-body">
+            • <span class="tc-highlight">Siku 5 bure</span> — hakuna malipo, hakuna kadi ya benki<br>
+            • Baada ya siku 5: <span class="tc-highlight">TZS 5,000/mwezi</span> au <span class="tc-highlight">TZS 50,000/mwaka</span><br>
+            • Malipo yanafanywa kupitia <span class="tc-highlight">Selar</span> (M-Pesa, Tigo Pesa, Airtel)<br>
+            • Baada ya kulipa, huduma inafunguliwa <span class="tc-highlight">moja kwa moja otomatiki</span><br>
+            • Unaweza kuacha huduma <span class="tc-warn">wakati wowote</span> bila adhabu<br>
+            • <span class="tc-warn">Hakuna marejesho</span> ya malipo yaliyofanywa tayari
+          </div>
+        </div>
+
+        <div class="tc-section" style="animation-delay:0.2s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">🤖</span> 3. Bot ya WhatsApp — Sheria
+          </div>
+          <div class="tc-section-body">
+            • Bot inatumia namba yako ya WhatsApp — <span class="tc-warn">lazima iwe namba yako halisi</span><br>
+            • Bot inajibu wateja wanaokupelekea ujumbe tu — <span class="tc-highlight">haipeleki spam</span><br>
+            • Majibu yanachukua dakika 1–30 kwa makusudi (kulinda namba yako dhidi ya ban)<br>
+            • LinkaMarket <span class="tc-highlight">haiwajibiki</span> iwapo WhatsApp itabadilisha sera zake<br>
+            • Usijaribu kutumia bot kwa madhumuni ya udanganyifu — tutafunga akaunti yako
+          </div>
+        </div>
+
+        <div class="tc-section" style="animation-delay:0.25s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">🛡️</span> 4. Sera ya Faragha
+          </div>
+          <div class="tc-section-body">
+            • Tunakusanya: jina la duka, namba ya WhatsApp, bidhaa, mazungumzo ya bot<br>
+            • <span class="tc-highlight">Hatuuzi wala kushirikisha</span> data yako kwa mtu yeyote wa tatu<br>
+            • Data inawekwa kwenye seva salama za <span class="tc-highlight">Supabase</span> (SSL/TLS)<br>
+            • Unaweza kuomba kufutwa kwa data yako yote — tutafanya ndani ya siku 7<br>
+            • Tunaweza kutumia takwimu zisizo na jina kuboresha huduma
+          </div>
+        </div>
+
+        <div class="tc-section" style="animation-delay:0.3s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">⚠️</span> 5. Mipaka ya Wajibu
+          </div>
+          <div class="tc-section-body">
+            LinkaMarket inafanya kazi <span class="tc-warn">kwa bidii kuboresha huduma</span>, lakini haiwezi kuhakikisha:<br><br>
+            • Upatikanaji wa huduma wakati wote (matengenezo ya dharura yanaweza kutokea)<br>
+            • Mapato ya biashara yako (inategemea bidhaa na wateja wako)<br>
+            • Bot kujibu kwa usahihi 100% (AI inaweza kufanya makosa)<br><br>
+            Kwa hiyo, <span class="tc-highlight">LinkaMarket haiwajibiki</span> kwa hasara yoyote ya biashara inayotokana na kutumia huduma hii.
+          </div>
+        </div>
+
+        <div class="tc-section" style="animation-delay:0.35s;">
+          <div class="tc-section-title">
+            <span style="font-size:18px;">📞</span> 6. Mawasiliano ya Msaada
+          </div>
+          <div class="tc-section-body">
+            Una swali? Tatizo? Tuko hapa kukusaidia.<br><br>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">
+              <!-- WhatsApp contact -->
+              <a href="https://wa.me/255696102700" target="_blank" style="display:flex;align-items:center;gap:12px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:14px;padding:13px 15px;text-decoration:none;">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span class="material-symbols-outlined" style="font-size:20px;color:white;">chat</span>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:#25d078;">WhatsApp Customer Care</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">+255 696 102 700</div>
+                  <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px;">Jibu ndani ya masaa 24</div>
+                </div>
+                <span class="material-symbols-outlined" style="font-size:18px;color:rgba(37,208,120,0.6);margin-left:auto;flex-shrink:0;">arrow_forward</span>
+              </a>
+              <!-- Response time note -->
+              <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:16px;flex-shrink:0;">⏰</span>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Tunajaribu kujibu kila swali ndani ya <strong style="color:rgba(255,255,255,0.7);">masaa 24</strong>. Masaa ya kazi: Jumatatu – Jumamosi, 8am – 9pm EAT</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:16px 0 4px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.6;">
+          LinkaMarket · Masharti ya Huduma v1.0<br>
+          Imewekwa: Machi 2026 · Tanzania 🇹🇿<br>
+          Kwa kutumia LinkaMarket unakubali masharti haya yote
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sticky footer -->
+    <div style="padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,0.08);background:#0a1628;flex-shrink:0;">
+      <button onclick="tcClose()" style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(37,208,120,0.3);">
+        <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
+        Nimeelewa — Nakubali Masharti
+      </button>
+    </div>
+
   </div>
 </div>
 
