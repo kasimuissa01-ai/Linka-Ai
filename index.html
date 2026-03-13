@@ -3954,6 +3954,107 @@
     }
     #pwa-ios-sheet.open { display: flex; }
 
+    
+    /* ── Premium nav pulse ── */
+    @keyframes premiumNavPulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+        50%      { box-shadow: 0 0 0 7px rgba(245,158,11,0); }
+    }
+    /* ── PWA install header button ── */
+    #pwa-header-btn {
+        display: none; align-items: center; gap: 5px;
+        background: linear-gradient(135deg,#25d078,#16a34a);
+        color: white; border: none; border-radius: 50px;
+        padding: 7px 13px; font-size: 12px; font-weight: 800;
+        cursor: pointer; font-family: inherit;
+        animation: pwaHeaderPulse 2.5s ease-in-out infinite;
+    }
+    #pwa-header-btn:active { transform: scale(0.95); }
+    @keyframes pwaHeaderPulse {
+        0%,100% { box-shadow: 0 2px 12px rgba(37,208,120,0.4); }
+        50%      { box-shadow: 0 2px 22px rgba(37,208,120,0.75); }
+    }
+    /* ── iOS install sheet ── */
+    #pwa-ios-sheet {
+        display: none; position: fixed; inset: 0; z-index: 9999;
+        background: rgba(4,18,8,0.72); backdrop-filter: blur(8px);
+        align-items: flex-end; justify-content: center;
+    }
+    #pwa-ios-sheet.open { display: flex; }
+    /* ── Paywall overlay ── */
+    #paywall-overlay {
+        display: none; position: fixed; inset: 0; z-index: 3000;
+        background: linear-gradient(160deg,#0a1628 0%,#0d2918 60%,#0a1628 100%);
+        flex-direction: column; overflow-y: auto;
+    }
+    #paywall-overlay.open { display: flex; animation: pwFadeIn 0.4s ease; }
+    @keyframes pwFadeIn { from{opacity:0;} to{opacity:1;} }
+    @keyframes pwSlideUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes pwPop     { from{opacity:0;transform:scale(0.88);} to{opacity:1;transform:scale(1);} }
+    @keyframes pwFloat   { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);} }
+    @keyframes pwShine   { 0%{left:-100%;} 100%{left:200%;} }
+    @keyframes pwGlow    {
+        0%,100%{box-shadow:0 0 30px rgba(37,208,120,0.3),0 8px 32px rgba(0,0,0,0.4);}
+        50%    {box-shadow:0 0 60px rgba(37,208,120,0.6),0 8px 32px rgba(0,0,0,0.4);}
+    }
+    .pw-feat-row {
+        display:flex;align-items:center;gap:13px;padding:13px 16px;
+        background:rgba(255,255,255,0.05);border-radius:14px;
+        border:1px solid rgba(255,255,255,0.08);animation:pwSlideUp 0.4s ease both;
+    }
+    .pw-cta-btn {
+        width:100%;padding:18px;background:linear-gradient(135deg,#25d078,#16a34a);
+        color:white;border:none;border-radius:18px;font-size:16px;font-weight:900;
+        cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
+        animation:pwGlow 2.5s ease-in-out infinite;transition:transform 0.15s;
+    }
+    .pw-cta-btn:active{transform:scale(0.97);}
+    .pw-cta-btn::after{
+        content:'';position:absolute;top:0;width:60%;height:100%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
+        animation:pwShine 3s ease-in-out infinite; animation-delay:1s;
+    }
+    /* ── Payment page ── */
+    #pw-payment-page {
+        display:none;position:fixed;inset:0;z-index:3500;
+        background:linear-gradient(160deg,#070f1a 0%,#0a1f10 50%,#070f1a 100%);
+        flex-direction:column;overflow-y:auto;
+    }
+    #pw-payment-page.open{display:flex;animation:ppPageIn 0.42s cubic-bezier(0.34,1.1,0.64,1);}
+    @keyframes ppPageIn{from{opacity:0;transform:translateY(40px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+    @keyframes ppFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+    @keyframes ppPulse{
+        0%,100%{box-shadow:0 0 0 0 rgba(37,208,120,0.5),0 8px 32px rgba(37,208,120,0.3);}
+        50%    {box-shadow:0 0 0 10px rgba(37,208,120,0),0 8px 32px rgba(37,208,120,0.5);}
+    }
+    @keyframes ppCardIn{from{opacity:0;transform:translateY(16px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+    @keyframes ppRowIn {from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:translateX(0);}}
+    .pp-plan-card{
+        border-radius:18px;padding:18px;border:2px solid rgba(255,255,255,0.08);
+        background:rgba(255,255,255,0.04);cursor:pointer;
+        transition:transform 0.18s,border-color 0.18s,background 0.18s;
+        animation:ppCardIn 0.4s ease both;
+    }
+    .pp-plan-card:active{transform:scale(0.97);}
+    .pp-plan-card.selected{border-color:#25d078;background:rgba(37,208,120,0.08);}
+    .pp-pay-btn{
+        width:100%;padding:19px;background:linear-gradient(135deg,#25d078,#16a34a);
+        color:white;border:none;border-radius:18px;font-size:17px;font-weight:900;
+        cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
+        animation:ppPulse 2.5s ease-in-out infinite;transition:transform 0.15s;
+    }
+    .pp-pay-btn:active{transform:scale(0.97);}
+    .pp-pay-btn::after{
+        content:'';position:absolute;top:0;width:50%;height:100%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+        animation:pwShine 3s ease-in-out infinite;animation-delay:1.5s;
+    }
+    .pp-feat-row{
+        display:flex;align-items:center;gap:13px;padding:12px 15px;
+        background:rgba(255,255,255,0.04);border-radius:13px;
+        border:1px solid rgba(255,255,255,0.07);animation:ppRowIn 0.35s ease both;
+    }
+
     </style>
 </head>
 <body>
@@ -4246,6 +4347,12 @@
             <div class="nav-item" id="nb-settings" onclick="nbGo('settings')">
                 <span class="material-symbols-outlined nav-icon">manage_accounts</span>
                 <span class="nav-label">Settings</span>
+            </div>
+            <div id="nb-premium" onclick="pwOpenPaymentPage()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;flex:1;padding:8px 0 4px;position:relative;min-width:0;">
+                <div style="width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;animation:premiumNavPulse 2.5s ease-in-out infinite;">
+                    <span class="material-symbols-outlined" style="font-size:18px;color:white;">workspace_premium</span>
+                </div>
+                <span style="font-size:10px;font-weight:800;color:#d97706;letter-spacing:0.2px;">Premium</span>
             </div>
         </div>
     </div>
@@ -5887,6 +5994,8 @@
         typeWriterHero();
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item')[0]?.classList.add('active');
+        // Fire-and-forget subscription check — never blocks products/name load
+        setTimeout(() => checkSubscription().catch(()=>{}), 800);
         
         const { data: { user } } = await sb.auth.getUser();
         if (!user) return;
@@ -7884,7 +7993,7 @@ function nbGo(page) {
         chOpen();
     } else if (page === 'settings') {
         document.getElementById('nb-settings')?.classList.add('active');
-        goToProfile();
+        openProfileSettings();
     }
 }
 
@@ -8207,6 +8316,206 @@ async function soConfirm() {
 }
 
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered:", reg.scope)).catch(err => console.error("SW registration failed:", err)); }); } 
+
+// ════════════════════════════════════════════════════════════════
+// SUBSCRIPTION + TRIAL + PAYMENT PAGE LOGIC
+// Placed here so sb (Supabase client) is already defined above
+// ════════════════════════════════════════════════════════════════
+const SELAR_MONTHLY = 'https://selar.co/YOUR_MONTHLY_LINK'; // ← replace
+const SELAR_ANNUAL  = 'https://selar.co/YOUR_ANNUAL_LINK';  // ← replace
+const TRIAL_DAYS    = 7;
+let _ppPlan = 'monthly';
+
+async function checkSubscription() {
+    try {
+        const { data:{ user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: p, error: e } = await sb.from('profiles')
+            .select('subscription_status,trial_started_at,subscription_expires_at')
+            .eq('id', user.id).single();
+        // If columns don't exist yet → never block dashboard
+        if (e || !p) return;
+        if (!p.subscription_status && !p.trial_started_at) return;
+
+        const now = new Date();
+
+        // New user — set trial start
+        if (!p.trial_started_at) {
+            const end = new Date(now.getTime() + TRIAL_DAYS*86400000).toISOString();
+            await sb.from('profiles').update({
+                trial_started_at: now.toISOString(),
+                subscription_status: 'trial',
+                subscription_expires_at: end
+            }).eq('id', user.id);
+            return;
+        }
+        // Active paid subscription
+        if (p.subscription_status === 'active') {
+            if (new Date(p.subscription_expires_at) > now) return;
+        }
+        // Trial still running
+        if (p.subscription_status === 'trial') {
+            if (new Date(p.subscription_expires_at) > now) return;
+        }
+        // Only show paywall if trial/subscription has truly expired
+        const expired = p.subscription_status === 'expired'
+            || (p.subscription_status === 'trial' && new Date(p.subscription_expires_at) <= now);
+        if (expired) pwShow();
+    } catch(err) {
+        // Never crash or block dashboard
+        console.warn('checkSubscription (safe):', err.message);
+    }
+}
+
+async function getTrialDaysLeft() {
+    try {
+        const { data:{ user } } = await sb.auth.getUser();
+        if (!user) return 99;
+        const { data: p } = await sb.from('profiles')
+            .select('subscription_expires_at,subscription_status').eq('id', user.id).single();
+        if (!p || p.subscription_status === 'active') return 99;
+        return Math.max(0, Math.ceil((new Date(p.subscription_expires_at) - new Date()) / 86400000));
+    } catch { return 99; }
+}
+
+function pwShow() {
+    const el = document.getElementById('paywall-overlay');
+    if (el) el.classList.add('open');
+}
+function pwHide() {
+    const el = document.getElementById('paywall-overlay');
+    if (el) el.classList.remove('open');
+}
+
+async function pwStartTrial() {
+    try {
+        const { data:{ user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: p } = await sb.from('profiles')
+            .select('trial_started_at,subscription_status').eq('id', user.id).single();
+        if (!p?.trial_started_at) {
+            const end = new Date(Date.now() + TRIAL_DAYS*86400000).toISOString();
+            await sb.from('profiles').update({
+                trial_started_at: new Date().toISOString(),
+                subscription_status: 'trial',
+                subscription_expires_at: end
+            }).eq('id', user.id);
+            pwHide();
+            showToastMsg('🎉 Karibu! Siku 7 zako bure zimeanza.','success');
+        } else {
+            // Trial already used — go to payment
+            pwOpenPaymentPage();
+        }
+    } catch(e) { console.warn('pwStartTrial:', e.message); }
+}
+
+async function pwCheckPayment(event) {
+    const btn = event?.target;
+    const orig = btn?.textContent;
+    if (btn) btn.textContent = 'Inaangalia...';
+    try {
+        const { data:{ user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data: p } = await sb.from('profiles')
+            .select('subscription_status').eq('id', user.id).single();
+        if (p?.subscription_status === 'active') {
+            pwHide(); showToastMsg('✅ Akaunti yako iko active!','success');
+        } else {
+            showToastMsg('❌ Malipo hayajapokelewa bado.','warn');
+            if (btn) btn.textContent = orig;
+        }
+    } catch(e) { if (btn) btn.textContent = orig; }
+}
+
+async function pwOpenPaymentPage() {
+    const page = document.getElementById('pw-payment-page');
+    if (!page) return;
+    page.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const days = await getTrialDaysLeft();
+    const badge = document.getElementById('pp-trial-badge');
+    const dEl   = document.getElementById('pp-days-left');
+    if (badge && days < 99 && days > 0) {
+        if (dEl) dEl.textContent = days;
+        badge.style.display = 'block';
+    }
+}
+
+function pwClosePaymentPage() {
+    const page = document.getElementById('pw-payment-page');
+    if (!page) return;
+    page.style.transition = 'opacity 0.25s,transform 0.25s';
+    page.style.opacity = '0';
+    page.style.transform = 'translateY(30px)';
+    setTimeout(() => {
+        page.classList.remove('open');
+        page.style.cssText = '';
+        document.body.style.overflow = '';
+    }, 260);
+}
+
+function ppSelectPlan(plan) {
+    _ppPlan = plan;
+    const mCard = document.getElementById('plan-monthly');
+    const aCard = document.getElementById('plan-annual');
+    const mDot  = document.getElementById('radio-monthly-dot');
+    const aDot  = document.getElementById('radio-annual-dot');
+    const mBrd  = document.getElementById('radio-monthly');
+    const aBrd  = document.getElementById('radio-annual');
+    const btnTx = document.getElementById('pp-pay-btn-text');
+    if (plan === 'monthly') {
+        mCard?.classList.add('selected'); aCard?.classList.remove('selected');
+        if (mBrd) mBrd.style.borderColor = '#25d078';
+        if (aBrd) aBrd.style.borderColor = 'rgba(255,255,255,0.2)';
+        if (mDot) mDot.style.background = '#25d078';
+        if (aDot) aDot.style.background = 'transparent';
+        if (btnTx) btnTx.textContent = 'Lipa TZS 5,000 kwa M-Pesa';
+    } else {
+        aCard?.classList.add('selected'); mCard?.classList.remove('selected');
+        if (aBrd) aBrd.style.borderColor = '#25d078';
+        if (mBrd) mBrd.style.borderColor = 'rgba(255,255,255,0.2)';
+        if (aDot) aDot.style.background = '#25d078';
+        if (mDot) mDot.style.background = 'transparent';
+        if (btnTx) btnTx.textContent = 'Lipa TZS 50,000 kwa M-Pesa';
+    }
+}
+
+function ppPay() {
+    const url = _ppPlan === 'annual' ? SELAR_ANNUAL : SELAR_MONTHLY;
+    const btn  = document.getElementById('pp-pay-btn');
+    const amt  = _ppPlan === 'annual' ? '50,000' : '5,000';
+    if (!btn) { window.open(url, '_blank'); return; }
+    btn.disabled = true;
+    btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;"><span style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span><span>Inafungua malipo...</span></div>';
+    setTimeout(() => {
+        window.open(url, '_blank');
+        btn.disabled = false;
+        btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;"><span class="material-symbols-outlined" style="font-size:21px;">payments</span><span id="pp-pay-btn-text">Lipa TZS '+amt+' kwa M-Pesa</span></div>';
+        _pwStartPoll();
+        showToastMsg('✅ Ukurasa wa malipo umefunguliwa! Lipa kisha rudi hapa.','success');
+    }, 1100);
+}
+
+let _pwPollTimer = null;
+function _pwStartPoll() {
+    clearInterval(_pwPollTimer);
+    let n = 0;
+    _pwPollTimer = setInterval(async () => {
+        if (++n > 45) { clearInterval(_pwPollTimer); return; }
+        try {
+            const { data:{ user } } = await sb.auth.getUser();
+            if (!user) return;
+            const { data: p } = await sb.from('profiles')
+                .select('subscription_status').eq('id', user.id).single();
+            if (p?.subscription_status === 'active') {
+                clearInterval(_pwPollTimer);
+                pwClosePaymentPage(); pwHide();
+                showToastMsg('🎉 Malipo yamepokelewa! Karibu LinkaMarket Premium.','success');
+            }
+        } catch(e) {}
+    }, 8000);
+}
+
 </script>
 
 <!-- ═══════════ PRIVACY POLICY MODAL ═══════════ -->
@@ -8476,6 +8785,175 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
       <button onclick="pwaIosClose()" style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 20px rgba(22,163,74,0.35);font-family:inherit;">
         Sawa, Nimeelewa ✓
       </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ iOS PWA INSTALL SHEET ═══════════ -->
+<div id="pwa-ios-sheet" onclick="if(event.target===this)pwaIosClose()">
+  <div style="width:100%;max-width:480px;background:white;border-radius:28px 28px 0 0;padding:0 0 32px;animation:chSlideUp 0.38s cubic-bezier(0.34,1.15,0.64,1);box-shadow:0 -12px 50px rgba(0,0,0,0.25);">
+    <div style="padding:14px 0 0;text-align:center;"><div style="width:38px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto;"></div></div>
+    <div style="text-align:center;padding:22px 24px 0;">
+      <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(37,208,120,0.35);">
+        <span class="material-symbols-outlined" style="font-size:36px;color:white;">storefront</span>
+      </div>
+      <div style="font-size:20px;font-weight:900;color:#0f172a;margin-bottom:6px;">Pakua LinkaMarket</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.6;max-width:280px;margin:0 auto;">Weka app kwenye Home Screen yako kwa ufikiaji wa haraka bila mtandao</div>
+    </div>
+    <div style="margin:20px 20px 0;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">⬆️</div>
+        <div><div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 1</div><div style="font-size:12px;color:#64748b;margin-top:2px;">Bonyeza <strong>Share</strong> (⬆️) chini ya Safari</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">➕</div>
+        <div><div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 2</div><div style="font-size:12px;color:#64748b;margin-top:2px;">Chagua <strong>"Add to Home Screen"</strong></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#f8fafc;border-radius:14px;padding:13px 16px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#fef9c3,#fde68a);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">✅</div>
+        <div><div style="font-size:13px;font-weight:800;color:#0f172a;">Hatua 3</div><div style="font-size:12px;color:#64748b;margin-top:2px;">Bonyeza <strong>"Add"</strong> — iko kwenye screen yako!</div></div>
+      </div>
+    </div>
+    <div style="margin:12px 20px 0;background:#fefce8;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;border:1.5px solid #fde68a;">
+      <span style="flex-shrink:0;font-size:16px;">⚠️</span>
+      <div style="font-size:11px;color:#92400e;font-weight:600;line-height:1.5;">Lazima utumie <strong>Safari</strong> — Chrome na Firefox hazisaidii install kwenye iPhone</div>
+    </div>
+    <div style="padding:16px 20px 0;">
+      <button onclick="pwaIosClose()" style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;">Sawa, Nimeelewa ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAYWALL SCREEN ═══════════ -->
+<div id="paywall-overlay">
+  <div style="max-width:480px;width:100%;margin:0 auto;padding:32px 20px 56px;display:flex;flex-direction:column;position:relative;">
+    <div style="position:fixed;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(37,208,120,0.13),transparent 70%);pointer-events:none;"></div>
+    <div style="position:fixed;bottom:-60px;right:-60px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent 70%);pointer-events:none;"></div>
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:26px;animation:pwSlideUp 0.4s ease;">
+      <div style="font-size:26px;font-weight:900;color:white;letter-spacing:-0.5px;margin-bottom:10px;">LINKA<span style="color:#25d078;">MARKET</span></div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0f172a;border-radius:99px;padding:5px 14px;font-size:12px;font-weight:900;">
+        <span class="material-symbols-outlined" style="font-size:14px;">star</span>Siku 7 Bure — Bila Kadi ya Benki
+      </div>
+    </div>
+    <!-- Hero -->
+    <div style="text-align:center;margin-bottom:22px;animation:pwFloat 3s ease-in-out infinite;">
+      <div style="width:88px;height:88px;border-radius:28px;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 50px rgba(37,208,120,0.4);">
+        <span class="material-symbols-outlined" style="font-size:44px;color:white;">storefront</span>
+      </div>
+    </div>
+    <!-- Headline -->
+    <div style="text-align:center;margin-bottom:26px;animation:pwSlideUp 0.4s ease 0.1s both;">
+      <div style="font-size:25px;font-weight:900;color:white;line-height:1.25;margin-bottom:10px;">Duka Lako Linafanya Kazi<br><span style="color:#25d078;">Hata Ukilala 😴</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;max-width:300px;margin:0 auto;">Bot yako ya WhatsApp inajibu wateja, inaonyesha bei, na inachukua maagizo — <strong style="color:rgba(255,255,255,0.8);">bila wewe kuwepo</strong></div>
+    </div>
+    <!-- Features -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
+      <div class="pw-feat-row" style="animation-delay:0.15s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(37,208,120,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bot ya WhatsApp 24/7</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Inajibu wateja kiotomatiki — usiku na mchana</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
+      <div class="pw-feat-row" style="animation-delay:0.2s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛒</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Duka la Bidhaa Bila Kikomo</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Ongeza bidhaa nyingi unavyotaka na picha</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
+      <div class="pw-feat-row" style="animation-delay:0.25s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔗</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Link ya Duka Lako</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Shiriki na wateja — wanunue moja kwa moja</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
+      <div class="pw-feat-row" style="animation-delay:0.3s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📊</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Takwimu za Mauzo</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Ona wateja, maagizo, na mauzo yako yote</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
+    </div>
+    <!-- Price -->
+    <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(37,208,120,0.3);border-radius:20px;padding:20px;margin-bottom:20px;animation:pwPop 0.4s ease 0.3s both;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div><div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Baada ya siku 7 bure</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:32px;font-weight:900;color:white;">5,000</span><span style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:700;">TZS / mwezi</span></div></div>
+        <div style="text-align:center;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px;">Sawa na</div><div style="font-size:14px;font-weight:900;color:#25d078;">~167 TZS</div><div style="font-size:10px;color:rgba(255,255,255,0.3);">kwa siku</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:rgba(37,208,120,0.1);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(37,208,120,0.2);"><div style="font-size:11px;font-weight:800;color:#25d078;">✅ Siku 7 Bure</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">Hakuna malipo sasa</div></div>
+        <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.07);"><div style="font-size:11px;font-weight:800;color:white;">❌ Bila Mkataba</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">Acha wakati wowote</div></div>
+      </div>
+    </div>
+    <!-- CTA -->
+    <button class="pw-cta-btn" onclick="pwStartTrial()">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;"><span class="material-symbols-outlined" style="font-size:22px;">rocket_launch</span><span>Anza Siku 7 Bure — Bila Malipo</span></div>
+    </button>
+    <div style="text-align:center;margin-top:10px;font-size:11px;color:rgba(255,255,255,0.28);">Hakuna kadi ya benki · Hakuna mkataba · Acha lini unataka</div>
+    <div style="text-align:center;margin-top:18px;">
+      <button onclick="pwCheckPayment(event)" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;">Tayari nimelipa — angalia hali yangu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAYMENT PAGE ═══════════ -->
+<div id="pw-payment-page">
+  <div style="position:fixed;top:-100px;right:-100px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(37,208,120,0.1),transparent 70%);pointer-events:none;"></div>
+  <div style="position:fixed;bottom:-80px;left:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.08),transparent 70%);pointer-events:none;"></div>
+  <div style="max-width:480px;width:100%;margin:0 auto;padding:0 20px 64px;display:flex;flex-direction:column;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:14px;padding:20px 0 24px;">
+      <button onclick="pwClosePaymentPage()" style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.65);">arrow_back</span>
+      </button>
+      <div style="flex:1;"><div style="font-size:18px;font-weight:900;color:white;">Pata Premium</div><div style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:1px;">Fungua nguvu zote za LinkaMarket</div></div>
+      <div id="pp-trial-badge" style="display:none;background:rgba(37,208,120,0.13);border:1px solid rgba(37,208,120,0.3);border-radius:99px;padding:5px 11px;font-size:11px;font-weight:800;color:#25d078;flex-shrink:0;"><span id="pp-days-left">7</span> siku</div>
+    </div>
+    <!-- Hero -->
+    <div style="text-align:center;margin-bottom:26px;animation:ppFloat 3.5s ease-in-out infinite;">
+      <div style="width:94px;height:94px;border-radius:30px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 60px rgba(245,158,11,0.4);">
+        <span class="material-symbols-outlined" style="font-size:50px;color:white;">workspace_premium</span>
+      </div>
+      <div style="font-size:23px;font-weight:900;color:white;line-height:1.25;margin-bottom:8px;">Biashara Yako,<br><span style="color:#f59e0b;">Nguvu Kamili</span> 🚀</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.42);max-width:280px;margin:0 auto;line-height:1.6;">Bot ya AI, duka kamili, takwimu — yote kwa bei ya chai moja kwa siku</div>
+    </div>
+    <!-- Plans -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:11px;">Chagua Mpango</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="pp-plan-card selected" id="plan-monthly" onclick="ppSelectPlan('monthly')" style="animation-delay:0.05s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="radio-monthly" style="width:20px;height:20px;border-radius:50%;border:2px solid #25d078;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <div id="radio-monthly-dot" style="width:10px;height:10px;border-radius:50%;background:#25d078;"></div>
+              </div>
+              <div><div style="font-size:14px;font-weight:800;color:white;">Kila Mwezi</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px;">Acha lini unataka</div></div>
+            </div>
+            <div style="text-align:right;"><div style="font-size:20px;font-weight:900;color:white;">5,000 <span style="font-size:11px;color:rgba(255,255,255,0.38);">TZS</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);">/ mwezi</div></div>
+          </div>
+        </div>
+        <div class="pp-plan-card" id="plan-annual" onclick="ppSelectPlan('annual')" style="animation-delay:0.1s;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:11px;right:-1px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:900;padding:3px 10px 3px 12px;border-radius:99px 0 0 99px;letter-spacing:0.3px;">BORA ZAIDI</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="radio-annual" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <div id="radio-annual-dot" style="width:10px;height:10px;border-radius:50%;background:transparent;"></div>
+              </div>
+              <div><div style="font-size:14px;font-weight:800;color:white;">Mwaka Mzima</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px;">Okoa miezi 2 bure</div></div>
+            </div>
+            <div style="text-align:right;"><div style="font-size:20px;font-weight:900;color:#f59e0b;">50,000 <span style="font-size:11px;color:rgba(255,255,255,0.38);">TZS</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);text-decoration:line-through;">60,000 TZS</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Features -->
+    <div style="margin-bottom:22px;">
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:11px;">Unachopata</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="pp-feat-row" style="animation-delay:0.1s;"><span style="font-size:19px;">🤖</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bot ya WhatsApp ya AI</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Inajibu wateja 24/7 kwa Kiswahili</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
+        <div class="pp-feat-row" style="animation-delay:0.14s;"><span style="font-size:19px;">🛒</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bidhaa Bila Kikomo</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Ongeza bidhaa, picha, bei — bila ukomo</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
+        <div class="pp-feat-row" style="animation-delay:0.18s;"><span style="font-size:19px;">📊</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Takwimu za Mauzo</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Mwenendo wa wateja na mauzo yako</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
+        <div class="pp-feat-row" style="animation-delay:0.22s;"><span style="font-size:19px;">🔗</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Link ya Duka Lako</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Shiriki na wateja — wanunue moja kwa moja</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
+        <div class="pp-feat-row" style="animation-delay:0.26s;"><span style="font-size:19px;">💬</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Mazungumzo ya Wateja</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Ona kila mazungumzo kati ya bot na wateja</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
+      </div>
+    </div>
+    <!-- Trust strip -->
+    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:22px;padding:13px;background:rgba(255,255,255,0.03);border-radius:14px;border:1px solid rgba(255,255,255,0.06);">
+      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">🔒</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Salama</div></div>
+      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">📱</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">M-Pesa/Tigo</div></div>
+      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">❌</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Bila Mkataba</div></div>
+      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">⚡</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Papo Hapo</div></div>
+    </div>
+    <!-- Pay button -->
+    <div style="position:sticky;bottom:24px;">
+      <button class="pp-pay-btn" id="pp-pay-btn" onclick="ppPay()">
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;">
+          <span class="material-symbols-outlined" style="font-size:21px;">payments</span>
+          <span id="pp-pay-btn-text">Lipa TZS 5,000 kwa M-Pesa</span>
+        </div>
+      </button>
+      <div style="text-align:center;margin-top:9px;font-size:11px;color:rgba(255,255,255,0.22);">Utalipwa kupitia Selar · Salama · Hakuna data kuhifadhiwa</div>
     </div>
   </div>
 </div>
