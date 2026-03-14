@@ -4100,6 +4100,82 @@
         color: #f59e0b; font-weight: 700;
     }
 
+    
+    /* ═══════════════════════════════════════════════
+       ONBOARDING OVERLAY
+    ═══════════════════════════════════════════════ */
+    #onboarding-overlay {
+        display: none;
+        position: fixed; inset: 0; z-index: 5000;
+        background: rgba(4, 14, 8, 0.88);
+        backdrop-filter: blur(6px);
+        align-items: flex-end; justify-content: center;
+    }
+    #onboarding-overlay.open { display: flex; }
+    #onboarding-card {
+        width: 100%; max-width: 480px;
+        background: linear-gradient(160deg, #0a1f10 0%, #071428 100%);
+        border-radius: 28px 28px 0 0;
+        border-top: 1px solid rgba(37,208,120,0.2);
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+        animation: obSlideUp 0.45s cubic-bezier(0.34,1.15,0.64,1);
+        overflow: hidden;
+    }
+    @keyframes obSlideUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+    @keyframes obFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes obPulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(37,208,120,0.4); }
+        50%     { box-shadow: 0 0 0 10px rgba(37,208,120,0); }
+    }
+    @keyframes obFloat {
+        0%,100% { transform: translateY(0); }
+        50%     { transform: translateY(-6px); }
+    }
+    @keyframes obStepPop {
+        from { opacity: 0; transform: scale(0.85); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    .ob-step-btn {
+        width: 100%; padding: 17px;
+        background: linear-gradient(135deg, #25d078, #16a34a);
+        color: white; border: none; border-radius: 16px;
+        font-size: 15px; font-weight: 900; cursor: pointer;
+        font-family: inherit;
+        box-shadow: 0 4px 20px rgba(37,208,120,0.35);
+        transition: transform 0.15s;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .ob-step-btn:active { transform: scale(0.97); }
+    .ob-skip-btn {
+        background: none; border: none;
+        color: rgba(255,255,255,0.3); font-size: 12px;
+        cursor: pointer; font-family: inherit;
+        padding: 8px; margin-top: 4px;
+    }
+    .ob-step-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        transition: background 0.3s, transform 0.3s;
+    }
+    .ob-step-dot.active {
+        background: #25d078;
+        transform: scale(1.3);
+    }
+    .ob-highlight-ring {
+        position: fixed; z-index: 4999; pointer-events: none;
+        border: 2.5px solid #25d078;
+        border-radius: 50px;
+        box-shadow: 0 0 0 3000px rgba(4,14,8,0.82);
+        animation: obPulse 2s ease-in-out infinite;
+        transition: all 0.4s cubic-bezier(0.34,1.15,0.64,1);
+    }
+
     </style>
 </head>
 <body>
@@ -4326,42 +4402,14 @@
                 <span class="material-symbols-outlined" style="color:#c2410c; margin-top:10px;">arrow_forward</span>
             </div>
 
-            <!-- Hero -->
-            <div class="modern-hero">
-                <div class="modern-hero-content">
-                    <span class="hero-typewriter" id="hero-typewriter-text"></span><span class="hero-cursor"></span>
-                    <button class="modern-btn" onclick="goToAddProduct()">Ongeza Bidhaa</button>
+            <!-- Products — clean, no hero above -->
+            <div class="modern-products-container" style="padding-top:8px;">
+                <div id="products-container">
+                    <!-- Products loaded by JS -->
                 </div>
             </div>
 
-            <!-- Products -->
-            <div class="modern-products-container">
-                <div class="modern-section-title">
-                    <span>New Arrivals</span>
-                </div>
-                
-                <div class="modern-grid" id="products-container">
-                    <!-- Products Injected Here via JS with Modern Animation -->
-                </div>
-            </div>
 
-            <!-- Trust Footer -->
-            <div class="luxe-trust">
-                <div class="luxe-trust-item">
-                    <span class="material-symbols-outlined luxe-trust-icon">verified_user</span>
-                    <div>
-                        <div class="luxe-trust-title">Secure Data</div>
-                        <div class="luxe-trust-sub">Encrypted</div>
-                    </div>
-                </div>
-                <div class="luxe-trust-item">
-                    <span class="material-symbols-outlined luxe-trust-icon">cloud_sync</span>
-                    <div>
-                        <div class="luxe-trust-title">Auto Sync</div>
-                        <div class="luxe-trust-sub">Always Online</div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Hidden elements to preserve JS logic looking for specific IDs -->
             <div id="dash-greeting" class="hidden"></div>
@@ -4485,6 +4533,32 @@
                     </div>
                 </div>
                 <span class="material-symbols-outlined" style="color: #cbd5e1;">chevron_right</span>
+            </div>
+
+            <!-- Guide / Mwongozo Button -->
+            <div onclick="obStart()" style="
+                display:flex;align-items:center;justify-content:space-between;
+                background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+                border:1.5px solid #86efac;border-radius:16px;
+                padding:15px 16px;margin-bottom:12px;cursor:pointer;
+                box-shadow:0 2px 12px rgba(37,208,120,0.1);
+                transition:transform 0.15s;
+                active:transform:scale(0.97);
+            ">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:42px;height:42px;background:linear-gradient(135deg,#25d078,#16a34a);
+                                border-radius:12px;display:flex;align-items:center;justify-content:center;
+                                box-shadow:0 4px 14px rgba(37,208,120,0.35);flex-shrink:0;">
+                        <span class="material-symbols-outlined" style="font-size:22px;color:white;">school</span>
+                    </div>
+                    <div>
+                        <div style="font-size:14px;font-weight:900;color:#15803d;">Mwongozo wa Matumizi</div>
+                        <div style="font-size:11px;color:#16a34a;margin-top:2px;font-weight:600;">
+                            Jinsi ya kutumia LinkaMarket hatua kwa hatua
+                        </div>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">play_circle</span>
             </div>
 
             <button class="save-profile-btn" onclick="saveShopProfile()">
@@ -6045,13 +6119,15 @@
         const { data: { user } } = await sb.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await sb.from('profiles').select('business_name, whatsapp_number').eq('id', user.id).single();
+        const { data: profile } = await sb.from('profiles').select('business_name, whatsapp_number, bot_connection_status').eq('id', user.id).single();
         if(profile && profile.business_name) { document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase(); }
         const alertCard = document.getElementById('setup-alert');
         if(!profile || !profile.whatsapp_number || !profile.business_name) { alertCard.classList.remove('hidden'); } else { alertCard.classList.add('hidden'); }
 
         const { data: products, error } = await sb.from('products').select(`*, product_images(image_url)`).eq('merchant_id', user.id).eq('is_active', true).order('created_at', { ascending: false });
         GLOBAL_PRODUCTS = products || [];
+        // Show onboarding if new user has no products or no bot
+        checkShouldShowOnboarding(profile, products);
 
         const container = document.getElementById('products-container');
         if(container) {
@@ -8600,6 +8676,287 @@ function tcClose() {
     }, 290);
 }
 
+
+// ════════════════════════════════════════════════════════════
+// ONBOARDING SYSTEM
+// Shows for new users who have no products OR no bot connected
+// ════════════════════════════════════════════════════════════
+let _obStep = 0;
+let _obTypeTimer = null;
+const _OB_KEY = 'lm_ob_done_v1';
+
+const _obSteps = [
+    {
+        icon: '👋',
+        iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
+        title: 'Karibu LinkaMarket!',
+        subtitle: 'Duka lako la WhatsApp linaanza hapa',
+        body: 'Nitakuonyesha jinsi ya kusanidi biashara yako kwa dakika chache.\n\nBot yako ya AI itajibu wateja wako kiotomatiki — hata ukiwa umelala. 😴',
+        btnText: 'Tuanze! 🚀',
+        btnIcon: 'rocket_launch',
+        target: null,
+        skipable: true,
+    },
+    {
+        icon: '🤖',
+        iconBg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+        title: 'Hatua 1 — Unganisha WhatsApp',
+        subtitle: 'Bot yako ya AI inahitaji namba yako',
+        body: 'Bonyeza kitufe cha "Bot" kwenye menyu ya chini.\n\nUtapata namba ya kuthibitisha — ingiza kwenye WhatsApp yako.\n\nBot itaanza kufanya kazi PAPO HAPO! ⚡',
+        btnText: 'Nenda Bot Section →',
+        btnIcon: 'smart_toy',
+        target: 'nb-chats',
+        targetLabel: 'Bonyeza hapa — Chats/Bot',
+        skipable: true,
+    },
+    {
+        icon: '📦',
+        iconBg: 'linear-gradient(135deg,#f59e0b,#d97706)',
+        title: 'Hatua 2 — Ongeza Bidhaa',
+        subtitle: 'Bot itajua bidhaa zako zote',
+        body: 'Bonyeza kitufe cha "+" kuongeza bidhaa yako ya kwanza.\n\nWeka jina, bei, na picha — bot itajifunza kila kitu moja kwa moja! 🛒\n\nWateja watauliza — bot itajibu kwa usahihi.',
+        btnText: 'Ongeza Bidhaa ya Kwanza →',
+        btnIcon: 'add_circle',
+        target: 'nb-add-product',
+        targetLabel: 'Bonyeza "+" hapa',
+        skipable: true,
+    },
+    {
+        icon: '💬',
+        iconBg: 'linear-gradient(135deg,#a855f7,#7c3aed)',
+        title: 'Hatua 3 — Angalia Mazungumzo',
+        subtitle: 'Ona kila mteja anayewasiliana na bot',
+        body: 'Kwenye sehemu ya "Chats" utaona mazungumzo yote kati ya bot na wateja wako.\n\nUnaweza kujibu mwenyewe au kuacha bot iendelee. 💬\n\nKukata bot? Settings → Bot → Kata. Rahisi!',
+        btnText: 'Nimeelewa — Nianze! ✅',
+        btnIcon: 'check_circle',
+        target: null,
+        skipable: false,
+    },
+];
+
+function obStart() {
+    _obStep = 0;
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    obRenderStep(0);
+}
+
+function obClose() {
+    localStorage.setItem(_OB_KEY, '1');
+    const overlay = document.getElementById('onboarding-overlay');
+    const ring    = document.getElementById('ob-highlight-ring');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.3s';
+        setTimeout(() => {
+            overlay.classList.remove('open');
+            overlay.style.opacity = '';
+            overlay.style.transition = '';
+        }, 300);
+    }
+    if (ring) ring.style.display = 'none';
+    document.body.style.overflow = '';
+    clearTimeout(_obTypeTimer);
+}
+
+function obNext() {
+    clearTimeout(_obTypeTimer);
+    const ring = document.getElementById('ob-highlight-ring');
+    if (ring) ring.style.display = 'none';
+
+    if (_obStep >= _obSteps.length - 1) {
+        obClose();
+        return;
+    }
+    _obStep++;
+    obRenderStep(_obStep);
+}
+
+function obGoToAction() {
+    const step = _obSteps[_obStep];
+    obClose();
+    // Navigate to relevant section
+    if (_obStep === 1) {
+        // Go to bot/chats section
+        setTimeout(() => nbGo('chats'), 350);
+    } else if (_obStep === 2) {
+        // Go to add product
+        setTimeout(() => goToAddProduct(), 350);
+    }
+}
+
+function obRenderStep(idx) {
+    const step    = _obSteps[idx];
+    const content = document.getElementById('ob-content');
+    const dots    = document.querySelectorAll('.ob-step-dot');
+    if (!content) return;
+
+    // Update dots
+    dots.forEach((d, i) => {
+        d.classList.toggle('active', i === idx);
+    });
+
+    // Highlight target element if any
+    const ring = document.getElementById('ob-highlight-ring');
+    if (step.target) {
+        const targetEl = document.getElementById(step.target);
+        if (targetEl && ring) {
+            const rect = targetEl.getBoundingClientRect();
+            ring.style.display = 'block';
+            ring.style.left   = (rect.left - 6) + 'px';
+            ring.style.top    = (rect.top - 6) + 'px';
+            ring.style.width  = (rect.width + 12) + 'px';
+            ring.style.height = (rect.height + 12) + 'px';
+        }
+    } else if (ring) {
+        ring.style.display = 'none';
+    }
+
+    // Build HTML
+    const isLast  = idx === _obSteps.length - 1;
+    const btnText = step.btnText;
+    const btnFn   = (idx < _obSteps.length - 1 && step.target) ? 'obGoToAction()' : 'obNext()';
+
+    content.style.opacity = '0';
+    content.style.transform = 'translateY(14px)';
+    content.style.transition = 'opacity 0.25s, transform 0.25s';
+
+    setTimeout(() => {
+        content.innerHTML = `
+            <div style="text-align:center;margin-bottom:20px;animation:obStepPop 0.4s ease both;">
+                <div style="width:80px;height:80px;border-radius:26px;background:${step.iconBg};
+                            display:flex;align-items:center;justify-content:center;
+                            margin:0 auto 14px;font-size:38px;
+                            box-shadow:0 8px 32px rgba(0,0,0,0.3);
+                            animation:obFloat 3s ease-in-out infinite;">
+                    ${step.icon}
+                </div>
+                <div style="font-size:21px;font-weight:900;color:white;line-height:1.25;margin-bottom:6px;">
+                    ${step.title}
+                </div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.45);font-weight:600;">
+                    ${step.subtitle}
+                </div>
+            </div>
+
+            <!-- Typewriter body -->
+            <div id="ob-typewriter" style="flex:1;font-size:13px;color:rgba(255,255,255,0.7);
+                          line-height:1.85;background:rgba(255,255,255,0.04);
+                          border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.08);
+                          margin-bottom:18px;min-height:80px;">
+            </div>
+
+            ${step.target ? `
+            <div style="background:rgba(37,208,120,0.08);border:1.5px dashed rgba(37,208,120,0.35);
+                         border-radius:12px;padding:10px 14px;margin-bottom:14px;
+                         display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">👆</span>
+                <span style="font-size:12px;color:#25d078;font-weight:700;">${step.targetLabel}</span>
+            </div>` : ''}
+
+            <button class="ob-step-btn" onclick="${btnFn}">
+                <span class="material-symbols-outlined" style="font-size:20px;">${step.btnIcon}</span>
+                <span>${btnText}</span>
+            </button>
+
+            ${step.skipable ? `
+            <div style="text-align:center;">
+                <button class="ob-skip-btn" onclick="obClose()">Ruka mwongozo huu</button>
+            </div>` : ''}
+        `;
+
+        content.style.opacity = '1';
+        content.style.transform = 'translateY(0)';
+
+        // Typewriter effect
+        obTypeWriter(step.body, 'ob-typewriter');
+    }, 180);
+}
+
+function obTypeWriter(text, elId) {
+    clearTimeout(_obTypeTimer);
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const lines = text.split('\n');
+    let html = '';
+    let charIdx = 0;
+    let lineIdx = 0;
+    const allChars = [];
+
+    // Flatten to chars with line break markers
+    lines.forEach((line, li) => {
+        for (let c of line) allChars.push({ char: c, newline: false });
+        if (li < lines.length - 1) allChars.push({ char: '', newline: true });
+    });
+
+    function tick() {
+        if (charIdx >= allChars.length) return;
+        const item = allChars[charIdx++];
+        if (item.newline) {
+            html += '<br>';
+        } else {
+            // Escape HTML
+            const safe = item.char === '&' ? '&amp;' : item.char === '<' ? '&lt;' : item.char;
+            html += safe;
+        }
+        el.innerHTML = html + '<span style="opacity:0.6;animation:none;">▌</span>';
+        const delay = item.newline ? 120 : (Math.random() > 0.85 ? 55 : 22);
+        _obTypeTimer = setTimeout(tick, delay);
+    }
+    tick();
+}
+
+// Called from loadDashboard after products + profile load
+async function checkShouldShowOnboarding(profile, products) {
+    try {
+        // Skip if already completed
+        if (localStorage.getItem(_OB_KEY)) return;
+        // Skip if user has both bot connected and products
+        const hasProducts = products && products.length > 0;
+        const hasBot      = profile && profile.bot_connection_status === 'connected';
+        // Show if either is missing — they need guidance
+        if (!hasProducts || !hasBot) {
+            setTimeout(() => obStart(), 1200);
+        }
+    } catch(e) {}
+}
+
+
+// ── M-Pesa Payment Modal ──────────────────────────────────
+function ppPayMpesa() {
+    // Update amount display based on selected plan
+    const amountEl = document.getElementById('mpesa-amount-display');
+    const labelEl  = document.getElementById('mpesa-plan-label');
+    if (amountEl) amountEl.textContent = _ppPlan === 'annual' ? 'TZS 50,000' : 'TZS 5,000';
+    if (labelEl)  labelEl.textContent  = _ppPlan === 'annual' ? 'Mpango wa Mwaka Mzima' : 'Mpango wa Kila Mwezi';
+
+    const ov = document.getElementById('mpesa-overlay');
+    if (ov) { ov.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+
+function mpesaClose() {
+    const ov = document.getElementById('mpesa-overlay');
+    const sh = document.getElementById('mpesa-sheet');
+    if (!ov) return;
+    if (sh) { sh.style.transition = 'transform 0.28s ease'; sh.style.transform = 'translateY(100%)'; }
+    ov.style.opacity = '0'; ov.style.transition = 'opacity 0.28s';
+    setTimeout(() => {
+        ov.style.display = 'none';
+        ov.style.opacity = ''; ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function mpesaCopyNumber() {
+    navigator.clipboard.writeText('+255696102700').then(() => {
+        showToastMsg('✅ Namba imenakiliwa! Weka kwenye M-Pesa', 'success');
+    }).catch(() => {
+        showToastMsg('Namba: +255 696 102 700', 'info');
+    });
+}
+
 </script>
 
 <!-- ═══════════ PRIVACY POLICY MODAL ═══════════ -->
@@ -9035,16 +9392,34 @@ function tcClose() {
       <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">❌</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Bila Mkataba</div></div>
       <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">⚡</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Papo Hapo</div></div>
     </div>
-    <!-- Pay button -->
-    <div style="position:sticky;bottom:24px;">
-      <button class="pp-pay-btn" id="pp-pay-btn" onclick="ppPay()">
+    <!-- Pay button area — M-Pesa primary, card secondary -->
+    <div style="position:sticky;bottom:24px;display:flex;flex-direction:column;gap:10px;">
+
+      <!-- PRIMARY: M-Pesa / Mobile Money -->
+      <button class="pp-pay-btn" id="pp-pay-btn" onclick="ppPayMpesa()">
         <div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;">
-          <span class="material-symbols-outlined" style="font-size:21px;">payments</span>
-          <span id="pp-pay-btn-text">Lipa TZS 5,000 kwa M-Pesa</span>
+          <span style="font-size:22px;">📱</span>
+          <span id="pp-pay-btn-text">Lipa kwa M-Pesa / Tigo / Airtel</span>
         </div>
       </button>
-      <div style="text-align:center;margin-top:9px;font-size:11px;color:rgba(255,255,255,0.22);">Utalipwa kupitia Selar · Salama · Hakuna data kuhifadhiwa</div>
-      <div style="text-align:center;margin-top:8px;">
+
+      <!-- SECONDARY: Card via Selar -->
+      <button onclick="ppPay()" style="
+        width:100%;padding:14px;
+        background:rgba(255,255,255,0.06);
+        color:rgba(255,255,255,0.6);
+        border:1.5px solid rgba(255,255,255,0.12);
+        border-radius:16px;font-size:13px;font-weight:700;
+        cursor:pointer;font-family:inherit;
+        display:flex;align-items:center;justify-content:center;gap:8px;
+        transition:background 0.2s;
+      ">
+        <span class="material-symbols-outlined" style="font-size:18px;">credit_card</span>
+        Lipa kwa Kadi ya Benki (Selar)
+      </button>
+
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.2);">Salama · Hakuna data kuhifadhiwa</div>
+      <div style="text-align:center;">
         <button onclick="tcOpen()" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;">
           <span class="material-symbols-outlined" style="font-size:12px;">gavel</span>
           Masharti ya Huduma
@@ -9227,6 +9602,145 @@ function tcClose() {
       </button>
     </div>
 
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     ONBOARDING OVERLAY
+═══════════════════════════════════════════════════ -->
+<div id="ob-highlight-ring" class="ob-highlight-ring" style="display:none;"></div>
+
+<div id="onboarding-overlay">
+  <div id="onboarding-card">
+
+    <!-- Progress dots -->
+    <div style="display:flex;justify-content:center;gap:8px;padding:18px 0 0;">
+      <div class="ob-step-dot active" id="ob-dot-0"></div>
+      <div class="ob-step-dot" id="ob-dot-1"></div>
+      <div class="ob-step-dot" id="ob-dot-2"></div>
+      <div class="ob-step-dot" id="ob-dot-3"></div>
+    </div>
+
+    <!-- Step content area -->
+    <div id="ob-content" style="padding:24px 22px 28px;min-height:340px;display:flex;flex-direction:column;">
+      <!-- Injected by JS per step -->
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     M-PESA PAYMENT MODAL
+═══════════════════════════════════════════════════ -->
+<div id="mpesa-overlay" onclick="if(event.target===this)mpesaClose()" style="
+    display:none;position:fixed;inset:0;z-index:6000;
+    background:rgba(4,14,8,0.85);backdrop-filter:blur(10px);
+    align-items:flex-end;justify-content:center;
+">
+  <div id="mpesa-sheet" style="
+    width:100%;max-width:480px;
+    background:linear-gradient(160deg,#0a1f10 0%,#071428 100%);
+    border-radius:28px 28px 0 0;
+    border-top:1px solid rgba(37,208,120,0.25);
+    box-shadow:0 -20px 60px rgba(0,0,0,0.5);
+    animation:chSlideUp 0.42s cubic-bezier(0.34,1.15,0.64,1);
+    max-height:92vh;overflow-y:auto;
+  ">
+    <div style="padding:14px 0 0;text-align:center;">
+      <div style="width:38px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto;"></div>
+    </div>
+
+    <div style="padding:22px 22px 32px;">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+        <div>
+          <div style="font-size:20px;font-weight:900;color:white;">Lipa kwa Mobile Money</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;">M-Pesa · Tigo Pesa · Airtel Money · Halopesa</div>
+        </div>
+        <button onclick="mpesaClose()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <span class="material-symbols-outlined" style="font-size:19px;color:rgba(255,255,255,0.6);">close</span>
+        </button>
+      </div>
+
+      <!-- Amount card -->
+      <div id="mpesa-amount-card" style="background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:18px;padding:18px;margin-bottom:18px;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Kiasi cha Kulipa</div>
+        <div id="mpesa-amount-display" style="font-size:36px;font-weight:900;color:#25d078;">TZS 5,000</div>
+        <div id="mpesa-plan-label" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Mpango wa Kila Mwezi</div>
+      </div>
+
+      <!-- Steps -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+
+        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">1</div>
+            <div style="font-size:13px;font-weight:800;color:white;">Piga *150*00# au fungua app yako</div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;padding-left:38px;">
+            M-Pesa: *150*00# &nbsp;·&nbsp; Tigo: *150*01# &nbsp;·&nbsp; Airtel: *150*60# &nbsp;·&nbsp; Halotel: *150*88#
+          </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">2</div>
+            <div style="font-size:13px;font-weight:800;color:white;">Tuma pesa kwa namba hii</div>
+          </div>
+          <!-- Number to pay to -->
+          <div style="margin-left:38px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.3);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="mpesaCopyNumber()">
+            <div>
+              <div style="font-size:22px;font-weight:900;color:#25d078;letter-spacing:1px;">+255 696 102 700</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">LinkaMarket · Kathim</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span class="material-symbols-outlined" style="font-size:20px;color:#25d078;">content_copy</span>
+              <span style="font-size:9px;color:rgba(37,208,120,0.6);font-weight:700;">COPY</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">3</div>
+            <div style="font-size:13px;font-weight:800;color:white;">Tuma picha ya risiti hapa</div>
+          </div>
+          <div style="margin-left:38px;">
+            <a href="https://wa.me/255696102700?text=Nimelipa%20LinkaMarket%20Premium%20-%20hii%20ni%20risiti%20yangu" 
+               target="_blank"
+               style="display:flex;align-items:center;gap:10px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:12px;padding:11px 14px;text-decoration:none;">
+              <div style="width:34px;height:34px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px;color:white;">chat</span>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:800;color:#25d078;">Tuma Risiti WhatsApp</div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;">+255 696 102 700</div>
+              </div>
+              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(37,208,120,0.5);margin-left:auto;">open_in_new</span>
+            </a>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:8px;text-align:center;line-height:1.5;">
+              Akaunti yako itafunguliwa ndani ya <strong style="color:rgba(255,255,255,0.5);">dakika 30</strong> — saa za kazi 8am–9pm
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Already paid check -->
+      <button onclick="pwCheckPayment(event)" style="width:100%;padding:15px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:16px;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
+        Tayari nimetuma — angalia hali yangu
+      </button>
+
+      <div style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.6;">
+        Una tatizo? Piga WhatsApp +255 696 102 700<br>
+        Tunajibu haraka wakati wa kazi
+      </div>
+
+    </div>
   </div>
 </div>
 
