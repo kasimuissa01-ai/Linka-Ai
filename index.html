@@ -4875,6 +4875,29 @@
             </div>
             <!-- END BOT SECTION -->
 
+            <!-- LOGOUT BUTTON -->
+            <div style="margin-top:24px;padding-bottom:32px;">
+                <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0,transparent);margin-bottom:20px;"></div>
+                <button onclick="logoutUser()" id="logout-btn" style="
+                    width:100%;padding:16px;
+                    background:white;
+                    border:2px solid #fee2e2;
+                    border-radius:16px;
+                    font-size:15px;font-weight:800;
+                    color:#ef4444;cursor:pointer;
+                    font-family:inherit;
+                    display:flex;align-items:center;justify-content:center;gap:10px;
+                    transition:all 0.2s;
+                    box-shadow:0 2px 8px rgba(239,68,68,0.08);
+                ">
+                    <span class="material-symbols-outlined" style="font-size:20px;">logout</span>
+                    Toka Akaunti (Logout)
+                </button>
+                <div style="text-align:center;margin-top:8px;font-size:11px;color:#94a3b8;">
+                    Utahitaji kuingia tena ukitaka kurudi
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -6392,6 +6415,19 @@
             loader.remove();
             console.error('Delete error:', error);
             alert('Kuna tatizo: ' + error.message);
+        }
+    }
+
+    async function logoutUser() {
+        const btn = document.getElementById('logout-btn');
+        if (btn) { btn.innerHTML = '<span style="width:18px;height:18px;border:2.5px solid rgba(239,68,68,0.3);border-top-color:#ef4444;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span>&nbsp;Inatoka...'; btn.disabled = true; }
+        try {
+            await sb.auth.signOut();
+            localStorage.clear();
+            window.location.reload();
+        } catch(e) {
+            showToastMsg('Hitilafu ya kutoka: ' + e.message, 'warn');
+            if (btn) { btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">logout</span> Toka Akaunti (Logout)'; btn.disabled = false; }
         }
     }
 
@@ -8823,96 +8859,127 @@ let   _tourActive = false;
 
 // ── Tour Steps Definition ──────────────────────────────────
 const _tourSteps = [
+    // ── STEP 0 — Welcome ──────────────────────────────────
     {
-        id:        'welcome',
-        icon:      '🚀',
-        iconBg:    'linear-gradient(135deg,#25d078,#16a34a)',
-        badge:     'Karibu!',
-        badgeIcon: '⭐',
-        title:     'Karibu LinkaMarket!',
-        subtitle:  'Biashara yako inakusubiri',
-        body:      'Tutakufundisha jinsi ya kuweka duka lako la WhatsApp la AI katika dakika 3.\n\nKila hatua itakuonyesha hasa kitu gani cha kufanya. Rahisi kama mchezo! 🎮',
-        target:    null,
-        btnText:   'Nianze! 🎮',
-        btnIcon:   'sports_esports',
-        xp:        0,
-        skipable:  true,
+        id:          'welcome',
+        icon:        '🚀',
+        iconBg:      'linear-gradient(135deg,#25d078,#16a34a)',
+        badge:       'Karibu!',
+        badgeIcon:   '⭐',
+        title:       'Karibu LinkaMarket!',
+        subtitle:    'Biashara yako ya AI inaanza sasa',
+        body:        'Nitakuonyesha hatua 5 za kuweka duka lako la WhatsApp la AI.\n\nKila hatua itakuonyesha hasa wapi ubonyeze. Rahisi kama mchezo! 🎮',
+        target:      null,
+        btnText:     'Nianze! 🎮',
+        btnIcon:     'sports_esports',
+        xp:          0,
+        skipable:    true,
         achievement: null,
-        position:  'center',
+        position:    'center',
     },
+
+    // ── STEP 1 — Settings / Profile ───────────────────────
     {
-        id:        'add-product',
-        icon:      '📦',
-        iconBg:    'linear-gradient(135deg,#f59e0b,#d97706)',
-        badge:     'Hatua 1 ya 3',
-        badgeIcon: '📦',
-        title:     'Ongeza Bidhaa Yako',
-        subtitle:  'Bot itajua bidhaa zako zote',
-        body:      'Bonyeza kitufe cha "+" hapo chini 👆\n\nWeka picha, jina na bei — bot itajifunza otomatiki na kujibu wateja wanaouliza kuhusu bidhaa hiyo!',
-        target:    'nb-add',
-        targetPad: 12,
-        btnText:   'Nionyeshe! →',
-        btnIcon:   'add_circle',
-        xp:        33,
-        skipable:  true,
+        id:          'settings',
+        icon:        '⚙️',
+        iconBg:      'linear-gradient(135deg,#64748b,#475569)',
+        badge:       'Hatua 1 ya 5',
+        badgeIcon:   '⚙️',
+        title:       'Weka Jina la Duka',
+        subtitle:    'Wateja watakuona kwa jina hili',
+        body:        'Bonyeza "Settings" ⚙️ kwenye kichwa cha ukurasa 👆\n\nWeka jina la duka lako na namba yako ya WhatsApp.\n\nHii ndiyo bot itakayotumia kujitambulisha kwa wateja wako!',
+        target:      'nb-settings',
+        targetPad:   10,
+        btnText:     'Nenda Settings →',
+        btnIcon:     'settings',
+        xp:          20,
+        skipable:    true,
         achievement: null,
-        position:  'top',
-        handOffset: { x: 10, y: -50 },
+        position:    'top',
+        handOffset:  { x: 0, y: -55 },
     },
+
+    // ── STEP 2 — Add Product ──────────────────────────────
     {
-        id:        'connect-bot',
-        icon:      '🤖',
-        iconBg:    'linear-gradient(135deg,#3b82f6,#1d4ed8)',
-        badge:     'Hatua 2 ya 3',
-        badgeIcon: '🤖',
-        title:     'Unganisha Bot ya AI',
-        subtitle:  'Inajibu wateja hata ukilala',
-        body:      'Bonyeza "Chats" hapo chini 👆\n\nUtapata namba ya kuthibitisha — ingiza kwenye WhatsApp yako.\n\nBot itaanza kujibu wateja kiotomatiki ndani ya dakika! ⚡',
-        target:    'nb-chats',
-        targetPad: 10,
-        btnText:   'Nenda Bot →',
-        btnIcon:   'smart_toy',
-        xp:        66,
-        skipable:  true,
-        achievement: '🏆 Bidhaa Imewekwa!',
-        position:  'top',
-        handOffset: { x: 10, y: -50 },
+        id:          'add-product',
+        icon:        '📦',
+        iconBg:      'linear-gradient(135deg,#f59e0b,#d97706)',
+        badge:       'Hatua 2 ya 5',
+        badgeIcon:   '📦',
+        title:       'Ongeza Bidhaa Yako ya Kwanza',
+        subtitle:    'Bot itajifunza bidhaa zako zote',
+        body:        'Bonyeza kitufe cha "+" hapo chini 👆\n\nWeka: Jina la bidhaa, Bei, Picha nzuri.\n\nBot itajua bidhaa yako na kujibu wateja wanaouliza kuhusu bei na stock! 🛒',
+        target:      'nb-add',
+        targetPad:   14,
+        btnText:     'Ongeza Bidhaa →',
+        btnIcon:     'add_circle',
+        xp:          40,
+        skipable:    true,
+        achievement: '⚙️ Profile Imewekwa!',
+        position:    'top',
+        handOffset:  { x: 0, y: -60 },
     },
+
+    // ── STEP 3 — Connect Bot ──────────────────────────────
     {
-        id:        'messages',
-        icon:      '💬',
-        iconBg:    'linear-gradient(135deg,#a855f7,#7c3aed)',
-        badge:     'Hatua 3 ya 3',
-        badgeIcon: '💬',
-        title:     'Angalia Mazungumzo',
-        subtitle:  'Ona bot ikifanya kazi',
-        body:      '"Chats" inaonyesha mazungumzo yote kati ya bot na wateja wako.\n\nUnaweza kuona, kujibu, au kuacha bot iendelee. 💬\n\nKukata bot? Settings → Bot → Kata.',
-        target:    'nb-chats',
-        targetPad: 10,
-        btnText:   'Ninaelewa! ✅',
-        btnIcon:   'check_circle',
-        xp:        100,
-        skipable:  false,
+        id:          'connect-bot',
+        icon:        '🤖',
+        iconBg:      'linear-gradient(135deg,#075e54,#128c7e)',
+        badge:       'Hatua 3 ya 5',
+        badgeIcon:   '🤖',
+        title:       'Unganisha WhatsApp na AI',
+        subtitle:    'Hatua muhimu zaidi — ifanye sasa',
+        body:        'Bonyeza "Settings" ⚙️ → Shuka chini → "Pata Code ya WhatsApp Bot"\n\nCode ya tarakimu 8 itaonekana.\n\nFungua WhatsApp yako → ⋮ Menu → Linked Devices → Link a Device → "Link with phone number" → Ingiza code!',
+        target:      'nb-settings',
+        targetPad:   10,
+        btnText:     'Nenda Unganisha Bot →',
+        btnIcon:     'smart_toy',
+        xp:          60,
+        skipable:    true,
+        achievement: '📦 Bidhaa Imewekwa!',
+        position:    'top',
+        handOffset:  { x: 0, y: -55 },
+        extraInfo:   '⏳ Subiri WhatsApp notification — itakuja ndani ya sekunde 30. Ukipata notification ya "New device linked" — bot iko live! ⚡',
+    },
+
+    // ── STEP 4 — View Messages ────────────────────────────
+    {
+        id:          'messages',
+        icon:        '💬',
+        iconBg:      'linear-gradient(135deg,#a855f7,#7c3aed)',
+        badge:       'Hatua 4 ya 5',
+        badgeIcon:   '💬',
+        title:       'Angalia Mazungumzo ya Bot',
+        subtitle:    'Ona bot ikifanya kazi kwa wateja',
+        body:        'Bonyeza "Chats" hapo chini 👆\n\nHapa utaona mazungumzo yote kati ya bot na wateja wako — moja kwa moja.\n\nUnaweza kujibu mwenyewe au kuacha bot iendelee. Kukata bot? Settings → Bot → Kata. ✅',
+        target:      'nb-chats',
+        targetPad:   10,
+        btnText:     'Angalia Chats →',
+        btnIcon:     'forum',
+        xp:          80,
+        skipable:    true,
         achievement: '🤖 Bot Imeunganishwa!',
-        position:  'top',
-        handOffset: { x: 10, y: -50 },
+        position:    'top',
+        handOffset:  { x: 0, y: -55 },
     },
+
+    // ── STEP 5 — Done ─────────────────────────────────────
     {
-        id:        'done',
-        icon:      '🎉',
-        iconBg:    'linear-gradient(135deg,#f59e0b,#ef4444)',
-        badge:     'Umefanikiwa!',
-        badgeIcon: '🏆',
-        title:     'Hongera! Uko Tayari!',
-        subtitle:  'Duka lako la AI liko hai',
-        body:      'Umeweka msingi wa biashara ya kisasa.\n\nBot yako ya AI itajibu wateja wako saa 24 — hata ukilala. 😴💰\n\nTutaonana upande wa pesa! 🚀',
-        target:    null,
-        btnText:   'Anza Kufanya Biashara! 💰',
-        btnIcon:   'rocket_launch',
-        xp:        100,
-        skipable:  false,
-        achievement: '🎉 Mwanzo wa Biashara!',
-        position:  'center',
+        id:          'done',
+        icon:        '🎉',
+        iconBg:      'linear-gradient(135deg,#f59e0b,#ef4444)',
+        badge:       'Umefanikiwa! 🏆',
+        badgeIcon:   '🏆',
+        title:       'Hongera! Duka Lako Liko Hai!',
+        subtitle:    'AI yako inafanya kazi saa 24',
+        body:        'Umeweka msingi kamili wa biashara ya kisasa! 🙌\n\nBot yako ya AI sasa itajibu wateja hata ukilala. 😴\n\nWateja watauliza — bot itajibu. Orders zitaingia. Pesa itaingia! 💰',
+        target:      null,
+        btnText:     'Anza Kufanya Biashara! 💰',
+        btnIcon:     'rocket_launch',
+        xp:          100,
+        skipable:    false,
+        achievement: '🎉 Karibu LinkaMarket!',
+        position:    'center',
     },
 ];
 
@@ -8951,10 +9018,11 @@ function obNext() {
 
 function obGoToAction() {
     const step = _tourSteps[_obStep];
-    // Navigate based on step id
-    if (step.id === 'add-product') {
+    if (step.id === 'settings' || step.id === 'connect-bot') {
+        obClose(); setTimeout(() => openProfileSettings(), 350);
+    } else if (step.id === 'add-product') {
         obClose(); setTimeout(() => goToAddProduct(), 350);
-    } else if (step.id === 'connect-bot' || step.id === 'messages') {
+    } else if (step.id === 'messages') {
         obClose(); setTimeout(() => nbGo('chats'), 350);
     } else {
         obNext();
@@ -9018,12 +9086,23 @@ function _tourRenderStep(idx) {
             ${step.target ? `
             <div style="background:rgba(37,208,120,0.08);
                         border:1.5px dashed rgba(37,208,120,0.4);
-                        border-radius:12px;padding:9px 14px;margin-bottom:12px;
+                        border-radius:12px;padding:9px 14px;margin-bottom:10px;
                         display:flex;align-items:center;gap:8px;
                         animation:tourCardIn 0.4s ease 0.3s both;">
                 <span style="font-size:20px;animation:tourHandTap 1.2s ease-in-out infinite;">👆</span>
                 <span style="font-size:12px;color:#4ade80;font-weight:700;">
-                    Angalia hapo juu — imeangaziwa kwa ajili yako
+                    Imeangaziwa hapo — bonyeza huko!
+                </span>
+            </div>` : ''}
+            ${step.extraInfo ? `
+            <div style="background:rgba(245,158,11,0.08);
+                        border:1.5px solid rgba(245,158,11,0.25);
+                        border-radius:12px;padding:10px 14px;margin-bottom:10px;
+                        display:flex;align-items:flex-start;gap:8px;
+                        animation:tourCardIn 0.4s ease 0.4s both;">
+                <span style="font-size:16px;flex-shrink:0;margin-top:1px;">💡</span>
+                <span style="font-size:11px;color:rgba(245,158,11,0.9);font-weight:600;line-height:1.6;">
+                    ${step.extraInfo}
                 </span>
             </div>` : ''}
             <button class="tour-next-btn" onclick="${btnFn}">
