@@ -4102,78 +4102,212 @@
 
     
     /* ═══════════════════════════════════════════════
-       ONBOARDING OVERLAY
+       APP TOUR — GAME-LIKE ANIMATED GUIDE
     ═══════════════════════════════════════════════ */
-    #onboarding-overlay {
+
+    /* Spotlight overlay — transparent hole over target */
+    #tour-overlay {
         display: none;
-        position: fixed; inset: 0; z-index: 5000;
-        background: rgba(4, 14, 8, 0.88);
-        backdrop-filter: blur(6px);
-        align-items: flex-end; justify-content: center;
+        position: fixed; inset: 0; z-index: 8000;
+        pointer-events: none;
     }
-    #onboarding-overlay.open { display: flex; }
-    #onboarding-card {
-        width: 100%; max-width: 480px;
-        background: linear-gradient(160deg, #0a1f10 0%, #071428 100%);
-        border-radius: 28px 28px 0 0;
-        border-top: 1px solid rgba(37,208,120,0.2);
-        box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
-        animation: obSlideUp 0.45s cubic-bezier(0.34,1.15,0.64,1);
+    #tour-overlay.active { display: block; }
+
+    /* SVG mask creates the spotlight hole */
+    #tour-svg {
+        position: fixed; inset: 0;
+        width: 100%; height: 100%;
+        pointer-events: all;
+    }
+
+    /* Tour card — floats above or below spotlight */
+    #tour-card {
+        position: fixed; z-index: 8100;
+        left: 50%; transform: translateX(-50%);
+        width: calc(100% - 32px); max-width: 420px;
+        background: linear-gradient(160deg,#0a1f10 0%,#071428 100%);
+        border-radius: 24px;
+        border: 1.5px solid rgba(37,208,120,0.25);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(37,208,120,0.1);
+        padding: 22px 20px 18px;
+        pointer-events: all;
+        display: none;
+    }
+    #tour-card.visible {
+        display: block;
+        animation: tourCardIn 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+    }
+    @keyframes tourCardIn {
+        from { opacity:0; transform: translateX(-50%) translateY(20px) scale(0.93); }
+        to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1);    }
+    }
+    @keyframes tourCardOut {
+        from { opacity:1; transform: translateX(-50%) scale(1); }
+        to   { opacity:0; transform: translateX(-50%) scale(0.9); }
+    }
+
+    /* Spotlight pulse ring */
+    #tour-pulse-ring {
+        position: fixed; z-index: 8050;
+        border-radius: 50px;
+        border: 2.5px solid #25d078;
+        pointer-events: none;
+        display: none;
+        animation: tourPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes tourPulse {
+        0%   { box-shadow: 0 0 0 0   rgba(37,208,120,0.7); border-color: #25d078; }
+        50%  { box-shadow: 0 0 0 12px rgba(37,208,120,0);  border-color: #4ade80; }
+        100% { box-shadow: 0 0 0 0   rgba(37,208,120,0);   border-color: #25d078; }
+    }
+
+    /* Tap hand pointer animation */
+    #tour-hand {
+        position: fixed; z-index: 8060;
+        font-size: 32px;
+        pointer-events: none;
+        display: none;
+        animation: tourHandTap 1.2s ease-in-out infinite;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+    }
+    @keyframes tourHandTap {
+        0%,100% { transform: scale(1)    rotate(-10deg); }
+        40%     { transform: scale(0.82) rotate(-10deg); }
+        60%     { transform: scale(1.08) rotate(-10deg); }
+    }
+
+    /* XP / progress bar at top of card */
+    .tour-xp-bar {
+        height: 4px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 99px;
+        margin-bottom: 16px;
         overflow: hidden;
     }
-    @keyframes obSlideUp {
-        from { transform: translateY(100%); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
+    .tour-xp-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #25d078, #4ade80);
+        border-radius: 99px;
+        transition: width 0.6s cubic-bezier(0.34,1.2,0.64,1);
+        box-shadow: 0 0 8px rgba(37,208,120,0.6);
     }
-    @keyframes obFadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
+
+    /* Step badge */
+    .tour-step-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(37,208,120,0.12);
+        border: 1px solid rgba(37,208,120,0.25);
+        border-radius: 99px; padding: 3px 10px;
+        font-size: 10px; font-weight: 800; color: #25d078;
+        margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    @keyframes obPulse {
-        0%,100% { box-shadow: 0 0 0 0 rgba(37,208,120,0.4); }
-        50%     { box-shadow: 0 0 0 10px rgba(37,208,120,0); }
+
+    /* Icon container with particle burst */
+    .tour-icon-wrap {
+        width: 72px; height: 72px;
+        border-radius: 22px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 14px;
+        font-size: 36px;
+        position: relative;
+        animation: tourIconPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
     }
-    @keyframes obFloat {
-        0%,100% { transform: translateY(0); }
-        50%     { transform: translateY(-6px); }
+    @keyframes tourIconPop {
+        from { transform: scale(0) rotate(-20deg); opacity: 0; }
+        to   { transform: scale(1) rotate(0deg);   opacity: 1; }
     }
-    @keyframes obStepPop {
-        from { opacity: 0; transform: scale(0.85); }
-        to   { opacity: 1; transform: scale(1); }
+    .tour-icon-wrap::after {
+        content: '';
+        position: absolute; inset: -6px;
+        border-radius: 28px;
+        border: 2px solid rgba(255,255,255,0.1);
+        animation: tourIconRing 2s ease-in-out infinite;
     }
-    .ob-step-btn {
-        width: 100%; padding: 17px;
-        background: linear-gradient(135deg, #25d078, #16a34a);
+    @keyframes tourIconRing {
+        0%,100% { transform: scale(1);    opacity: 0.4; }
+        50%     { transform: scale(1.08); opacity: 0.15; }
+    }
+
+    /* Particles */
+    .tour-particle {
+        position: absolute;
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: #25d078;
+        animation: tourParticle 0.7s ease-out both;
+        pointer-events: none;
+    }
+    @keyframes tourParticle {
+        from { transform: translate(0,0) scale(1); opacity: 1; }
+        to   { opacity: 0; }
+    }
+
+    /* Next button */
+    .tour-next-btn {
+        width: 100%; padding: 16px;
+        background: linear-gradient(135deg,#25d078,#16a34a);
         color: white; border: none; border-radius: 16px;
         font-size: 15px; font-weight: 900; cursor: pointer;
-        font-family: inherit;
-        box-shadow: 0 4px 20px rgba(37,208,120,0.35);
-        transition: transform 0.15s;
+        font-family: inherit; margin-top: 16px;
         display: flex; align-items: center; justify-content: center; gap: 10px;
+        box-shadow: 0 4px 20px rgba(37,208,120,0.4);
+        transition: transform 0.15s, box-shadow 0.15s;
+        position: relative; overflow: hidden;
     }
-    .ob-step-btn:active { transform: scale(0.97); }
-    .ob-skip-btn {
+    .tour-next-btn:active { transform: scale(0.97); }
+    .tour-next-btn::after {
+        content: '';
+        position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+        background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+        animation: tourBtnShine 2.5s ease-in-out infinite;
+    }
+    @keyframes tourBtnShine {
+        0%   { left: -100%; }
+        100% { left: 200%;  }
+    }
+
+    /* Skip button */
+    .tour-skip-btn {
         background: none; border: none;
-        color: rgba(255,255,255,0.3); font-size: 12px;
+        color: rgba(255,255,255,0.25); font-size: 11px;
         cursor: pointer; font-family: inherit;
-        padding: 8px; margin-top: 4px;
+        padding: 6px; margin-top: 4px; width: 100%; text-align: center;
+        transition: color 0.2s;
     }
-    .ob-step-dot {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: rgba(255,255,255,0.15);
-        transition: background 0.3s, transform 0.3s;
+    .tour-skip-btn:hover { color: rgba(255,255,255,0.5); }
+
+    /* Celebration confetti overlay */
+    #tour-confetti {
+        position: fixed; inset: 0; z-index: 8200;
+        pointer-events: none; display: none;
     }
-    .ob-step-dot.active {
-        background: #25d078;
-        transform: scale(1.3);
+    .conf-piece {
+        position: absolute; width: 8px; height: 8px;
+        border-radius: 2px;
+        animation: confFall linear both;
     }
-    .ob-highlight-ring {
-        position: fixed; z-index: 4999; pointer-events: none;
-        border: 2.5px solid #25d078;
-        border-radius: 50px;
-        box-shadow: 0 0 0 3000px rgba(4,14,8,0.82);
-        animation: obPulse 2s ease-in-out infinite;
-        transition: all 0.4s cubic-bezier(0.34,1.15,0.64,1);
+    @keyframes confFall {
+        from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+        to   { transform: translateY(100vh)  rotate(720deg); opacity: 0; }
+    }
+
+    /* Achievement popup */
+    #tour-achievement {
+        position: fixed; top: 80px; left: 50%;
+        transform: translateX(-50%) translateY(-120px);
+        z-index: 8300;
+        background: linear-gradient(135deg,#f59e0b,#d97706);
+        color: white; border-radius: 99px;
+        padding: 10px 20px;
+        font-size: 13px; font-weight: 900;
+        display: flex; align-items: center; gap: 8px;
+        box-shadow: 0 8px 30px rgba(245,158,11,0.5);
+        transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+        pointer-events: none;
+        white-space: nowrap;
+    }
+    #tour-achievement.show {
+        transform: translateX(-50%) translateY(0);
     }
 
     </style>
@@ -4426,7 +4560,7 @@
                 <span class="nav-label">Nyumbani</span>
             </div>
             <!-- CENTER ADD -->
-            <div class="nav-item center-action" onclick="goToAddProduct()">
+            <div class="nav-item center-action" id="nb-add" onclick="goToAddProduct()">
                 <div class="floating-add-btn">
                     <span class="material-symbols-outlined" style="font-size:26px;">add</span>
                 </div>
@@ -8677,250 +8811,435 @@ function tcClose() {
 }
 
 
-// ════════════════════════════════════════════════════════════
-// ONBOARDING SYSTEM
-// Shows for new users who have no products OR no bot connected
-// ════════════════════════════════════════════════════════════
-let _obStep = 0;
-let _obTypeTimer = null;
-const _OB_KEY = 'lm_ob_done_v1';
 
-const _obSteps = [
+// ════════════════════════════════════════════════════════════
+// APP TOUR — GAME-LIKE ANIMATED GUIDE
+// Replaces old onboarding system entirely
+// ════════════════════════════════════════════════════════════
+const _OB_KEY     = 'lm_ob_done_v1';
+let   _obStep     = 0;
+let   _obTypeTimer = null;
+let   _tourActive = false;
+
+// ── Tour Steps Definition ──────────────────────────────────
+const _tourSteps = [
     {
-        icon: '👋',
-        iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
-        title: 'Karibu LinkaMarket!',
-        subtitle: 'Duka lako la WhatsApp linaanza hapa',
-        body: 'Nitakuonyesha jinsi ya kusanidi biashara yako kwa dakika chache.\n\nBot yako ya AI itajibu wateja wako kiotomatiki — hata ukiwa umelala. 😴',
-        btnText: 'Tuanze! 🚀',
-        btnIcon: 'rocket_launch',
-        target: null,
-        skipable: true,
+        id:        'welcome',
+        icon:      '🚀',
+        iconBg:    'linear-gradient(135deg,#25d078,#16a34a)',
+        badge:     'Karibu!',
+        badgeIcon: '⭐',
+        title:     'Karibu LinkaMarket!',
+        subtitle:  'Biashara yako inakusubiri',
+        body:      'Tutakufundisha jinsi ya kuweka duka lako la WhatsApp la AI katika dakika 3.\n\nKila hatua itakuonyesha hasa kitu gani cha kufanya. Rahisi kama mchezo! 🎮',
+        target:    null,
+        btnText:   'Nianze! 🎮',
+        btnIcon:   'sports_esports',
+        xp:        0,
+        skipable:  true,
+        achievement: null,
+        position:  'center',
     },
     {
-        icon: '🤖',
-        iconBg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
-        title: 'Hatua 1 — Unganisha WhatsApp',
-        subtitle: 'Bot yako ya AI inahitaji namba yako',
-        body: 'Bonyeza kitufe cha "Bot" kwenye menyu ya chini.\n\nUtapata namba ya kuthibitisha — ingiza kwenye WhatsApp yako.\n\nBot itaanza kufanya kazi PAPO HAPO! ⚡',
-        btnText: 'Nenda Bot Section →',
-        btnIcon: 'smart_toy',
-        target: 'nb-chats',
-        targetLabel: 'Bonyeza hapa — Chats/Bot',
-        skipable: true,
+        id:        'add-product',
+        icon:      '📦',
+        iconBg:    'linear-gradient(135deg,#f59e0b,#d97706)',
+        badge:     'Hatua 1 ya 3',
+        badgeIcon: '📦',
+        title:     'Ongeza Bidhaa Yako',
+        subtitle:  'Bot itajua bidhaa zako zote',
+        body:      'Bonyeza kitufe cha "+" hapo chini 👆\n\nWeka picha, jina na bei — bot itajifunza otomatiki na kujibu wateja wanaouliza kuhusu bidhaa hiyo!',
+        target:    'nb-add',
+        targetPad: 12,
+        btnText:   'Nionyeshe! →',
+        btnIcon:   'add_circle',
+        xp:        33,
+        skipable:  true,
+        achievement: null,
+        position:  'top',
+        handOffset: { x: 10, y: -50 },
     },
     {
-        icon: '📦',
-        iconBg: 'linear-gradient(135deg,#f59e0b,#d97706)',
-        title: 'Hatua 2 — Ongeza Bidhaa',
-        subtitle: 'Bot itajua bidhaa zako zote',
-        body: 'Bonyeza kitufe cha "+" kuongeza bidhaa yako ya kwanza.\n\nWeka jina, bei, na picha — bot itajifunza kila kitu moja kwa moja! 🛒\n\nWateja watauliza — bot itajibu kwa usahihi.',
-        btnText: 'Ongeza Bidhaa ya Kwanza →',
-        btnIcon: 'add_circle',
-        target: 'nb-add-product',
-        targetLabel: 'Bonyeza "+" hapa',
-        skipable: true,
+        id:        'connect-bot',
+        icon:      '🤖',
+        iconBg:    'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+        badge:     'Hatua 2 ya 3',
+        badgeIcon: '🤖',
+        title:     'Unganisha Bot ya AI',
+        subtitle:  'Inajibu wateja hata ukilala',
+        body:      'Bonyeza "Chats" hapo chini 👆\n\nUtapata namba ya kuthibitisha — ingiza kwenye WhatsApp yako.\n\nBot itaanza kujibu wateja kiotomatiki ndani ya dakika! ⚡',
+        target:    'nb-chats',
+        targetPad: 10,
+        btnText:   'Nenda Bot →',
+        btnIcon:   'smart_toy',
+        xp:        66,
+        skipable:  true,
+        achievement: '🏆 Bidhaa Imewekwa!',
+        position:  'top',
+        handOffset: { x: 10, y: -50 },
     },
     {
-        icon: '💬',
-        iconBg: 'linear-gradient(135deg,#a855f7,#7c3aed)',
-        title: 'Hatua 3 — Angalia Mazungumzo',
-        subtitle: 'Ona kila mteja anayewasiliana na bot',
-        body: 'Kwenye sehemu ya "Chats" utaona mazungumzo yote kati ya bot na wateja wako.\n\nUnaweza kujibu mwenyewe au kuacha bot iendelee. 💬\n\nKukata bot? Settings → Bot → Kata. Rahisi!',
-        btnText: 'Nimeelewa — Nianze! ✅',
-        btnIcon: 'check_circle',
-        target: null,
-        skipable: false,
+        id:        'messages',
+        icon:      '💬',
+        iconBg:    'linear-gradient(135deg,#a855f7,#7c3aed)',
+        badge:     'Hatua 3 ya 3',
+        badgeIcon: '💬',
+        title:     'Angalia Mazungumzo',
+        subtitle:  'Ona bot ikifanya kazi',
+        body:      '"Chats" inaonyesha mazungumzo yote kati ya bot na wateja wako.\n\nUnaweza kuona, kujibu, au kuacha bot iendelee. 💬\n\nKukata bot? Settings → Bot → Kata.',
+        target:    'nb-chats',
+        targetPad: 10,
+        btnText:   'Ninaelewa! ✅',
+        btnIcon:   'check_circle',
+        xp:        100,
+        skipable:  false,
+        achievement: '🤖 Bot Imeunganishwa!',
+        position:  'top',
+        handOffset: { x: 10, y: -50 },
+    },
+    {
+        id:        'done',
+        icon:      '🎉',
+        iconBg:    'linear-gradient(135deg,#f59e0b,#ef4444)',
+        badge:     'Umefanikiwa!',
+        badgeIcon: '🏆',
+        title:     'Hongera! Uko Tayari!',
+        subtitle:  'Duka lako la AI liko hai',
+        body:      'Umeweka msingi wa biashara ya kisasa.\n\nBot yako ya AI itajibu wateja wako saa 24 — hata ukilala. 😴💰\n\nTutaonana upande wa pesa! 🚀',
+        target:    null,
+        btnText:   'Anza Kufanya Biashara! 💰',
+        btnIcon:   'rocket_launch',
+        xp:        100,
+        skipable:  false,
+        achievement: '🎉 Mwanzo wa Biashara!',
+        position:  'center',
     },
 ];
 
+// ── Core Tour Functions ────────────────────────────────────
 function obStart() {
-    _obStep = 0;
-    const overlay = document.getElementById('onboarding-overlay');
-    if (overlay) overlay.classList.add('open');
+    _obStep    = 0;
+    _tourActive = true;
+    document.getElementById('tour-overlay').classList.add('active');
     document.body.style.overflow = 'hidden';
-    obRenderStep(0);
+    _tourRenderStep(0);
 }
 
 function obClose() {
     localStorage.setItem(_OB_KEY, '1');
-    const overlay = document.getElementById('onboarding-overlay');
-    const ring    = document.getElementById('ob-highlight-ring');
-    if (overlay) {
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.3s';
-        setTimeout(() => {
-            overlay.classList.remove('open');
-            overlay.style.opacity = '';
-            overlay.style.transition = '';
-        }, 300);
-    }
-    if (ring) ring.style.display = 'none';
-    document.body.style.overflow = '';
+    _tourActive = false;
     clearTimeout(_obTypeTimer);
+    _tourHideAll();
+    document.body.style.overflow = '';
 }
 
 function obNext() {
     clearTimeout(_obTypeTimer);
-    const ring = document.getElementById('ob-highlight-ring');
-    if (ring) ring.style.display = 'none';
-
-    if (_obStep >= _obSteps.length - 1) {
-        obClose();
+    if (_obStep >= _tourSteps.length - 1) {
+        _tourShowConfetti();
+        setTimeout(() => obClose(), 2200);
         return;
     }
+    const prev = _tourSteps[_obStep];
     _obStep++;
-    obRenderStep(_obStep);
+    // Show achievement if defined on NEXT step
+    if (_tourSteps[_obStep].achievement) {
+        _tourShowAchievement(_tourSteps[_obStep].achievement);
+    }
+    _tourRenderStep(_obStep);
 }
 
 function obGoToAction() {
-    const step = _obSteps[_obStep];
-    obClose();
-    // Navigate to relevant section
-    if (_obStep === 1) {
-        // Go to bot/chats section
-        setTimeout(() => nbGo('chats'), 350);
-    } else if (_obStep === 2) {
-        // Go to add product
-        setTimeout(() => goToAddProduct(), 350);
+    const step = _tourSteps[_obStep];
+    // Navigate based on step id
+    if (step.id === 'add-product') {
+        obClose(); setTimeout(() => goToAddProduct(), 350);
+    } else if (step.id === 'connect-bot' || step.id === 'messages') {
+        obClose(); setTimeout(() => nbGo('chats'), 350);
+    } else {
+        obNext();
     }
 }
 
-function obRenderStep(idx) {
-    const step    = _obSteps[idx];
-    const content = document.getElementById('ob-content');
-    const dots    = document.querySelectorAll('.ob-step-dot');
-    if (!content) return;
+// ── Render a single step ───────────────────────────────────
+function _tourRenderStep(idx) {
+    const step    = _tourSteps[idx];
+    const card    = document.getElementById('tour-card');
+    const content = document.getElementById('tour-content');
+    const xpFill  = document.getElementById('tour-xp-fill');
+    if (!card || !content) return;
 
-    // Update dots
-    dots.forEach((d, i) => {
-        d.classList.toggle('active', i === idx);
-    });
-
-    // Highlight target element if any
-    const ring = document.getElementById('ob-highlight-ring');
-    if (step.target) {
-        const targetEl = document.getElementById(step.target);
-        if (targetEl && ring) {
-            const rect = targetEl.getBoundingClientRect();
-            ring.style.display = 'block';
-            ring.style.left   = (rect.left - 6) + 'px';
-            ring.style.top    = (rect.top - 6) + 'px';
-            ring.style.width  = (rect.width + 12) + 'px';
-            ring.style.height = (rect.height + 12) + 'px';
-        }
-    } else if (ring) {
-        ring.style.display = 'none';
-    }
-
-    // Build HTML
-    const isLast  = idx === _obSteps.length - 1;
-    const btnText = step.btnText;
-    const btnFn   = (idx < _obSteps.length - 1 && step.target) ? 'obGoToAction()' : 'obNext()';
-
-    content.style.opacity = '0';
-    content.style.transform = 'translateY(14px)';
-    content.style.transition = 'opacity 0.25s, transform 0.25s';
+    // Hide card while transitioning
+    card.classList.remove('visible');
+    _tourHideSpotlight();
 
     setTimeout(() => {
+        // Update XP bar
+        if (xpFill) xpFill.style.width = step.xp + '%';
+
+        // Spotlight target element
+        if (step.target) {
+            _tourSpotlight(step.target, step.targetPad || 10, step.handOffset);
+        }
+
+        // Position card
+        _tourPositionCard(step);
+
+        // Build card content
+        const isLast = idx === _tourSteps.length - 1;
+        const btnFn  = step.target ? 'obGoToAction()' : 'obNext()';
+
         content.innerHTML = `
-            <div style="text-align:center;margin-bottom:20px;animation:obStepPop 0.4s ease both;">
-                <div style="width:80px;height:80px;border-radius:26px;background:${step.iconBg};
-                            display:flex;align-items:center;justify-content:center;
-                            margin:0 auto 14px;font-size:38px;
-                            box-shadow:0 8px 32px rgba(0,0,0,0.3);
-                            animation:obFloat 3s ease-in-out infinite;">
+            <div style="text-align:center;margin-bottom:16px;">
+                <div style="display:inline-flex;align-items:center;gap:5px;"
+                     class="tour-step-badge">
+                    <span>${step.badgeIcon}</span>
+                    <span>${step.badge}</span>
+                </div>
+                <div class="tour-icon-wrap" style="background:${step.iconBg};
+                     box-shadow:0 8px 28px rgba(0,0,0,0.35);">
                     ${step.icon}
                 </div>
-                <div style="font-size:21px;font-weight:900;color:white;line-height:1.25;margin-bottom:6px;">
+                <div style="font-size:20px;font-weight:900;color:white;
+                            line-height:1.25;margin-bottom:5px;">
                     ${step.title}
                 </div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.45);font-weight:600;">
+                <div style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">
                     ${step.subtitle}
                 </div>
             </div>
-
-            <!-- Typewriter body -->
-            <div id="ob-typewriter" style="flex:1;font-size:13px;color:rgba(255,255,255,0.7);
-                          line-height:1.85;background:rgba(255,255,255,0.04);
-                          border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.08);
-                          margin-bottom:18px;min-height:80px;">
+            <div id="tour-typewriter"
+                 style="font-size:13px;color:rgba(255,255,255,0.65);
+                        line-height:1.8;background:rgba(255,255,255,0.04);
+                        border-radius:14px;padding:14px 16px;
+                        border:1px solid rgba(255,255,255,0.07);
+                        min-height:72px;margin-bottom:14px;">
             </div>
-
             ${step.target ? `
-            <div style="background:rgba(37,208,120,0.08);border:1.5px dashed rgba(37,208,120,0.35);
-                         border-radius:12px;padding:10px 14px;margin-bottom:14px;
-                         display:flex;align-items:center;gap:10px;">
-                <span style="font-size:18px;">👆</span>
-                <span style="font-size:12px;color:#25d078;font-weight:700;">${step.targetLabel}</span>
+            <div style="background:rgba(37,208,120,0.08);
+                        border:1.5px dashed rgba(37,208,120,0.4);
+                        border-radius:12px;padding:9px 14px;margin-bottom:12px;
+                        display:flex;align-items:center;gap:8px;
+                        animation:tourCardIn 0.4s ease 0.3s both;">
+                <span style="font-size:20px;animation:tourHandTap 1.2s ease-in-out infinite;">👆</span>
+                <span style="font-size:12px;color:#4ade80;font-weight:700;">
+                    Angalia hapo juu — imeangaziwa kwa ajili yako
+                </span>
             </div>` : ''}
-
-            <button class="ob-step-btn" onclick="${btnFn}">
+            <button class="tour-next-btn" onclick="${btnFn}">
                 <span class="material-symbols-outlined" style="font-size:20px;">${step.btnIcon}</span>
-                <span>${btnText}</span>
+                <span>${step.btnText}</span>
             </button>
-
             ${step.skipable ? `
             <div style="text-align:center;">
-                <button class="ob-skip-btn" onclick="obClose()">Ruka mwongozo huu</button>
+                <button class="tour-skip-btn" onclick="obClose()">
+                    Ruka mwongozo
+                </button>
             </div>` : ''}
         `;
 
-        content.style.opacity = '1';
-        content.style.transform = 'translateY(0)';
+        // Show card
+        card.classList.add('visible');
 
-        // Typewriter effect
-        obTypeWriter(step.body, 'ob-typewriter');
-    }, 180);
+        // Typewriter
+        _tourTypeWriter(step.body, 'tour-typewriter');
+
+        // Particle burst on icon
+        _tourBurstParticles();
+
+    }, 220);
 }
 
-function obTypeWriter(text, elId) {
+// ── Spotlight a UI element ─────────────────────────────────
+function _tourSpotlight(targetId, pad, handOffset) {
+    const el   = document.getElementById(targetId);
+    const ring = document.getElementById('tour-pulse-ring');
+    const hand = document.getElementById('tour-hand');
+    const hole = document.getElementById('tour-hole');
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const x = rect.left   - pad;
+    const y = rect.top    - pad;
+    const w = rect.width  + pad * 2;
+    const h = rect.height + pad * 2;
+
+    // SVG mask hole — creates the transparent spotlight
+    if (hole) {
+        hole.setAttribute('x', x);
+        hole.setAttribute('y', y);
+        hole.setAttribute('width', w);
+        hole.setAttribute('height', h);
+        hole.setAttribute('rx', Math.min(20, h/2));
+    }
+
+    // Pulse ring
+    if (ring) {
+        ring.style.display = 'block';
+        ring.style.left   = x + 'px';
+        ring.style.top    = y + 'px';
+        ring.style.width  = w + 'px';
+        ring.style.height = h + 'px';
+        ring.style.borderRadius = Math.min(20, h/2) + 'px';
+    }
+
+    // Tap hand — positioned near element
+    if (hand && handOffset) {
+        hand.style.display = 'block';
+        hand.style.left = (rect.left + rect.width/2 + handOffset.x) + 'px';
+        hand.style.top  = (rect.top  + rect.height/2 + handOffset.y) + 'px';
+    }
+}
+
+function _tourHideSpotlight() {
+    const ring = document.getElementById('tour-pulse-ring');
+    const hand = document.getElementById('tour-hand');
+    const hole = document.getElementById('tour-hole');
+    if (ring) ring.style.display = 'none';
+    if (hand) hand.style.display = 'none';
+    if (hole) { hole.setAttribute('width','0'); hole.setAttribute('height','0'); }
+}
+
+function _tourHideAll() {
+    const overlay = document.getElementById('tour-overlay');
+    const card    = document.getElementById('tour-card');
+    const conf    = document.getElementById('tour-confetti');
+    if (overlay) overlay.classList.remove('active');
+    if (card)    { card.classList.remove('visible'); card.style.animation = 'tourCardOut 0.3s ease both'; setTimeout(()=>{card.style.animation='';},350); }
+    if (conf)    conf.style.display = 'none';
+    _tourHideSpotlight();
+}
+
+// ── Position card above or below spotlight ─────────────────
+function _tourPositionCard(step) {
+    const card = document.getElementById('tour-card');
+    if (!card) return;
+
+    if (step.position === 'center' || !step.target) {
+        card.style.top    = '50%';
+        card.style.bottom = 'auto';
+        card.style.transform = 'translate(-50%,-50%)';
+        return;
+    }
+
+    const el = document.getElementById(step.target);
+    if (!el) { card.style.top='50%'; card.style.transform='translate(-50%,-50%)'; return; }
+
+    const rect = el.getBoundingClientRect();
+    const pad  = (step.targetPad || 10);
+    const spaceAbove = rect.top - pad;
+
+    if (spaceAbove > 260) {
+        // Enough space above — position card above the spotlight
+        card.style.bottom = (window.innerHeight - rect.top + pad + 12) + 'px';
+        card.style.top    = 'auto';
+        card.style.transform = 'translateX(-50%)';
+    } else {
+        // Position below
+        card.style.top    = '16px';
+        card.style.bottom = 'auto';
+        card.style.transform = 'translateX(-50%)';
+    }
+}
+
+// ── Typewriter ──────────────────────────────────────────────
+function _tourTypeWriter(text, elId) {
     clearTimeout(_obTypeTimer);
     const el = document.getElementById(elId);
     if (!el) return;
-    const lines = text.split('\n');
-    let html = '';
-    let charIdx = 0;
-    let lineIdx = 0;
     const allChars = [];
-
-    // Flatten to chars with line break markers
-    lines.forEach((line, li) => {
-        for (let c of line) allChars.push({ char: c, newline: false });
-        if (li < lines.length - 1) allChars.push({ char: '', newline: true });
+    text.split('\n').forEach((line, li, arr) => {
+        for (const c of line) allChars.push({ c, br: false });
+        if (li < arr.length - 1) allChars.push({ c: '', br: true });
     });
-
+    let i = 0; let html = '';
     function tick() {
-        if (charIdx >= allChars.length) return;
-        const item = allChars[charIdx++];
-        if (item.newline) {
-            html += '<br>';
-        } else {
-            // Escape HTML
-            const safe = item.char === '&' ? '&amp;' : item.char === '<' ? '&lt;' : item.char;
-            html += safe;
-        }
-        el.innerHTML = html + '<span style="opacity:0.6;animation:none;">▌</span>';
-        const delay = item.newline ? 120 : (Math.random() > 0.85 ? 55 : 22);
-        _obTypeTimer = setTimeout(tick, delay);
+        if (i >= allChars.length) { el.innerHTML = html; return; }
+        const item = allChars[i++];
+        html += item.br ? '<br>' : (item.c==='<'?'&lt;':item.c==='&'?'&amp;':item.c);
+        el.innerHTML = html + '<span style="opacity:0.5;">▌</span>';
+        _obTypeTimer = setTimeout(tick, item.br ? 110 : (Math.random()>0.88 ? 50 : 18));
     }
     tick();
 }
 
-// Called from loadDashboard after products + profile load
+// ── Particle burst on step icon ────────────────────────────
+function _tourBurstParticles() {
+    const wrap = document.querySelector('.tour-icon-wrap');
+    if (!wrap) return;
+    const colors = ['#25d078','#4ade80','#f59e0b','#60a5fa','#a78bfa','#f472b6'];
+    for (let i = 0; i < 10; i++) {
+        const p = document.createElement('div');
+        p.className = 'tour-particle';
+        p.style.background = colors[i % colors.length];
+        const angle = (i / 10) * 360;
+        const dist  = 40 + Math.random() * 25;
+        const tx = Math.cos(angle * Math.PI/180) * dist;
+        const ty = Math.sin(angle * Math.PI/180) * dist;
+        p.style.top  = '50%'; p.style.left = '50%';
+        p.style.animationDuration = (0.5 + Math.random() * 0.3) + 's';
+        p.style.animationDelay    = (Math.random() * 0.1) + 's';
+        p.style.setProperty('--tx', tx + 'px');
+        p.style.setProperty('--ty', ty + 'px');
+        p.style.transform = `translate(-50%,-50%)`;
+        p.style.animation = `none`;
+        wrap.appendChild(p);
+        // Animate manually
+        requestAnimationFrame(() => {
+            p.style.transition = `transform ${0.5+Math.random()*0.3}s ease-out, opacity ${0.5+Math.random()*0.2}s ease-out`;
+            p.style.transform  = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`;
+            p.style.opacity    = '0';
+        });
+        setTimeout(() => p.remove(), 900);
+    }
+}
+
+// ── Achievement popup ──────────────────────────────────────
+function _tourShowAchievement(text) {
+    const el = document.getElementById('tour-achievement');
+    const tx = document.getElementById('tour-achievement-text');
+    if (!el) return;
+    if (tx) tx.textContent = text;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Confetti celebration ────────────────────────────────────
+function _tourShowConfetti() {
+    const conf = document.getElementById('tour-confetti');
+    if (!conf) return;
+    conf.style.display = 'block';
+    conf.innerHTML = '';
+    const colors = ['#25d078','#4ade80','#f59e0b','#60a5fa','#f472b6','#a78bfa','#fb923c'];
+    for (let i = 0; i < 60; i++) {
+        const p = document.createElement('div');
+        p.className = 'conf-piece';
+        p.style.background = colors[i % colors.length];
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        p.style.animationDelay    = (Math.random() * 0.8) + 's';
+        p.style.width  = (6 + Math.random() * 8) + 'px';
+        p.style.height = (6 + Math.random() * 8) + 'px';
+        p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        conf.appendChild(p);
+    }
+    // Show final achievement
+    _tourShowAchievement('🎉 Umefanikiwa! Karibu LinkaMarket!');
+    setTimeout(() => { conf.style.display='none'; conf.innerHTML=''; }, 3500);
+}
+
+// ── Called from loadDashboard ──────────────────────────────
 async function checkShouldShowOnboarding(profile, products) {
     try {
-        // Skip if already completed
         if (localStorage.getItem(_OB_KEY)) return;
-        // Skip if user has both bot connected and products
         const hasProducts = products && products.length > 0;
         const hasBot      = profile && profile.bot_connection_status === 'connected';
-        // Show if either is missing — they need guidance
         if (!hasProducts || !hasBot) {
             setTimeout(() => obStart(), 1200);
         }
     } catch(e) {}
 }
+
 
 
 // ── M-Pesa Payment Modal ──────────────────────────────────
@@ -9606,29 +9925,48 @@ function mpesaCopyNumber() {
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════
-     ONBOARDING OVERLAY
-═══════════════════════════════════════════════════ -->
-<div id="ob-highlight-ring" class="ob-highlight-ring" style="display:none;"></div>
+<!-- ════════════════════════════════════════════════════
+     APP TOUR — GAME-LIKE ANIMATED GUIDE
+════════════════════════════════════════════════════ -->
 
-<div id="onboarding-overlay">
-  <div id="onboarding-card">
-
-    <!-- Progress dots -->
-    <div style="display:flex;justify-content:center;gap:8px;padding:18px 0 0;">
-      <div class="ob-step-dot active" id="ob-dot-0"></div>
-      <div class="ob-step-dot" id="ob-dot-1"></div>
-      <div class="ob-step-dot" id="ob-dot-2"></div>
-      <div class="ob-step-dot" id="ob-dot-3"></div>
-    </div>
-
-    <!-- Step content area -->
-    <div id="ob-content" style="padding:24px 22px 28px;min-height:340px;display:flex;flex-direction:column;">
-      <!-- Injected by JS per step -->
-    </div>
-
-  </div>
+<!-- Dark overlay with spotlight hole (SVG mask) -->
+<div id="tour-overlay">
+  <svg id="tour-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <mask id="tour-mask">
+        <rect width="100%" height="100%" fill="white"/>
+        <rect id="tour-hole" x="0" y="0" width="0" height="0" rx="16" fill="black"/>
+      </mask>
+    </defs>
+    <rect width="100%" height="100%" fill="rgba(4,14,8,0.82)" mask="url(#tour-mask)"/>
+  </svg>
 </div>
+
+<!-- Pulsing ring around highlighted element -->
+<div id="tour-pulse-ring"></div>
+
+<!-- Animated tap hand -->
+<div id="tour-hand">👆</div>
+
+<!-- Achievement popup -->
+<div id="tour-achievement">
+  <span style="font-size:18px;">🏆</span>
+  <span id="tour-achievement-text">Hatua Imekamilika!</span>
+</div>
+
+<!-- Confetti container -->
+<div id="tour-confetti"></div>
+
+<!-- Main tour card -->
+<div id="tour-card">
+  <!-- XP Progress bar -->
+  <div class="tour-xp-bar">
+    <div class="tour-xp-fill" id="tour-xp-fill" style="width:0%"></div>
+  </div>
+  <!-- Dynamic content injected by JS -->
+  <div id="tour-content"></div>
+</div>
+
 
 
 <!-- ═══════════════════════════════════════════════════
