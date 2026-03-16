@@ -4617,7 +4617,7 @@
                 <!-- WhatsApp Input with Country Code Selector -->
                 <div class="pf-group">
                     <label class="pf-label">WhatsApp for Orders (Namba ya Simu)</label>
-                    <div class="pf-input-wrapper" style="display: flex; gap: 0;">
+                    <div class="pf-input-wrapper" id="prof-phone-wrap" style="display: flex; gap: 0;">
                         <select id="country-code-select" style="
                             padding: 16px 12px;
                             font-size: 16px;
@@ -4695,7 +4695,7 @@
                 <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">play_circle</span>
             </div>
 
-            <button class="save-profile-btn" onclick="saveShopProfile()">
+            <button class="save-profile-btn" id="btn-save-profile" onclick="saveShopProfile()">
                 <span class="material-symbols-outlined">save</span>
                 Save Changes
             </button>
@@ -4703,7 +4703,7 @@
             <!-- ═══════════════════════════════════════
                  WHATSAPP AI BOT — IN SETTINGS
             ═══════════════════════════════════════ -->
-            <div id="bot-section" style="margin-top:8px;">
+            <div id="bot-section" style="margin-top:8px;scroll-margin-top:20px;">
 
                 <!-- Section header -->
                 <div style="display:flex;align-items:center;gap:10px;padding:16px 0 10px;">
@@ -4822,7 +4822,7 @@
                             </div>
                         </div>
 
-                        <button onclick="botResetSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
+                        <button id="btn-retry-code" onclick="botResetSetup()" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;padding:6px;">
                             ← Omba code mpya
                         </button>
                     </div>
@@ -6290,6 +6290,10 @@
         if(container) {
             container.innerHTML = '';
             if(products && products.length > 0) {
+                // Create grid wrapper
+                const grid = document.createElement('div');
+                grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:0;';
+                container.appendChild(grid);
                 products.forEach((p, index) => {
                     const img = getProductImage(p);
                     const safeName = (p.name || 'Product').replace(/'/g, "\\'");
@@ -6358,7 +6362,7 @@
                             <p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p>
                         </div>
                     </div>`;
-                    container.innerHTML += html;
+                    grid.innerHTML += html;
                 });
             } else {
                 container.innerHTML = `
@@ -6435,6 +6439,19 @@
         document.querySelectorAll('.screen-wrapper').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-profile').classList.remove('hidden');
         loadBotStatus();
+        // Auto-start settings tour if onboarding not yet completed
+        setTimeout(() => {
+            try {
+                if (!localStorage.getItem(_OB_KEY) && typeof _tourRenderStep === 'function') {
+                    const card = document.getElementById('tour-card');
+                    if (card && card.classList.contains('visible')) return;
+                    _obStep = 1; _tourActive = true;
+                    document.getElementById('tour-overlay').classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    _tourRenderStep(1);
+                }
+            } catch(e) {}
+        }, 700);
         const { data: { user } } = await sb.auth.getUser();
         if(!user) return;
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -8859,127 +8876,127 @@ let   _tourActive = false;
 
 // ── Tour Steps Definition ──────────────────────────────────
 const _tourSteps = [
-    // ── STEP 0 — Welcome ──────────────────────────────────
+
+    // ══ STEP 0 — Welcome ════════════════════════════════════
     {
-        id:          'welcome',
-        icon:        '🚀',
-        iconBg:      'linear-gradient(135deg,#25d078,#16a34a)',
-        badge:       'Karibu!',
-        badgeIcon:   '⭐',
-        title:       'Karibu LinkaMarket!',
-        subtitle:    'Biashara yako ya AI inaanza sasa',
-        body:        'Nitakuonyesha hatua 5 za kuweka duka lako la WhatsApp la AI.\n\nKila hatua itakuonyesha hasa wapi ubonyeze. Rahisi kama mchezo! 🎮',
-        target:      null,
-        btnText:     'Nianze! 🎮',
-        btnIcon:     'sports_esports',
-        xp:          0,
-        skipable:    true,
-        achievement: null,
-        position:    'center',
+        id: 'welcome',
+        icon: '🚀', iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
+        badge: 'Karibu!', badgeIcon: '⭐',
+        title: 'Karibu LinkaMarket!',
+        subtitle: 'Duka lako la AI linaanza sasa hivi',
+        body: 'Nitakufundisha hatua kwa hatua jinsi ya kuweka duka lako la WhatsApp la AI.\n\nKila hatua itaonyesha hasa wapi ubonyeze — kama mchezo wa simu! 🎮\n\nTuanze!',
+        target: null, xp: 0, skipable: true,
+        btnText: 'Nianze Mchezo! 🎮', btnIcon: 'sports_esports',
+        achievement: null, position: 'center',
     },
 
-    // ── STEP 1 — Settings / Profile ───────────────────────
+    // ══ STEP 1 — Enter Shop Name ════════════════════════════
     {
-        id:          'settings',
-        icon:        '⚙️',
-        iconBg:      'linear-gradient(135deg,#64748b,#475569)',
-        badge:       'Hatua 1 ya 5',
-        badgeIcon:   '⚙️',
-        title:       'Weka Jina la Duka',
-        subtitle:    'Wateja watakuona kwa jina hili',
-        body:        'Bonyeza "Settings" ⚙️ kwenye kichwa cha ukurasa 👆\n\nWeka jina la duka lako na namba yako ya WhatsApp.\n\nHii ndiyo bot itakayotumia kujitambulisha kwa wateja wako!',
-        target:      'nb-settings',
-        targetPad:   10,
-        btnText:     'Nenda Settings →',
-        btnIcon:     'settings',
-        xp:          20,
-        skipable:    true,
-        achievement: null,
-        position:    'top',
-        handOffset:  { x: 0, y: -55 },
+        id: 'shop-name',
+        icon: '🏪', iconBg: 'linear-gradient(135deg,#6366f1,#4f46e5)',
+        badge: 'Hatua 1 ya 7', badgeIcon: '🏪',
+        title: 'Weka Jina la Duka Lako',
+        subtitle: 'Wateja watakujua kwa jina hili',
+        body: 'Ona sanduku la "Jina la Duka" hapo juu 👆\n\nBonyeza ndani yake — andika jina la biashara yako.\n\nMfano: "Duka la Asha" au "Mama John Fashion"',
+        target: 'prof-shop-name', targetPad: 8,
+        xp: 14, skipable: true,
+        btnText: 'Nimeweka Jina →', btnIcon: 'storefront',
+        achievement: null, position: 'bottom',
+        handOffset: { x: 0, y: 45 },
+        extraInfo: '💡 Jina hili litaonekana kwa wateja wako kwenye WhatsApp na kwenye link ya duka lako.',
     },
 
-    // ── STEP 2 — Add Product ──────────────────────────────
+    // ══ STEP 2 — Enter WhatsApp Number ══════════════════════
     {
-        id:          'add-product',
-        icon:        '📦',
-        iconBg:      'linear-gradient(135deg,#f59e0b,#d97706)',
-        badge:       'Hatua 2 ya 5',
-        badgeIcon:   '📦',
-        title:       'Ongeza Bidhaa Yako ya Kwanza',
-        subtitle:    'Bot itajifunza bidhaa zako zote',
-        body:        'Bonyeza kitufe cha "+" hapo chini 👆\n\nWeka: Jina la bidhaa, Bei, Picha nzuri.\n\nBot itajua bidhaa yako na kujibu wateja wanaouliza kuhusu bei na stock! 🛒',
-        target:      'nb-add',
-        targetPad:   14,
-        btnText:     'Ongeza Bidhaa →',
-        btnIcon:     'add_circle',
-        xp:          40,
-        skipable:    true,
-        achievement: '⚙️ Profile Imewekwa!',
-        position:    'top',
-        handOffset:  { x: 0, y: -60 },
+        id: 'whatsapp-number',
+        icon: '📱', iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
+        badge: 'Hatua 2 ya 7', badgeIcon: '📱',
+        title: 'Weka Namba ya WhatsApp',
+        subtitle: 'Orders za wateja zitakuja hapa',
+        body: 'Bonyeza kwenye namba ya simu hapo 👆\n\nWeka namba yako ya WhatsApp inayotumika kwa biashara.\n\nMfano: 0712345678',
+        target: 'prof-phone-wrap', targetPad: 8,
+        xp: 28, skipable: true,
+        btnText: 'Nimeweka Namba →', btnIcon: 'phone',
+        achievement: '🏪 Jina Limewekwa!', position: 'bottom',
+        handOffset: { x: 0, y: 45 },
+        extraInfo: '⚠️ Tumia namba yenye umri wa miezi 2 au zaidi. Namba mpya zinaweza kubaniwa na WhatsApp.',
     },
 
-    // ── STEP 3 — Connect Bot ──────────────────────────────
+    // ══ STEP 3 — Save Profile ════════════════════════════════
     {
-        id:          'connect-bot',
-        icon:        '🤖',
-        iconBg:      'linear-gradient(135deg,#075e54,#128c7e)',
-        badge:       'Hatua 3 ya 5',
-        badgeIcon:   '🤖',
-        title:       'Unganisha WhatsApp na AI',
-        subtitle:    'Hatua muhimu zaidi — ifanye sasa',
-        body:        'Bonyeza "Settings" ⚙️ → Shuka chini → "Pata Code ya WhatsApp Bot"\n\nCode ya tarakimu 8 itaonekana.\n\nFungua WhatsApp yako → ⋮ Menu → Linked Devices → Link a Device → "Link with phone number" → Ingiza code!',
-        target:      'nb-settings',
-        targetPad:   10,
-        btnText:     'Nenda Unganisha Bot →',
-        btnIcon:     'smart_toy',
-        xp:          60,
-        skipable:    true,
-        achievement: '📦 Bidhaa Imewekwa!',
-        position:    'top',
-        handOffset:  { x: 0, y: -55 },
-        extraInfo:   '⏳ Subiri WhatsApp notification — itakuja ndani ya sekunde 30. Ukipata notification ya "New device linked" — bot iko live! ⚡',
+        id: 'save-profile',
+        icon: '💾', iconBg: 'linear-gradient(135deg,#0ea5e9,#0284c7)',
+        badge: 'Hatua 3 ya 7', badgeIcon: '💾',
+        title: 'Hifadhi Mabadiliko Yako',
+        subtitle: 'Bonyeza Save kabla hatujaendelea',
+        body: 'Umeweka jina na namba — sasa hifadhi! 👆\n\nBonyeza kitufe cha "Save Changes" hapo juu.',
+        target: 'btn-save-profile', targetPad: 8,
+        xp: 42, skipable: true,
+        btnText: 'Nimehifadhi →', btnIcon: 'save',
+        achievement: '📱 Namba Imewekwa!', position: 'top',
+        handOffset: { x: 0, y: -50 },
+        extraInfo: '💡 Kama hujahifadhi, mabadiliko yako yatapotea ukitoka kwenye ukurasa huu.',
     },
 
-    // ── STEP 4 — View Messages ────────────────────────────
+    // ══ STEP 4 — Get Bot Code ════════════════════════════════
     {
-        id:          'messages',
-        icon:        '💬',
-        iconBg:      'linear-gradient(135deg,#a855f7,#7c3aed)',
-        badge:       'Hatua 4 ya 5',
-        badgeIcon:   '💬',
-        title:       'Angalia Mazungumzo ya Bot',
-        subtitle:    'Ona bot ikifanya kazi kwa wateja',
-        body:        'Bonyeza "Chats" hapo chini 👆\n\nHapa utaona mazungumzo yote kati ya bot na wateja wako — moja kwa moja.\n\nUnaweza kujibu mwenyewe au kuacha bot iendelee. Kukata bot? Settings → Bot → Kata. ✅',
-        target:      'nb-chats',
-        targetPad:   10,
-        btnText:     'Angalia Chats →',
-        btnIcon:     'forum',
-        xp:          80,
-        skipable:    true,
-        achievement: '🤖 Bot Imeunganishwa!',
-        position:    'top',
-        handOffset:  { x: 0, y: -55 },
+        id: 'get-code',
+        icon: '🤖', iconBg: 'linear-gradient(135deg,#075e54,#128c7e)',
+        badge: 'Hatua 4 ya 7', badgeIcon: '🤖',
+        title: 'Pata Code ya Bot',
+        subtitle: 'Code itaunganisha WhatsApp na AI',
+        body: 'Shuka kidogo chini ya ukurasa huu 👆\n\nBonyeza kitufe cha kijani: "Pata Code ya WhatsApp Bot"\n\nCode ya tarakimu 8 itaonekana kwenye skrini.',
+        target: 'btn-get-bot-code', targetPad: 10,
+        xp: 56, skipable: true,
+        btnText: 'Bonyeza Pata Code →', btnIcon: 'phonelink_ring',
+        achievement: '💾 Imehifadhiwa!', position: 'top',
+        handOffset: { x: 0, y: -55 },
+        extraInfo: '💡 Code itaisha kwa sekunde 60. Kama itaisha kabla haujaitumia — bonyeza tena "Pata Code".',
     },
 
-    // ── STEP 5 — Done ─────────────────────────────────────
+    // ══ STEP 5 — Enter Code in WhatsApp ════════════════════
     {
-        id:          'done',
-        icon:        '🎉',
-        iconBg:      'linear-gradient(135deg,#f59e0b,#ef4444)',
-        badge:       'Umefanikiwa! 🏆',
-        badgeIcon:   '🏆',
-        title:       'Hongera! Duka Lako Liko Hai!',
-        subtitle:    'AI yako inafanya kazi saa 24',
-        body:        'Umeweka msingi kamili wa biashara ya kisasa! 🙌\n\nBot yako ya AI sasa itajibu wateja hata ukilala. 😴\n\nWateja watauliza — bot itajibu. Orders zitaingia. Pesa itaingia! 💰',
-        target:      null,
-        btnText:     'Anza Kufanya Biashara! 💰',
-        btnIcon:     'rocket_launch',
-        xp:          100,
-        skipable:    false,
-        achievement: '🎉 Karibu LinkaMarket!',
-        position:    'center',
+        id: 'enter-code',
+        icon: '📲', iconBg: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
+        badge: 'Hatua 5 ya 7', badgeIcon: '📲',
+        title: 'Ingiza Code kwenye WhatsApp',
+        subtitle: 'Fuata hatua hizi kwenye simu yako',
+        body: 'Code iko skrini — sasa fuata hatua hizi:\n\n1️⃣ Fungua WhatsApp kwenye simu yako\n2️⃣ Gonga ⋮ (dots tatu) → Settings\n3️⃣ Gonga "Linked Devices"\n4️⃣ Gonga "Link a Device"\n5️⃣ Chagua "Link with phone number"\n6️⃣ Ingiza code ile uliyoona',
+        target: 'bot-code-view', targetPad: 12,
+        xp: 70, skipable: false,
+        btnText: 'Nimeingiza Code →', btnIcon: 'check_circle',
+        achievement: '🔑 Code Imepatikana!', position: 'top',
+        handOffset: null,
+        extraInfo: '⏳ Baada ya kuingiza code — subiri kidogo. WhatsApp itatuma notification ya "New device linked". Hiyo inamaanisha bot iko live!',
+    },
+
+    // ══ STEP 6 — Wait / Retry ════════════════════════════════
+    {
+        id: 'wait-confirm',
+        icon: '⏳', iconBg: 'linear-gradient(135deg,#f59e0b,#d97706)',
+        badge: 'Hatua 6 ya 7', badgeIcon: '⏳',
+        title: 'Subiri Uthibitisho',
+        subtitle: 'WhatsApp inatuma notification',
+        body: 'Ukiona "Bot Inafanya Kazi! ✅" — umefanikiwa! 🎉\n\nUkiona bado spinner inazunguka — subiri sekunde 30 zaidi.\n\nCode haikuja? Bonyeza "Omba code mpya" halafu rudia hatua za WhatsApp tena.',
+        target: 'btn-confirm-connect', targetPad: 10,
+        xp: 85, skipable: false,
+        btnText: 'Bot Imeunganishwa! ✅', btnIcon: 'verified',
+        achievement: '📲 Code Imeingizwa!', position: 'top',
+        handOffset: { x: 0, y: -55 },
+        extraInfo: '🔄 Kama code ilisha (sekunde 60) kabla haujaitumia — bonyeza "Omba code mpya" chini ya bot section, kisha rudia hatua za WhatsApp tena.',
+    },
+
+    // ══ STEP 7 — Done! ═══════════════════════════════════════
+    {
+        id: 'done',
+        icon: '🎉', iconBg: 'linear-gradient(135deg,#f59e0b,#ef4444)',
+        badge: 'Umefanikiwa! 🏆', badgeIcon: '🏆',
+        title: 'Hongera! Duka Lako Liko Hai!',
+        subtitle: 'Bot yako ya AI inafanya kazi saa 24',
+        body: 'Umeweka msingi kamili wa biashara ya kisasa! 🙌\n\nBot yako sasa itajibu wateja kiotomatiki — hata ukilala usiku. 😴\n\nTutaonana upande wa pesa! 💰🚀',
+        target: null, xp: 100, skipable: false,
+        btnText: 'Anza Kufanya Biashara! 💰', btnIcon: 'rocket_launch',
+        achievement: '🤖 Bot Iko Live!', position: 'center',
     },
 ];
 
@@ -9018,8 +9035,15 @@ function obNext() {
 
 function obGoToAction() {
     const step = _tourSteps[_obStep];
-    if (step.id === 'settings' || step.id === 'connect-bot') {
-        obClose(); setTimeout(() => openProfileSettings(), 350);
+    // Settings-related steps
+    if (['shop-name','whatsapp-number','save-profile','get-code','enter-code','wait-confirm'].includes(step.id)) {
+        // Stay on settings page — just go to next step
+        // First scroll to bot section if needed
+        if (['get-code','enter-code','wait-confirm'].includes(step.id)) {
+            const botEl = document.getElementById('bot-section');
+            if (botEl) botEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        setTimeout(() => obNext(), 400);
     } else if (step.id === 'add-product') {
         obClose(); setTimeout(() => goToAddProduct(), 350);
     } else if (step.id === 'messages') {
@@ -9197,6 +9221,8 @@ function _tourPositionCard(step) {
     if (step.position === 'center' || !step.target) {
         card.style.top    = '50%';
         card.style.bottom = 'auto';
+        card.style.maxHeight = '85vh';
+        card.style.overflowY = 'auto';
         card.style.transform = 'translate(-50%,-50%)';
         return;
     }
@@ -9206,16 +9232,32 @@ function _tourPositionCard(step) {
 
     const rect = el.getBoundingClientRect();
     const pad  = (step.targetPad || 10);
-    const spaceAbove = rect.top - pad;
+    card.style.maxHeight = '70vh';
+    card.style.overflowY = 'auto';
 
-    if (spaceAbove > 260) {
-        // Enough space above — position card above the spotlight
+    // Explicit position override from step definition
+    if (step.position === 'bottom') {
+        // Card below the element
+        const below = rect.bottom + pad + 12;
+        if (below + 300 < window.innerHeight) {
+            card.style.top    = below + 'px';
+            card.style.bottom = 'auto';
+            card.style.transform = 'translateX(-50%)';
+        } else {
+            card.style.top    = '10px';
+            card.style.bottom = 'auto';
+            card.style.transform = 'translateX(-50%)';
+        }
+        return;
+    }
+
+    const spaceAbove = rect.top - pad;
+    if (spaceAbove > 280) {
         card.style.bottom = (window.innerHeight - rect.top + pad + 12) + 'px';
         card.style.top    = 'auto';
         card.style.transform = 'translateX(-50%)';
     } else {
-        // Position below
-        card.style.top    = '16px';
+        card.style.top    = '10px';
         card.style.bottom = 'auto';
         card.style.transform = 'translateX(-50%)';
     }
