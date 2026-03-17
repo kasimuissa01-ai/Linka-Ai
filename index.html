@@ -4452,6 +4452,76 @@
 </head>
 <body>
     <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
+    <!-- ══ DEBUG PANEL — catches ALL JS errors ══ -->
+    <div id="dbg-btn" onclick="document.getElementById('dbg-panel').style.display=document.getElementById('dbg-panel').style.display==='none'?'flex':'none'" style="
+        position:fixed;bottom:80px;right:16px;z-index:99999;
+        width:48px;height:48px;border-radius:50%;
+        background:linear-gradient(135deg,#ef4444,#dc2626);
+        color:white;font-size:20px;display:flex;align-items:center;
+        justify-content:center;cursor:pointer;
+        box-shadow:0 4px 16px rgba(239,68,68,0.5);
+        border:3px solid white;font-weight:900;
+    ">🐛</div>
+
+    <div id="dbg-panel" style="
+        display:none;position:fixed;bottom:140px;right:16px;
+        z-index:99999;width:calc(100vw - 32px);max-width:420px;
+        max-height:60vh;background:#0f172a;border-radius:16px;
+        border:2px solid #ef4444;overflow:hidden;
+        box-shadow:0 8px 40px rgba(0,0,0,0.6);
+        flex-direction:column;
+    ">
+        <div style="background:#ef4444;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <span style="color:white;font-weight:900;font-size:13px;">🐛 Console Errors</span>
+            <div style="display:flex;gap:8px;">
+                <button onclick="document.getElementById('dbg-log').innerHTML='';_dbgCount=0;document.getElementById('dbg-badge').textContent='0'" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:700;">Clear</button>
+                <button onclick="document.getElementById('dbg-panel').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:700;">✕</button>
+            </div>
+        </div>
+        <div id="dbg-log" style="flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:11px;color:#e2e8f0;line-height:1.6;"></div>
+    </div>
+    <div id="dbg-badge" style="
+        position:fixed;bottom:120px;right:12px;z-index:99999;
+        background:#ef4444;color:white;border-radius:99px;
+        font-size:10px;font-weight:900;padding:2px 6px;
+        display:none;min-width:18px;text-align:center;
+    ">0</div>
+
+    <script>
+    // Catch ALL errors before anything else runs
+    var _dbgCount = 0;
+    function _dbgLog(type, msg, color) {
+        _dbgCount++;
+        var badge = document.getElementById('dbg-badge');
+        var log   = document.getElementById('dbg-log');
+        if (badge) { badge.style.display='block'; badge.textContent=_dbgCount; }
+        if (log) {
+            var d = document.createElement('div');
+            d.style.cssText = 'padding:6px 8px;border-radius:8px;margin-bottom:6px;border-left:3px solid '+color+';background:rgba(255,255,255,0.04)';
+            d.innerHTML = '<span style="color:'+color+';font-weight:700;">['+type+']</span> ' + 
+                          msg.toString().replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            log.appendChild(d);
+            log.scrollTop = log.scrollHeight;
+        }
+    }
+    window.onerror = function(msg, src, line, col, err) {
+        _dbgLog('ERROR', (err ? err.message : msg) + ' @ L'+line+':'+col, '#f87171');
+        return false;
+    };
+    window.onunhandledrejection = function(e) {
+        _dbgLog('PROMISE', e.reason ? (e.reason.message || e.reason) : 'Unhandled rejection', '#fb923c');
+    };
+    // Override console
+    var _origError = console.error.bind(console);
+    var _origWarn  = console.warn.bind(console);
+    var _origLog   = console.log.bind(console);
+    console.error = function() { _origError.apply(console,arguments); _dbgLog('ERR', Array.from(arguments).join(' '), '#f87171'); };
+    console.warn  = function() { _origWarn.apply(console,arguments);  _dbgLog('WARN',Array.from(arguments).join(' '), '#fbbf24'); };
+    console.log   = function() { _origLog.apply(console,arguments);   _dbgLog('LOG', Array.from(arguments).join(' '), '#34d399'); };
+    _dbgLog('INFO','Debug panel ready — watching all errors','#60a5fa');
+    </script>
+    <!-- ══ END DEBUG PANEL ══ -->
+
     <div id="global-loader">
         <div style="width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #25d078; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         <p style="font-weight: 700; color: #25d078; font-size: 14px;">Loading...</p>
@@ -6142,6 +6212,12 @@
     
     // Safety check for Supabase
     let sb;
+
+    // ── Hoisted constants (used throughout, defined early) ──
+    const _OB_KEY = 'lm_ob_done_v1';
+    let _tourActive = false;
+    let _obStep = 0;
+
     try {
         const { createClient } = supabase;
         sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -9083,10 +9159,8 @@ function tcClose() {
 // APP TOUR — GAME-LIKE ANIMATED GUIDE
 // Replaces old onboarding system entirely
 // ════════════════════════════════════════════════════════════
-const _OB_KEY     = 'lm_ob_done_v1';
-let   _obStep     = 0;
+// _OB_KEY, _obStep, _tourActive — hoisted to top of script
 let   _obTypeTimer = null;
-let   _tourActive = false;
 
 // ── Tour Steps Definition ──────────────────────────────────
 const _tourSteps = [
@@ -9783,6 +9857,18 @@ function ob3GoToDashboard() {
     localStorage.setItem(_OB_KEY, '1');
     showScreen('step-5', true);
     loadDashboard();
+}
+
+
+// ── Stub functions (referenced in HTML, kept safe) ──────
+function goToTemplateChange() { openProfileSettings(); }
+function contactMerchantWhatsApp() {
+    const phone = CURRENT_MERCHANT_DATA?.whatsapp_number || CURRENT_MERCHANT_DATA?.phone_number || '';
+    if (phone) window.open('https://wa.me/' + phone.replace(/[^0-9]/g,''), '_blank');
+}
+function scrollToProducts() {
+    const el = document.getElementById('products-container');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
 </script>
