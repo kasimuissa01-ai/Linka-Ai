@@ -9785,18 +9785,6 @@ function ob3GoToDashboard() {
     loadDashboard();
 }
 
-
-// ── Stub functions (referenced in HTML, kept safe) ──────
-function goToTemplateChange() { openProfileSettings(); }
-function contactMerchantWhatsApp() {
-    const phone = CURRENT_MERCHANT_DATA?.whatsapp_number || CURRENT_MERCHANT_DATA?.phone_number || '';
-    if (phone) window.open('https://wa.me/' + phone.replace(/[^0-9]/g,''), '_blank');
-}
-function scrollToProducts() {
-    const el = document.getElementById('products-container');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
-
 </script>
 
 <!-- ═══════════ PRIVACY POLICY MODAL ═══════════ -->
