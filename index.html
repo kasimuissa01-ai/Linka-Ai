@@ -40,23 +40,29 @@
       gtag('config', 'G-CMBWJH2ER1');
     </script>
 
-    <!-- Amplitude Analytics -->
+    <!-- Amplitude Analytics — try/catch so it NEVER crashes the app -->
     <script src="https://cdn.amplitude.com/libs/amplitude-8.18.4-min.gz.js"></script>
     <script>
-      const amp = amplitude.getInstance();
-      amp.init("3ddef487e0f6c35a57bebd55e4c9b7e3");
-      let userId = localStorage.getItem("user_id");
-      if (!userId) {
-        userId = "user_" + Math.random().toString(36).slice(2);
-        localStorage.setItem("user_id", userId);
+      try {
+        const amp = amplitude.getInstance();
+        amp.init("3ddef487e0f6c35a57bebd55e4c9b7e3");
+        let userId = localStorage.getItem("user_id");
+        if (!userId) {
+          userId = "user_" + Math.random().toString(36).slice(2);
+          localStorage.setItem("user_id", userId);
+        }
+        amp.setUserId(userId);
+        amp.logEvent("App Opened");
+        window.amp = amp;
+        const sessionStart = Date.now();
+        window.addEventListener("beforeunload", function () {
+          const durationSeconds = Math.floor((Date.now() - sessionStart) / 1000);
+          try { amp.logEvent("Session Ended", { duration_seconds: durationSeconds }); } catch(e) {}
+        });
+      } catch(e) {
+        window.amp = null;
+        console.warn("Amplitude not loaded:", e.message);
       }
-      amp.setUserId(userId);
-      amp.logEvent("App Opened");
-      const sessionStart = Date.now();
-      window.addEventListener("beforeunload", function () {
-        const durationSeconds = Math.floor((Date.now() - sessionStart) / 1000);
-        amp.logEvent("Session Ended", { duration_seconds: durationSeconds });
-      });
     </script>
 
     <!-- PWA Manifest -->
@@ -6233,9 +6239,21 @@
                         else showScreen('step-' + step, false);
                         if(step == 5) loadDashboard();
                     } else {
-                        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                        showScreen('step-5', false);
-                        loadDashboard();
+                        try {
+                            const { data: prof } = await sb.from('profiles')
+                                .select('business_name').eq('id', session.user.id).single();
+                            if (!prof?.business_name) {
+                                showScreen('step-1', true);
+                            } else {
+                                history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                                showScreen('step-5', false);
+                                loadDashboard();
+                            }
+                        } catch(e) {
+                            history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                            showScreen('step-5', false);
+                            loadDashboard();
+                        }
                     }
                 } else {
                     showScreen('step-auth', true);
@@ -6444,349 +6462,20 @@
     });
 
     function handleStep1Click() { showScreen('step-1', true); }
-    function handleStep2Click() { const name = document.getElementById('shop-name-input').value; if(!name) return alert('Please enter a name'); localStorage.setItem('temp_shop_name', name); navigateTo(3, 'Category'); }
+    function handleStep2Click() { const n=(document.getElementById('ob-shop-name')?.value||'').trim(); if(n){localStorage.setItem('temp_shop_name',n);} showScreen('step-2',true); }
     function selectCategory(element, name) { document.querySelectorAll('.cat-card').forEach(card => card.classList.remove('selected')); element.classList.add('selected'); localStorage.setItem('temp_shop_cat', name); const otherInput = document.getElementById('other-input-container'); if (name === 'Other') { otherInput.classList.add('open'); setTimeout(() => otherInput.querySelector('input').focus(), 100); } else { otherInput.classList.remove('open'); } if (navigator.vibrate) navigator.vibrate(20); }
     
-    // REPLACE existing handleStep3Click function
-    function handleStep3Click() { 
-        const selectedCat = document.querySelector('.cat-card.selected');
-        if (!selectedCat) {
-            alert('Please select a category first');
-            return;
-        }
-        
-        IS_TEMPLATE_EDIT_MODE = false; // Ensure onboarding mode
-        document.getElementById('btn-step-3-5').innerText = 'Continue →'; // Reset button text
-        navigateTo('3-5', 'Choose Template');
-        loadTemplates();
-    }
+    function handleStep3Click() { showScreen('step-2', true); }
 
-    // ============================================
-    // TEMPLATE SELECTION FUNCTIONS
-    // ============================================
 
-    let SELECTED_TEMPLATE_ID = null;
-
-    async function loadTemplates() {
-        const container = document.getElementById('templates-container');
-        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #9ca3af;">Loading templates...</div>';
-        
+    async function handleStep4Click() {
         try {
-            const { data: templates, error } = await sb
-                .from('store_templates')
-                .select('*')
-                .order('name');
-            
-            if (error) throw error;
-            
-            if (!templates || templates.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #9ca3af;">
-                        <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No templates available</p>
-                        <p style="font-size: 14px;">We'll use a default design for now</p>
-                    </div>`;
-                return;
-            }
-            
-            renderTemplateCards(templates);
-            
-        } catch (error) {
-            console.error('Template load error:', error);
-            container.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #ef4444;">
-                    Failed to load templates. Please try again.
-                </div>`;
-        }
+            const { data:{ user } } = await sb.auth.getUser();
+            if (user) { showScreen('step-5', true); loadDashboard(); }
+            else showScreen('step-auth', true);
+        } catch(e) { showScreen('step-auth', true); }
     }
 
-    function renderTemplateCards(templates) {
-        const container = document.getElementById('templates-container');
-        
-        container.innerHTML = templates.map(template => `
-            <div class="template-card" id="template-${template.id}" onclick="selectTemplate('${template.id}')">
-                <div class="template-preview" style="background-image: url('${template.preview_image || 'https://via.placeholder.com/400x300?text=Preview'}')">
-                    <div class="template-selected-check">
-                        <span class="material-symbols-outlined" style="font-size: 32px; color: white;">check_circle</span>
-                    </div>
-                    ${template.is_premium ? '<div class="template-badge">✨ Premium</div>' : ''}
-                </div>
-                
-                <div class="template-info">
-                    <div>
-                        <div class="template-name">${template.name}</div>
-                        <div class="template-category">${template.category || 'General'}</div>
-                    </div>
-                </div>
-                
-                <button class="preview-btn" onclick="event.stopPropagation(); previewTemplate('${template.id}')">
-                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
-                    Preview
-                </button>
-            </div>
-        `).join('');
-    }
-
-    function selectTemplate(templateId) {
-        // Remove previous selection
-        document.querySelectorAll('.template-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Select new template
-        const selectedCard = document.getElementById(`template-${templateId}`);
-        if (selectedCard) {
-            selectedCard.classList.add('selected');
-            SELECTED_TEMPLATE_ID = templateId;
-            
-            // Enable continue button
-            const btn = document.getElementById('btn-step-3-5');
-            btn.classList.remove('btn-disabled');
-            btn.disabled = false;
-            
-            // Haptic feedback
-            if (navigator.vibrate) navigator.vibrate(50);
-        }
-    }
-
-    function previewTemplate(templateId) {
-        // Show preview modal (implement later or redirect to demo page)
-        alert(`Preview for template: ${templateId}\n(Full preview implementation coming soon)`);
-    }
-
-    // New function for Settings
-    function goToTemplateChange() {
-        IS_TEMPLATE_EDIT_MODE = true;
-        document.getElementById('btn-step-3-5').innerText = 'Save Template'; // Change text
-        // Show screen directly
-        showScreen('step-3-5', true);
-        loadTemplates();
-    }
-
-    // Update handleTemplateSelection
-    async function handleTemplateSelection() {
-        if (!SELECTED_TEMPLATE_ID) return alert('Select a template');
-
-        if (IS_TEMPLATE_EDIT_MODE) {
-            // Handle Edit Mode Save
-            const btn = document.getElementById('btn-step-3-5');
-            btn.innerHTML = 'Saving...';
-            try {
-                const { data: { user } } = await sb.auth.getUser();
-                if(user) {
-                    await sb.from('profiles').update({ selected_template_id: SELECTED_TEMPLATE_ID }).eq('id', user.id);
-                    // Also apply locally immediately
-                    await applyTemplateToStorefront(SELECTED_TEMPLATE_ID);
-                    alert('Template Updated!');
-                    openProfileSettings(); // Go back to settings
-                }
-            } catch(e) { console.error(e); alert('Error saving'); }
-            btn.innerHTML = 'Save Template';
-        } else {
-            // Handle Onboarding Flow
-            localStorage.setItem('temp_template_id', SELECTED_TEMPLATE_ID);
-            navigateTo(4, 'Shop Rules');
-        }
-    }
-
-    // ✅ NEW FUNCTION: Add this anywhere in the script section
-    async function applyTemplateToStorefront(templateId) {
-        try {
-            const { data: template, error } = await sb
-                .from('store_templates')
-                .select('css_styles, html_structure')
-                .eq('id', templateId)
-                .single();
-            
-            if (error || !template) {
-                console.log('Template not found, using default');
-                return;
-            }
-            
-            // Apply custom CSS
-            if (template.css_styles) {
-                let styleTag = document.getElementById('template-custom-styles');
-                if (!styleTag) {
-                    styleTag = document.createElement('style');
-                    styleTag.id = 'template-custom-styles';
-                    document.head.appendChild(styleTag);
-                }
-                
-                // Apply CSS variables or full styles
-                const cssText = generateCSSFromTemplate(template.css_styles);
-                styleTag.textContent = cssText;
-            }
-            
-            console.log('✅ Template applied:', templateId);
-            
-        } catch (error) {
-            console.error('Template application error:', error);
-        }
-    }
-
-    function generateCSSFromTemplate(cssStyles) {
-        // Generate CSS from JSONB structure
-        let css = ':root {';
-        
-        if (cssStyles.colors) {
-            if (cssStyles.colors.primary) css += `--primary: ${cssStyles.colors.primary};`;
-            if (cssStyles.colors.secondary) css += `--secondary: ${cssStyles.colors.secondary};`;
-            if (cssStyles.colors.background) css += `--bg-body: ${cssStyles.colors.background};`;
-        }
-        
-        if (cssStyles.fonts) {
-            if (cssStyles.fonts.heading) css += `--font-heading: ${cssStyles.fonts.heading};`;
-            if (cssStyles.fonts.body) css += `--font-body: ${cssStyles.fonts.body};`;
-        }
-        
-        css += '}';
-        
-        // Add custom component styles
-        if (cssStyles.customCSS) {
-            css += '\n' + cssStyles.customCSS;
-        }
-        
-        return css;
-    }
-
-    // ============================================================
-    // CUSTOMER STOREFRONT LOADING FUNCTIONS
-    // ============================================================
-
-    let CURRENT_MERCHANT_DATA = null;
-
-    async function loadCustomerStorefrontBySlug(slug) {
-        try {
-            const { data: profile, error } = await sb
-                .from('profiles')
-                .select('id, business_name, whatsapp_number, phone_number, selected_template_id')
-                .eq('store_slug', slug)
-                .single();
-            if (error || !profile) { showScreen('step-auth', true); return; }
-            CURRENT_MERCHANT_DATA = profile;
-            IS_CUSTOMER_MODE = true;
-            CUSTOMER_MERCHANT_ID = profile.id;
-            await loadCustomerStorefrontData(profile);
-            trackStoreView(profile.id);
-        } catch(e) { console.error('Slug storefront error:', e); showScreen('step-auth', true); }
-    }
-
-    async function loadCustomerStorefront(merchantId) {
-        try {
-            const { data: profile, error } = await sb
-                .from('profiles')
-                .select('id, business_name, whatsapp_number, phone_number, selected_template_id')
-                .eq('id', merchantId)
-                .single();
-            if (error || !profile) { showScreen('step-auth', true); return; }
-            CURRENT_MERCHANT_DATA = profile;
-            IS_CUSTOMER_MODE = true;
-            CUSTOMER_MERCHANT_ID = profile.id;
-            await loadCustomerStorefrontData(profile);
-            trackStoreView(profile.id);
-        } catch(e) { console.error('Merchant storefront error:', e); showScreen('step-auth', true); }
-    }
-
-    async function loadCustomerStorefrontData(profile) {
-        if (!profile) return;
-        showScreen('customer-storefront', true);
-
-        // Set store name
-        const name = profile.business_name || 'Welcome';
-        const nameEl = document.getElementById('customer-store-name');
-        const heroNameEl = document.getElementById('customer-hero-store-name');
-        if (nameEl) nameEl.textContent = name;
-        if (heroNameEl) heroNameEl.textContent = name;
-
-        // Start hero typewriter
-        startCustomerTypewriter(name);
-
-        // Load products
-        const { data: products } = await sb
-            .from('products')
-            .select('*')
-            .eq('merchant_id', profile.id)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false });
-
-        renderSmartStorefront(products || []);
-    }
-
-    function startCustomerTypewriter(storeName) {
-        const phrases = [`Karibu ${storeName}! 👋`, 'Browse our products 🛍️', 'Order via WhatsApp 💬'];
-        let phraseIdx = 0, charIdx = 0, deleting = false;
-        const el = document.getElementById('customer-typewriter');
-        if (!el) return;
-        function type() {
-            const phrase = phrases[phraseIdx];
-            if (!deleting) { el.textContent = phrase.slice(0, ++charIdx); if (charIdx === phrase.length) { deleting = true; setTimeout(type, 1800); return; } }
-            else { el.textContent = phrase.slice(0, --charIdx); if (charIdx === 0) { deleting = false; phraseIdx = (phraseIdx + 1) % phrases.length; } }
-            setTimeout(type, deleting ? 40 : 70);
-        }
-        type();
-    }
-
-    function scrollToProducts() {
-        document.getElementById('customer-products-section')?.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function contactMerchantWhatsApp() {
-        if (!CURRENT_MERCHANT_DATA) return;
-        const phone = (CURRENT_MERCHANT_DATA.whatsapp_number || CURRENT_MERCHANT_DATA.phone_number || '').replace(/[^0-9]/g, '');
-        if (!phone) return alert('Contact not available');
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Hi! I found your store on LinkaMarket 👋')}`, '_blank');
-    }
-    async function handleStep4Click() { 
-        const whatsapp = document.getElementById('whatsapp-input').value.trim();
-        const lipa = document.getElementById('lipa-input').value.trim();
-        
-        if (!whatsapp) {
-            alert('Please enter your WhatsApp number');
-            return;
-        }
-        
-        triggerFeedback('btn-step-4'); 
-        
-        try {
-            const { data: { user } } = await sb.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-            
-            // Collect all onboarding data
-            const shopName = localStorage.getItem('temp_shop_name');
-            const category = localStorage.getItem('temp_shop_cat');
-            const templateId = localStorage.getItem('temp_template_id');
-            
-            // Save to database
-            const { error } = await sb
-                .from('profiles')
-                .update({
-                    business_name: shopName,
-                    category: category,
-                    whatsapp_number: whatsapp,
-                    phone_number: whatsapp,
-                    lipa_number: lipa || null,
-                    selected_template_id: templateId, // SAVE TEMPLATE CHOICE
-                    onboarding_completed: true
-                })
-                .eq('id', user.id);
-            
-            if (error) throw error;
-            
-            // Clear temp storage
-            localStorage.removeItem('temp_shop_name');
-            localStorage.removeItem('temp_shop_cat');
-            localStorage.removeItem('temp_template_id');
-            
-            setTimeout(() => { 
-                history.pushState({ step: 5 }, 'Inventory', `?step=5`); 
-                showScreen('step-5', true); 
-                loadDashboard(); 
-            }, 150); 
-            
-        } catch (error) {
-            console.error('Save error:', error);
-            alert('Failed to save settings: ' + error.message);
-        }
-    }
 
     // --- DASHBOARD LOGIC (UPDATED WITH DELETE BUTTON) ---
     async function loadDashboard() {
