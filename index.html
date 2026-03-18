@@ -4003,77 +4003,14 @@
     }
     #pwa-ios-sheet.open { display: flex; }
     /* ── Paywall overlay ── */
-    #paywall-overlay {
-        display: none; position: fixed; inset: 0; z-index: 3000;
-        background: linear-gradient(160deg,#0a1628 0%,#0d2918 60%,#0a1628 100%);
-        flex-direction: column; overflow-y: auto;
-    }
-    #paywall-overlay.open { display: flex; animation: pwFadeIn 0.4s ease; }
-    @keyframes pwFadeIn { from{opacity:0;} to{opacity:1;} }
+    /* pw-feat-row kept for paywall HTML references */
+    @keyframes pwFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);} }
     @keyframes pwSlideUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
-    @keyframes pwPop     { from{opacity:0;transform:scale(0.88);} to{opacity:1;transform:scale(1);} }
-    @keyframes pwFloat   { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);} }
-    @keyframes pwShine   { 0%{left:-100%;} 100%{left:200%;} }
-    @keyframes pwGlow    {
-        0%,100%{box-shadow:0 0 30px rgba(37,208,120,0.3),0 8px 32px rgba(0,0,0,0.4);}
-        50%    {box-shadow:0 0 60px rgba(37,208,120,0.6),0 8px 32px rgba(0,0,0,0.4);}
-    }
+    @keyframes pwPop { from{opacity:0;transform:scale(0.88);} to{opacity:1;transform:scale(1);} }
     .pw-feat-row {
         display:flex;align-items:center;gap:13px;padding:13px 16px;
         background:rgba(255,255,255,0.05);border-radius:14px;
         border:1px solid rgba(255,255,255,0.08);animation:pwSlideUp 0.4s ease both;
-    }
-    .pw-cta-btn {
-        width:100%;padding:18px;background:linear-gradient(135deg,#25d078,#16a34a);
-        color:white;border:none;border-radius:18px;font-size:16px;font-weight:900;
-        cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
-        animation:pwGlow 2.5s ease-in-out infinite;transition:transform 0.15s;
-    }
-    .pw-cta-btn:active{transform:scale(0.97);}
-    .pw-cta-btn::after{
-        content:'';position:absolute;top:0;width:60%;height:100%;
-        background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
-        animation:pwShine 3s ease-in-out infinite; animation-delay:1s;
-    }
-    /* ── Payment page ── */
-    #pw-payment-page {
-        display:none;position:fixed;inset:0;z-index:3500;
-        background:linear-gradient(160deg,#070f1a 0%,#0a1f10 50%,#070f1a 100%);
-        flex-direction:column;overflow-y:auto;
-    }
-    #pw-payment-page.open{display:flex;animation:ppPageIn 0.42s cubic-bezier(0.34,1.1,0.64,1);}
-    @keyframes ppPageIn{from{opacity:0;transform:translateY(40px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
-    @keyframes ppFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-    @keyframes ppPulse{
-        0%,100%{box-shadow:0 0 0 0 rgba(37,208,120,0.5),0 8px 32px rgba(37,208,120,0.3);}
-        50%    {box-shadow:0 0 0 10px rgba(37,208,120,0),0 8px 32px rgba(37,208,120,0.5);}
-    }
-    @keyframes ppCardIn{from{opacity:0;transform:translateY(16px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-    @keyframes ppRowIn {from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:translateX(0);}}
-    .pp-plan-card{
-        border-radius:18px;padding:18px;border:2px solid rgba(255,255,255,0.08);
-        background:rgba(255,255,255,0.04);cursor:pointer;
-        transition:transform 0.18s,border-color 0.18s,background 0.18s;
-        animation:ppCardIn 0.4s ease both;
-    }
-    .pp-plan-card:active{transform:scale(0.97);}
-    .pp-plan-card.selected{border-color:#25d078;background:rgba(37,208,120,0.08);}
-    .pp-pay-btn{
-        width:100%;padding:19px;background:linear-gradient(135deg,#25d078,#16a34a);
-        color:white;border:none;border-radius:18px;font-size:17px;font-weight:900;
-        cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
-        animation:ppPulse 2.5s ease-in-out infinite;transition:transform 0.15s;
-    }
-    .pp-pay-btn:active{transform:scale(0.97);}
-    .pp-pay-btn::after{
-        content:'';position:absolute;top:0;width:50%;height:100%;
-        background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
-        animation:pwShine 3s ease-in-out infinite;animation-delay:1.5s;
-    }
-    .pp-feat-row{
-        display:flex;align-items:center;gap:13px;padding:12px 15px;
-        background:rgba(255,255,255,0.04);border-radius:13px;
-        border:1px solid rgba(255,255,255,0.07);animation:ppRowIn 0.35s ease both;
     }
 
     
@@ -4119,216 +4056,6 @@
     }
     .tc-warn {
         color: #f59e0b; font-weight: 700;
-    }
-
-    
-    /* ═══════════════════════════════════════════════
-       APP TOUR — GAME-LIKE ANIMATED GUIDE
-    ═══════════════════════════════════════════════ */
-
-    /* Spotlight overlay — transparent hole over target */
-    #tour-overlay {
-        display: none;
-        position: fixed; inset: 0; z-index: 8000;
-        pointer-events: none;
-    }
-    #tour-overlay.active { display: block; }
-
-    /* SVG mask creates the spotlight hole */
-    #tour-svg {
-        position: fixed; inset: 0;
-        width: 100%; height: 100%;
-        pointer-events: all;
-    }
-
-    /* Tour card — floats above or below spotlight */
-    #tour-card {
-        position: fixed; z-index: 8100;
-        left: 50%; transform: translateX(-50%);
-        width: calc(100% - 32px); max-width: 420px;
-        background: linear-gradient(160deg,#0a1f10 0%,#071428 100%);
-        border-radius: 24px;
-        border: 1.5px solid rgba(37,208,120,0.25);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(37,208,120,0.1);
-        padding: 22px 20px 18px;
-        pointer-events: all;
-        display: none;
-    }
-    #tour-card.visible {
-        display: block;
-        animation: tourCardIn 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
-    }
-    @keyframes tourCardIn {
-        from { opacity:0; transform: translateX(-50%) translateY(20px) scale(0.93); }
-        to   { opacity:1; transform: translateX(-50%) translateY(0)    scale(1);    }
-    }
-    @keyframes tourCardOut {
-        from { opacity:1; transform: translateX(-50%) scale(1); }
-        to   { opacity:0; transform: translateX(-50%) scale(0.9); }
-    }
-
-    /* Spotlight pulse ring */
-    #tour-pulse-ring {
-        position: fixed; z-index: 8050;
-        border-radius: 50px;
-        border: 2.5px solid #25d078;
-        pointer-events: none;
-        display: none;
-        animation: tourPulse 1.4s ease-in-out infinite;
-    }
-    @keyframes tourPulse {
-        0%   { box-shadow: 0 0 0 0   rgba(37,208,120,0.7); border-color: #25d078; }
-        50%  { box-shadow: 0 0 0 12px rgba(37,208,120,0);  border-color: #4ade80; }
-        100% { box-shadow: 0 0 0 0   rgba(37,208,120,0);   border-color: #25d078; }
-    }
-
-    /* Tap hand pointer animation */
-    #tour-hand {
-        position: fixed; z-index: 8060;
-        font-size: 32px;
-        pointer-events: none;
-        display: none;
-        animation: tourHandTap 1.2s ease-in-out infinite;
-        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
-    }
-    @keyframes tourHandTap {
-        0%,100% { transform: scale(1)    rotate(-10deg); }
-        40%     { transform: scale(0.82) rotate(-10deg); }
-        60%     { transform: scale(1.08) rotate(-10deg); }
-    }
-
-    /* XP / progress bar at top of card */
-    .tour-xp-bar {
-        height: 4px;
-        background: rgba(255,255,255,0.08);
-        border-radius: 99px;
-        margin-bottom: 16px;
-        overflow: hidden;
-    }
-    .tour-xp-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #25d078, #4ade80);
-        border-radius: 99px;
-        transition: width 0.6s cubic-bezier(0.34,1.2,0.64,1);
-        box-shadow: 0 0 8px rgba(37,208,120,0.6);
-    }
-
-    /* Step badge */
-    .tour-step-badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        background: rgba(37,208,120,0.12);
-        border: 1px solid rgba(37,208,120,0.25);
-        border-radius: 99px; padding: 3px 10px;
-        font-size: 10px; font-weight: 800; color: #25d078;
-        margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-
-    /* Icon container with particle burst */
-    .tour-icon-wrap {
-        width: 72px; height: 72px;
-        border-radius: 22px;
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 14px;
-        font-size: 36px;
-        position: relative;
-        animation: tourIconPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
-    }
-    @keyframes tourIconPop {
-        from { transform: scale(0) rotate(-20deg); opacity: 0; }
-        to   { transform: scale(1) rotate(0deg);   opacity: 1; }
-    }
-    .tour-icon-wrap::after {
-        content: '';
-        position: absolute; inset: -6px;
-        border-radius: 28px;
-        border: 2px solid rgba(255,255,255,0.1);
-        animation: tourIconRing 2s ease-in-out infinite;
-    }
-    @keyframes tourIconRing {
-        0%,100% { transform: scale(1);    opacity: 0.4; }
-        50%     { transform: scale(1.08); opacity: 0.15; }
-    }
-
-    /* Particles */
-    .tour-particle {
-        position: absolute;
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: #25d078;
-        animation: tourParticle 0.7s ease-out both;
-        pointer-events: none;
-    }
-    @keyframes tourParticle {
-        from { transform: translate(0,0) scale(1); opacity: 1; }
-        to   { opacity: 0; }
-    }
-
-    /* Next button */
-    .tour-next-btn {
-        width: 100%; padding: 16px;
-        background: linear-gradient(135deg,#25d078,#16a34a);
-        color: white; border: none; border-radius: 16px;
-        font-size: 15px; font-weight: 900; cursor: pointer;
-        font-family: inherit; margin-top: 16px;
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        box-shadow: 0 4px 20px rgba(37,208,120,0.4);
-        transition: transform 0.15s, box-shadow 0.15s;
-        position: relative; overflow: hidden;
-    }
-    .tour-next-btn:active { transform: scale(0.97); }
-    .tour-next-btn::after {
-        content: '';
-        position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-        background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
-        animation: tourBtnShine 2.5s ease-in-out infinite;
-    }
-    @keyframes tourBtnShine {
-        0%   { left: -100%; }
-        100% { left: 200%;  }
-    }
-
-    /* Skip button */
-    .tour-skip-btn {
-        background: none; border: none;
-        color: rgba(255,255,255,0.25); font-size: 11px;
-        cursor: pointer; font-family: inherit;
-        padding: 6px; margin-top: 4px; width: 100%; text-align: center;
-        transition: color 0.2s;
-    }
-    .tour-skip-btn:hover { color: rgba(255,255,255,0.5); }
-
-    /* Celebration confetti overlay */
-    #tour-confetti {
-        position: fixed; inset: 0; z-index: 8200;
-        pointer-events: none; display: none;
-    }
-    .conf-piece {
-        position: absolute; width: 8px; height: 8px;
-        border-radius: 2px;
-        animation: confFall linear both;
-    }
-    @keyframes confFall {
-        from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-        to   { transform: translateY(100vh)  rotate(720deg); opacity: 0; }
-    }
-
-    /* Achievement popup */
-    #tour-achievement {
-        position: fixed; top: 80px; left: 50%;
-        transform: translateX(-50%) translateY(-120px);
-        z-index: 8300;
-        background: linear-gradient(135deg,#f59e0b,#d97706);
-        color: white; border-radius: 99px;
-        padding: 10px 20px;
-        font-size: 13px; font-weight: 900;
-        display: flex; align-items: center; gap: 8px;
-        box-shadow: 0 8px 30px rgba(245,158,11,0.5);
-        transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
-        pointer-events: none;
-        white-space: nowrap;
-    }
-    #tour-achievement.show {
-        transform: translateX(-50%) translateY(0);
     }
 
     
@@ -4471,76 +4198,7 @@
     </style>
 </head>
 <body>
-    <!-- GLOBAL LOADING SCREEN (Fixes White Screen Issue) -->
-    <!-- ══ DEBUG PANEL — catches ALL JS errors ══ -->
-    <div id="dbg-btn" onclick="document.getElementById('dbg-panel').style.display=document.getElementById('dbg-panel').style.display==='none'?'flex':'none'" style="
-        position:fixed;bottom:80px;right:16px;z-index:99999;
-        width:48px;height:48px;border-radius:50%;
-        background:linear-gradient(135deg,#ef4444,#dc2626);
-        color:white;font-size:20px;display:flex;align-items:center;
-        justify-content:center;cursor:pointer;
-        box-shadow:0 4px 16px rgba(239,68,68,0.5);
-        border:3px solid white;font-weight:900;
-    ">🐛</div>
-
-    <div id="dbg-panel" style="
-        display:none;position:fixed;bottom:140px;right:16px;
-        z-index:99999;width:calc(100vw - 32px);max-width:420px;
-        max-height:60vh;background:#0f172a;border-radius:16px;
-        border:2px solid #ef4444;overflow:hidden;
-        box-shadow:0 8px 40px rgba(0,0,0,0.6);
-        flex-direction:column;
-    ">
-        <div style="background:#ef4444;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-            <span style="color:white;font-weight:900;font-size:13px;">🐛 Console Errors</span>
-            <div style="display:flex;gap:8px;">
-                <button onclick="document.getElementById('dbg-log').innerHTML='';_dbgCount=0;document.getElementById('dbg-badge').textContent='0'" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:700;">Clear</button>
-                <button onclick="document.getElementById('dbg-panel').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:700;">✕</button>
-            </div>
-        </div>
-        <div id="dbg-log" style="flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:11px;color:#e2e8f0;line-height:1.6;"></div>
-    </div>
-    <div id="dbg-badge" style="
-        position:fixed;bottom:120px;right:12px;z-index:99999;
-        background:#ef4444;color:white;border-radius:99px;
-        font-size:10px;font-weight:900;padding:2px 6px;
-        display:none;min-width:18px;text-align:center;
-    ">0</div>
-
-    <script>
-    // Catch ALL errors before anything else runs
-    var _dbgCount = 0;
-    function _dbgLog(type, msg, color) {
-        _dbgCount++;
-        var badge = document.getElementById('dbg-badge');
-        var log   = document.getElementById('dbg-log');
-        if (badge) { badge.style.display='block'; badge.textContent=_dbgCount; }
-        if (log) {
-            var d = document.createElement('div');
-            d.style.cssText = 'padding:6px 8px;border-radius:8px;margin-bottom:6px;border-left:3px solid '+color+';background:rgba(255,255,255,0.04)';
-            d.innerHTML = '<span style="color:'+color+';font-weight:700;">['+type+']</span> ' + 
-                          msg.toString().replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            log.appendChild(d);
-            log.scrollTop = log.scrollHeight;
-        }
-    }
-    window.onerror = function(msg, src, line, col, err) {
-        _dbgLog('ERROR', (err ? err.message : msg) + ' @ L'+line+':'+col, '#f87171');
-        return false;
-    };
-    window.onunhandledrejection = function(e) {
-        _dbgLog('PROMISE', e.reason ? (e.reason.message || e.reason) : 'Unhandled rejection', '#fb923c');
-    };
-    // Override console
-    var _origError = console.error.bind(console);
-    var _origWarn  = console.warn.bind(console);
-    var _origLog   = console.log.bind(console);
-    console.error = function() { _origError.apply(console,arguments); _dbgLog('ERR', Array.from(arguments).join(' '), '#f87171'); };
-    console.warn  = function() { _origWarn.apply(console,arguments);  _dbgLog('WARN',Array.from(arguments).join(' '), '#fbbf24'); };
-    console.log   = function() { _origLog.apply(console,arguments);   _dbgLog('LOG', Array.from(arguments).join(' '), '#34d399'); };
-    _dbgLog('INFO','Debug panel ready — watching all errors','#60a5fa');
-    </script>
-    <!-- ══ END DEBUG PANEL ══ -->
+    <!-- GLOBAL LOADING SCREEN -->
 
     <div id="global-loader">
         <div style="width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top: 4px solid #25d078; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -4694,140 +4352,6 @@
         <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1e1b4b;letter-spacing:-0.5px;">LinkaMarket</div>
     </div>
 
-    <!-- Animated chat section -->
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 20px;gap:10px;min-height:0;overflow:hidden;" id="ob1-chat-area">
-
-        <!-- Bot message 1 -->
-        <div class="ob-chat-row ob-chat-bot" style="animation-delay:0.1s;">
-            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
-            <div class="ob-chat-bubble ob-bubble-bot">
-                Habari! Mimi ni AI Bot wako wa biashara 👋<br>
-                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">LinkaMarket AI · Sasa hivi</span>
-            </div>
-        </div>
-
-        <!-- Customer message 1 -->
-        <div class="ob-chat-row ob-chat-customer" style="animation-delay:0.5s;">
-            <div class="ob-chat-bubble ob-bubble-customer">
-                Habari! Je, mna viatu vya watoto?
-            </div>
-            <div class="ob-chat-avatar ob-avatar-customer">👤</div>
-        </div>
-
-        <!-- Bot reply - typing then message -->
-        <div class="ob-chat-row ob-chat-bot" style="animation-delay:0.9s;" id="ob1-typing-row">
-            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
-            <div class="ob-chat-bubble ob-bubble-bot ob-typing-indicator" id="ob1-typing">
-                <span></span><span></span><span></span>
-            </div>
-        </div>
-        <div class="ob-chat-row ob-chat-bot ob-chat-hidden" style="animation-delay:1.8s;" id="ob1-reply-row">
-            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
-            <div class="ob-chat-bubble ob-bubble-bot">
-                Ndio! 🎉 Tuna viatu vizuri sana:<br>
-                👟 <strong>Nike Kids</strong> — Tsh 45,000<br>
-                👟 <strong>Adidas Jr</strong> — Tsh 38,000<br>
-                Unataka kupiga order? 📦
-                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">LinkaMarket AI · Sasa hivi</span>
-            </div>
-        </div>
-
-        <!-- Customer orders -->
-        <div class="ob-chat-row ob-chat-customer ob-chat-hidden" style="animation-delay:2.5s;" id="ob1-order-row">
-            <div class="ob-chat-bubble ob-bubble-customer">
-                Nipe moja ya Nike! 🛒
-            </div>
-            <div class="ob-chat-avatar ob-avatar-customer">👤</div>
-        </div>
-
-        <!-- Bot confirms -->
-        <div class="ob-chat-row ob-chat-bot ob-chat-hidden" style="animation-delay:3.1s;" id="ob1-confirm-row">
-            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
-            <div class="ob-chat-bubble ob-bubble-bot">
-                ✅ Order imepokewa! Tutakufikia hivi karibuni 🚀<br>
-                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">Bot inafanya kazi 24/7 — hata ukiwa umelala 😴</span>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Bottom white panel -->
-    <div style="
-        background:white;border-radius:32px 32px 0 0;
-        padding:24px 24px 32px;
-        box-shadow:0 -8px 40px rgba(99,102,241,0.12);
-        flex-shrink:0;
-    ">
-        <!-- Progress dots -->
-        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:18px;">
-            <div style="width:24px;height:6px;border-radius:3px;background:#6366f1;"></div>
-            <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
-            <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
-        </div>
-
-        <div style="font-size:22px;font-weight:900;color:#0f172a;line-height:1.25;margin-bottom:5px;letter-spacing:-0.5px;">
-            Duka Lako la AI<br>Linaanza Hapa 🚀
-        </div>
-        <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:18px;">
-            Weka jina la biashara na namba ya WhatsApp — Bot yako itajibu wateja kiotomatiki saa 24
-        </div>
-
-        <!-- Business name -->
-        <div style="margin-bottom:10px;">
-            <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Jina la Duka</div>
-            <div style="position:relative;">
-                <span class="material-symbols-outlined" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:17px;color:#a5b4fc;">storefront</span>
-                <input type="text" id="ob-shop-name" placeholder="Mfano: Duka la Asha Fashion"
-                    style="width:100%;padding:13px 13px 13px 40px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:14px;font-weight:600;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color 0.2s,background 0.2s;"
-                    onfocus="this.style.borderColor='#6366f1';this.style.background='#eef2ff'"
-                    onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
-            </div>
-        </div>
-
-        <!-- WhatsApp number -->
-        <div style="margin-bottom:18px;">
-            <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Namba ya WhatsApp</div>
-            <div style="display:flex;gap:8px;">
-                <select id="ob-country-code" style="padding:13px 8px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:13px;font-weight:800;font-family:inherit;outline:none;cursor:pointer;flex-shrink:0;min-width:100px;-webkit-appearance:none;">
-                    <option value="+255">🇹🇿 +255</option>
-                    <option value="+254">🇰🇪 +254</option>
-                    <option value="+256">🇺🇬 +256</option>
-                    <option value="+250">🇷🇼 +250</option>
-                    <option value="+233">🇬🇭 +233</option>
-                    <option value="+234">🇳🇬 +234</option>
-                </select>
-                <input type="tel" id="ob-whatsapp" placeholder="712 345 678"
-                    style="flex:1;padding:13px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:14px;font-weight:600;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color 0.2s,background 0.2s;"
-                    onfocus="this.style.borderColor='#6366f1';this.style.background='#eef2ff'"
-                    onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
-            </div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:5px;display:flex;align-items:center;gap:4px;">
-                <span class="material-symbols-outlined" style="font-size:11px;">info</span>
-                Tumia namba yenye umri wa miezi 2+ (salama zaidi)
-            </div>
-        </div>
-
-        <button id="ob-btn-1" onclick="obStep1Next()" style="
-            width:100%;padding:16px;
-            background:linear-gradient(135deg,#6366f1,#4f46e5);
-            color:white;border:none;border-radius:16px;
-            font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;
-            box-shadow:0 8px 24px rgba(99,102,241,0.4);
-            display:flex;align-items:center;justify-content:center;gap:10px;
-            transition:transform 0.15s,box-shadow 0.15s;
-        "
-        onmousedown="this.style.transform='scale(0.97)'"
-        onmouseup="this.style.transform='scale(1)'"
-        ontouchstart="this.style.transform='scale(0.97)'"
-        ontouchend="this.style.transform='scale(1)'">
-            <span style="font-size:17px;">✨</span>
-            Endelea — Anza Sasa
-        </button>
-        <div style="text-align:center;margin-top:8px;font-size:11px;color:#94a3b8;">
-            Siku 5 bure · Bila kadi ya benki · Bila mkataba
-        </div>
-    </div>
-</div>
     <!-- Floating feature pills — top section -->
     <div id="ob1-pills" style="
         flex:1;position:relative;
@@ -4974,9 +4498,10 @@
         </button>
 
         <div style="text-align:center;margin-top:10px;font-size:11px;color:#94a3b8;">
-            Siku 5 bure · Bila kadi ya benki · Bila mkataba
+            Siku 7 bure · Bila kadi ya benki · Bila mkataba
         </div>
     </div>
+</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════
@@ -5308,7 +4833,7 @@
                 <span class="material-symbols-outlined nav-icon">manage_accounts</span>
                 <span class="nav-label">Settings</span>
             </div>
-            <div id="nb-premium" onclick="pwOpenPaymentPage()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;flex:1;padding:8px 0 4px;position:relative;min-width:0;">
+            <div id="nb-premium" onclick="snippeOpen('annual')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;flex:1;padding:8px 0 4px;position:relative;min-width:0;">
                 <div style="width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;animation:premiumNavPulse 2.5s ease-in-out infinite;">
                     <span class="material-symbols-outlined" style="font-size:18px;color:white;">workspace_premium</span>
                 </div>
@@ -5402,31 +4927,6 @@
                 <span class="material-symbols-outlined" style="color: #cbd5e1;">chevron_right</span>
             </div>
 
-            <!-- Guide / Mwongozo Button -->
-            <div onclick="obStart()" style="
-                display:flex;align-items:center;justify-content:space-between;
-                background:linear-gradient(135deg,#f0fdf4,#dcfce7);
-                border:1.5px solid #86efac;border-radius:16px;
-                padding:15px 16px;margin-bottom:12px;cursor:pointer;
-                box-shadow:0 2px 12px rgba(37,208,120,0.1);
-                transition:transform 0.15s;
-                active:transform:scale(0.97);
-            ">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:42px;height:42px;background:linear-gradient(135deg,#25d078,#16a34a);
-                                border-radius:12px;display:flex;align-items:center;justify-content:center;
-                                box-shadow:0 4px 14px rgba(37,208,120,0.35);flex-shrink:0;">
-                        <span class="material-symbols-outlined" style="font-size:22px;color:white;">school</span>
-                    </div>
-                    <div>
-                        <div style="font-size:14px;font-weight:900;color:#15803d;">Mwongozo wa Matumizi</div>
-                        <div style="font-size:11px;color:#16a34a;margin-top:2px;font-weight:600;">
-                            Jinsi ya kutumia LinkaMarket hatua kwa hatua
-                        </div>
-                    </div>
-                </div>
-                <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">play_circle</span>
-            </div>
 
             <button class="save-profile-btn" id="btn-save-profile" onclick="saveShopProfile()">
                 <span class="material-symbols-outlined">save</span>
@@ -6347,7 +5847,6 @@
 
     // ── Hoisted constants (used throughout, defined early) ──
     const _OB_KEY = 'lm_ob_done_v1';
-    let _tourActive = false;
     let _obStep = 0;
 
     try {
@@ -6792,27 +6291,41 @@
         const { data: { user } } = await sb.auth.getUser();
         if (!user) { showScreen('step-auth', true); return; }
 
-        // 1. Fetch profile FIRST — decide screen before rendering anything
-        const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+        // 1. Fetch the user profile
+        const { data: profile, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
 
-        // 2. THE PERMANENT FIX: business_name in DB = not a new user
-        if (profile && profile.business_name) {
-            localStorage.setItem(_OB_KEY, '1');
-            document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase();
-            // Explicitly force step-1 hidden before showing dashboard
-            const ob1 = document.getElementById('step-1');
-            const ob2 = document.getElementById('step-2');
-            const ob3 = document.getElementById('step-3');
-            if (ob1) ob1.classList.add('hidden');
-            if (ob2) ob2.classList.add('hidden');
-            if (ob3) ob3.classList.add('hidden');
-            history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-            showScreen('step-5', true);
-        } else {
-            // Truly new user — no name in DB
+        if (error && error.code !== 'PGRST116') {
+            console.error("Profile fetch error", error);
+            return;
+        }
+
+        // 2. STATUS IDENTIFICATION PATTERN
+        // Priority 1: New User (No business name)
+        if (!profile || !profile.business_name) {
             showScreen('step-1', true);
             return;
         }
+
+        // Priority 2: Incomplete Setup (No connected WhatsApp Bot)
+        if (profile.bot_connection_status !== 'connected') {
+            // Prepare Step 2 (Inject the shop name if we have it)
+            const nameDisplay = document.getElementById('ob-shop-name');
+            if (nameDisplay) nameDisplay.value = profile.business_name;
+            showScreen('step-2', true);
+            return;
+        }
+
+        // Priority 3: Fully Setup -> Show Dashboard
+        // Ensure all onboarding screens are hidden to prevent overlap
+        ['step-1', 'step-2', 'step-3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+
+        localStorage.setItem(_OB_KEY, '1');
+        document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase();
+        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+        showScreen('step-5', true);
 
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item')[0]?.classList.add('active');
@@ -6936,19 +6449,7 @@
         document.querySelectorAll('.screen-wrapper').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-profile').classList.remove('hidden');
         loadBotStatus();
-        // Auto-start settings tour if onboarding not yet completed
-        setTimeout(() => {
-            try {
-                if (!localStorage.getItem(_OB_KEY) && typeof _tourRenderStep === 'function') {
-                    const card = document.getElementById('tour-card');
-                    if (card && card.classList.contains('visible')) return;
-                    _obStep = 1; _tourActive = true;
-                    document.getElementById('tour-overlay').classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                    _tourRenderStep(1);
-                }
-            } catch(e) {}
-        }, 700);
+
         const { data: { user } } = await sb.auth.getUser();
         if(!user) return;
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -8598,7 +8099,7 @@ async function botFinishConnection(user) {
     const cc         = (ccInput?.value || '+255').replace('+', '');
     const fullPhone  = rawPhone.startsWith(cc) ? rawPhone : cc + rawPhone;
 
-    // ── Step 1: Update UI immediately — don't wait for DB ──
+    // ── Step 1: Update UI immediately ──
     clearInterval(BOT_POLL);
     clearInterval(BOT_TIMER);
     BOT_CONNECTED = true;
@@ -8606,17 +8107,34 @@ async function botFinishConnection(user) {
     showBotConnected(phoneInput?.value || fullPhone || '');
     startBotStatusPoll();
 
-    // ── Step 2: Sync to Supabase in background — UI already updated ──
-    // Using .then() on the raw promise avoids any .catch() issues
-    const updatePromise = sb.from('profiles').update({
-        bot_connection_status: 'connected',
-        bot_connected_at:      new Date().toISOString(),
-        whatsapp_number:       fullPhone || undefined
-    }).eq('id', user.id);
+    // ── Step 2: Sync bot status + start trial on FIRST connection ──
+    try {
+        const { data: existing } = await sb.from('profiles')
+            .select('trial_started_at, bot_connection_status')
+            .eq('id', user.id).single();
 
-    updatePromise.then(({ error }) => {
+        const isFirstConnection = !existing?.trial_started_at;
+        const trialEnd = new Date(Date.now() + 7 * 86400000).toISOString();
+
+        const updatePayload = {
+            bot_connection_status: 'connected',
+            bot_connected_at:      new Date().toISOString(),
+            whatsapp_number:       fullPhone || undefined,
+        };
+
+        // Start 7-day trial only when bot connects for the first time
+        if (isFirstConnection) {
+            updatePayload.trial_started_at       = new Date().toISOString();
+            updatePayload.subscription_status    = 'trial';
+            updatePayload.subscription_expires_at = trialEnd;
+        }
+
+        const { error } = await sb.from('profiles').update(updatePayload).eq('id', user.id);
         if (error) console.warn('botFinishConnection DB sync:', error.message);
-    });
+        else if (isFirstConnection) showToastMsg('🎉 Siku 7 bure zimeanza! Furahia LinkaMarket.', 'success');
+    } catch(e) {
+        console.warn('botFinishConnection error:', e.message);
+    }
 }
 
 // ── Background auto-poll every 5s (fallback if user doesn't tap confirm) ─
@@ -9129,9 +8647,8 @@ if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navi
 // SUBSCRIPTION + TRIAL + PAYMENT PAGE LOGIC
 // Placed here so sb (Supabase client) is already defined above
 // ════════════════════════════════════════════════════════════════
-const SELAR_MONTHLY = 'https://selar.com/u515159529';
-const SELAR_ANNUAL  = 'https://selar.com/36567jum26';
-const TRIAL_DAYS    = 5;
+// ── Snippe payment config ──
+const TRIAL_DAYS = 7; // Trial starts when bot connects, not here
 let _ppPlan = 'monthly';
 
 async function checkSubscription() {
@@ -9141,23 +8658,14 @@ async function checkSubscription() {
         const { data: p, error: e } = await sb.from('profiles')
             .select('subscription_status,trial_started_at,subscription_expires_at')
             .eq('id', user.id).single();
-        // If columns don't exist yet → never block dashboard
+        // Columns don't exist yet or no subscription data → never block
         if (e || !p) return;
-        if (!p.subscription_status && !p.trial_started_at) return;
+        // Trial hasn't started yet (bot not connected) → don't block
+        if (!p.trial_started_at) return;
 
         const now = new Date();
 
-        // New user — set trial start
-        if (!p.trial_started_at) {
-            const end = new Date(now.getTime() + TRIAL_DAYS*86400000).toISOString();
-            await sb.from('profiles').update({
-                trial_started_at: now.toISOString(),
-                subscription_status: 'trial',
-                subscription_expires_at: end
-            }).eq('id', user.id);
-            return;
-        }
-        // Active paid subscription
+        // Active paid subscription — still valid
         if (p.subscription_status === 'active') {
             if (new Date(p.subscription_expires_at) > now) return;
         }
@@ -9165,123 +8673,43 @@ async function checkSubscription() {
         if (p.subscription_status === 'trial') {
             if (new Date(p.subscription_expires_at) > now) return;
         }
-        // Only show paywall if trial/subscription has truly expired
+        // Expired → show paywall
         const expired = p.subscription_status === 'expired'
             || (p.subscription_status === 'trial' && new Date(p.subscription_expires_at) <= now);
         if (expired) pwShow();
     } catch(err) {
-        // Never crash or block dashboard
         console.warn('checkSubscription (safe):', err.message);
     }
 }
 
-async function getTrialDaysLeft() {
-    try {
-        const { data:{ user } } = await sb.auth.getUser();
-        if (!user) return 99;
-        const { data: p } = await sb.from('profiles')
-            .select('subscription_expires_at,subscription_status').eq('id', user.id).single();
-        if (!p || p.subscription_status === 'active') return 99;
-        return Math.max(0, Math.ceil((new Date(p.subscription_expires_at) - new Date()) / 86400000));
-    } catch { return 99; }
-}
+// getTrialDaysLeft removed — trial managed by botFinishConnection
 
 function pwShow() {
-    const el = document.getElementById('paywall-overlay');
-    if (el) el.classList.add('open');
+    // Trial expired → open Snippe payment sheet directly
+    snippeOpen('annual');
 }
 function pwHide() {
-    const el = document.getElementById('paywall-overlay');
-    if (el) el.classList.remove('open');
+    // No-op: snippeClose() handles sheet closing
+    snippeClose();
 }
 
-async function pwStartTrial() {
-    try {
-        const { data:{ user } } = await sb.auth.getUser();
-        if (!user) return;
-        const { data: p } = await sb.from('profiles')
-            .select('trial_started_at,subscription_status').eq('id', user.id).single();
-        if (!p?.trial_started_at) {
-            const end = new Date(Date.now() + TRIAL_DAYS*86400000).toISOString();
-            await sb.from('profiles').update({
-                trial_started_at: new Date().toISOString(),
-                subscription_status: 'trial',
-                subscription_expires_at: end
-            }).eq('id', user.id);
-            pwHide();
-            showToastMsg('🎉 Karibu! Siku 7 zako bure zimeanza.','success');
-        } else {
-            // Trial already used — go to payment
-            pwOpenPaymentPage();
-        }
-    } catch(e) { console.warn('pwStartTrial:', e.message); }
+function pwStartTrial() {
+    // Trial now starts automatically when bot connects (botFinishConnection)
+    // If user clicks trial CTA, open payment sheet directly
+    snippeOpen('monthly');
 }
 
 async function pwCheckPayment(event) {
-    const btn = event?.target;
-    const origHtml = btn?.innerHTML;
-    if (btn) btn.innerHTML = '<span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#25d078;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span>Inaangalia Selar...</span>';
-    try {
-        const { data:{ session } } = await sb.auth.getSession();
-        if (!session) { showToastMsg('Tafadhali ingia kwanza.','warn'); return; }
-
-        // Call our Edge Function which checks Selar API
-        const res = await fetch(
-            SUPABASE_URL + '/functions/v1/check-selar-payment',
-            {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + session.access_token,
-                    'apikey': SUPABASE_KEY,
-                }
-            }
-        );
-        const result = await res.json();
-
-        if (result.activated) {
-            clearInterval(_pwPollTimer);
-            pwClosePaymentPage();
-            pwHide();
-            showToastMsg('🎉 Malipo yamepokelewa! Karibu LinkaMarket Premium.','success');
-        } else {
-            showToastMsg('❌ Malipo hayajapatikana kwa ' + (result.email||'akaunti yako') + '. Hakikisha umetumia email ile ile ya akaunti hii.','warn');
-            if (btn) btn.innerHTML = origHtml;
-        }
-    } catch(e) {
-        showToastMsg('Hitilafu: ' + e.message,'warn');
-        if (btn) btn.innerHTML = origHtml;
-    }
+    // Now handled by Snippe polling — open payment sheet
+    snippeOpen(_ppPlan);
 }
 
-async function pwOpenPaymentPage() {
-    const page = document.getElementById('pw-payment-page');
-    if (!page) return;
-    page.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    const days = await getTrialDaysLeft();
-    const badge = document.getElementById('pp-trial-badge');
-    const dEl   = document.getElementById('pp-days-left');
-    if (badge && days < 99 && days > 0) {
-        if (dEl) dEl.textContent = days;
-        badge.style.display = 'block';
-    }
-}
-
-function pwClosePaymentPage() {
-    const page = document.getElementById('pw-payment-page');
-    if (!page) return;
-    page.style.transition = 'opacity 0.25s,transform 0.25s';
-    page.style.opacity = '0';
-    page.style.transform = 'translateY(30px)';
-    setTimeout(() => {
-        page.classList.remove('open');
-        page.style.cssText = '';
-        document.body.style.overflow = '';
-    }, 260);
-}
+function pwOpenPaymentPage() { snippeOpen(_ppPlan); }
+function pwClosePaymentPage() { snippeClose(); }
 
 function ppSelectPlan(plan) {
     _ppPlan = plan;
+    // sync radio buttons on payment page
     const mCard = document.getElementById('plan-monthly');
     const aCard = document.getElementById('plan-annual');
     const mDot  = document.getElementById('radio-monthly-dot');
@@ -9295,52 +8723,23 @@ function ppSelectPlan(plan) {
         if (aBrd) aBrd.style.borderColor = 'rgba(255,255,255,0.2)';
         if (mDot) mDot.style.background = '#25d078';
         if (aDot) aDot.style.background = 'transparent';
-        if (btnTx) btnTx.textContent = 'Lipa TZS 5,000 kwa M-Pesa';
+        if (btnTx) btnTx.textContent = 'Lipa TZS 5,000';
     } else {
         aCard?.classList.add('selected'); mCard?.classList.remove('selected');
         if (aBrd) aBrd.style.borderColor = '#25d078';
         if (mBrd) mBrd.style.borderColor = 'rgba(255,255,255,0.2)';
         if (aDot) aDot.style.background = '#25d078';
         if (mDot) mDot.style.background = 'transparent';
-        if (btnTx) btnTx.textContent = 'Lipa TZS 50,000 kwa M-Pesa';
+        if (btnTx) btnTx.textContent = 'Lipa TZS 50,000';
     }
+    snippeSelectPlan(plan);
 }
 
-function ppPay() {
-    const url = _ppPlan === 'annual' ? SELAR_ANNUAL : SELAR_MONTHLY;
-    const btn  = document.getElementById('pp-pay-btn');
-    const amt  = _ppPlan === 'annual' ? '50,000' : '5,000';
-    if (!btn) { window.open(url, '_blank'); return; }
-    btn.disabled = true;
-    btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;"><span style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;"></span><span>Inafungua malipo...</span></div>';
-    setTimeout(() => {
-        window.open(url, '_blank');
-        btn.disabled = false;
-        btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;"><span class="material-symbols-outlined" style="font-size:21px;">payments</span><span id="pp-pay-btn-text">Lipa TZS '+amt+' kwa M-Pesa</span></div>';
-        _pwStartPoll();
-        showToastMsg('✅ Ukurasa wa malipo umefunguliwa! Lipa kisha rudi hapa.','success');
-    }, 1100);
-}
+// ppPay and ppPayMpesa now open the Snippe sheet
+function ppPay()      { snippeOpen(_ppPlan); }
+function ppPayMpesa() { snippeOpen(_ppPlan); }
 
-let _pwPollTimer = null;
-function _pwStartPoll() {
-    clearInterval(_pwPollTimer);
-    let n = 0;
-    _pwPollTimer = setInterval(async () => {
-        if (++n > 45) { clearInterval(_pwPollTimer); return; }
-        try {
-            const { data:{ user } } = await sb.auth.getUser();
-            if (!user) return;
-            const { data: p } = await sb.from('profiles')
-                .select('subscription_status').eq('id', user.id).single();
-            if (p?.subscription_status === 'active') {
-                clearInterval(_pwPollTimer);
-                pwClosePaymentPage(); pwHide();
-                showToastMsg('🎉 Malipo yamepokelewa! Karibu LinkaMarket Premium.','success');
-            }
-        } catch(e) {}
-    }, 8000);
-}
+let _pwPollTimer = null; // kept for legacy references
 
 
 // ── Terms & Conditions ────────────────────────────────
@@ -9369,524 +8768,14 @@ function tcClose() {
 // APP TOUR — GAME-LIKE ANIMATED GUIDE
 // Replaces old onboarding system entirely
 // ════════════════════════════════════════════════════════════
-// _OB_KEY, _obStep, _tourActive — hoisted to top of script
+// _OB_KEY, _obStep — hoisted to top of script
 let   _obTypeTimer = null;
 
 // ── Tour Steps Definition ──────────────────────────────────
-const _tourSteps = [
-
-    // ══ STEP 0 — Welcome ════════════════════════════════════
-    {
-        id: 'welcome',
-        icon: '🚀', iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
-        badge: 'Karibu!', badgeIcon: '⭐',
-        title: 'Karibu LinkaMarket!',
-        subtitle: 'Duka lako la AI linaanza sasa hivi',
-        body: 'Nitakufundisha hatua kwa hatua jinsi ya kuweka duka lako la WhatsApp la AI.\n\nKila hatua itaonyesha hasa wapi ubonyeze — kama mchezo wa simu! 🎮\n\nTuanze!',
-        target: null, xp: 0, skipable: true,
-        btnText: 'Nianze Mchezo! 🎮', btnIcon: 'sports_esports',
-        achievement: null, position: 'center',
-    },
-
-    // ══ STEP 1 — Enter Shop Name ════════════════════════════
-    {
-        id: 'shop-name',
-        icon: '🏪', iconBg: 'linear-gradient(135deg,#6366f1,#4f46e5)',
-        badge: 'Hatua 1 ya 7', badgeIcon: '🏪',
-        title: 'Weka Jina la Duka Lako',
-        subtitle: 'Wateja watakujua kwa jina hili',
-        body: 'Ona sanduku la "Jina la Duka" hapo juu 👆\n\nBonyeza ndani yake — andika jina la biashara yako.\n\nMfano: "Duka la Asha" au "Mama John Fashion"',
-        target: 'prof-shop-name', targetPad: 8,
-        xp: 14, skipable: true,
-        btnText: 'Nimeweka Jina →', btnIcon: 'storefront',
-        achievement: null, position: 'bottom',
-        handOffset: { x: 0, y: 45 },
-        extraInfo: '💡 Jina hili litaonekana kwa wateja wako kwenye WhatsApp na kwenye link ya duka lako.',
-    },
-
-    // ══ STEP 2 — Enter WhatsApp Number ══════════════════════
-    {
-        id: 'whatsapp-number',
-        icon: '📱', iconBg: 'linear-gradient(135deg,#25d078,#16a34a)',
-        badge: 'Hatua 2 ya 7', badgeIcon: '📱',
-        title: 'Weka Namba ya WhatsApp',
-        subtitle: 'Orders za wateja zitakuja hapa',
-        body: 'Bonyeza kwenye namba ya simu hapo 👆\n\nWeka namba yako ya WhatsApp inayotumika kwa biashara.\n\nMfano: 0712345678',
-        target: 'prof-phone-wrap', targetPad: 8,
-        xp: 28, skipable: true,
-        btnText: 'Nimeweka Namba →', btnIcon: 'phone',
-        achievement: '🏪 Jina Limewekwa!', position: 'bottom',
-        handOffset: { x: 0, y: 45 },
-        extraInfo: '⚠️ Tumia namba yenye umri wa miezi 2 au zaidi. Namba mpya zinaweza kubaniwa na WhatsApp.',
-    },
-
-    // ══ STEP 3 — Save Profile ════════════════════════════════
-    {
-        id: 'save-profile',
-        icon: '💾', iconBg: 'linear-gradient(135deg,#0ea5e9,#0284c7)',
-        badge: 'Hatua 3 ya 7', badgeIcon: '💾',
-        title: 'Hifadhi Mabadiliko Yako',
-        subtitle: 'Bonyeza Save kabla hatujaendelea',
-        body: 'Umeweka jina na namba — sasa hifadhi! 👆\n\nBonyeza kitufe cha "Save Changes" hapo juu.',
-        target: 'btn-save-profile', targetPad: 8,
-        xp: 42, skipable: true,
-        btnText: 'Nimehifadhi →', btnIcon: 'save',
-        achievement: '📱 Namba Imewekwa!', position: 'top',
-        handOffset: { x: 0, y: -50 },
-        extraInfo: '💡 Kama hujahifadhi, mabadiliko yako yatapotea ukitoka kwenye ukurasa huu.',
-    },
-
-    // ══ STEP 4 — Get Bot Code ════════════════════════════════
-    {
-        id: 'get-code',
-        icon: '🤖', iconBg: 'linear-gradient(135deg,#075e54,#128c7e)',
-        badge: 'Hatua 4 ya 7', badgeIcon: '🤖',
-        title: 'Pata Code ya Bot',
-        subtitle: 'Code itaunganisha WhatsApp na AI',
-        body: 'Shuka kidogo chini ya ukurasa huu 👆\n\nBonyeza kitufe cha kijani: "Pata Code ya WhatsApp Bot"\n\nCode ya tarakimu 8 itaonekana kwenye skrini.',
-        target: 'btn-get-bot-code', targetPad: 10,
-        xp: 56, skipable: true,
-        btnText: 'Bonyeza Pata Code →', btnIcon: 'phonelink_ring',
-        achievement: '💾 Imehifadhiwa!', position: 'top',
-        handOffset: { x: 0, y: -55 },
-        extraInfo: '💡 Code itaisha kwa sekunde 60. Kama itaisha kabla haujaitumia — bonyeza tena "Pata Code".',
-    },
-
-    // ══ STEP 5 — Enter Code in WhatsApp ════════════════════
-    {
-        id: 'enter-code',
-        icon: '📲', iconBg: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
-        badge: 'Hatua 5 ya 7', badgeIcon: '📲',
-        title: 'Ingiza Code kwenye WhatsApp',
-        subtitle: 'Fuata hatua hizi kwenye simu yako',
-        body: 'Code iko skrini — sasa fuata hatua hizi:\n\n1️⃣ Fungua WhatsApp kwenye simu yako\n2️⃣ Gonga ⋮ (dots tatu) → Settings\n3️⃣ Gonga "Linked Devices"\n4️⃣ Gonga "Link a Device"\n5️⃣ Chagua "Link with phone number"\n6️⃣ Ingiza code ile uliyoona',
-        target: 'bot-code-view', targetPad: 12,
-        xp: 70, skipable: false,
-        btnText: 'Nimeingiza Code →', btnIcon: 'check_circle',
-        achievement: '🔑 Code Imepatikana!', position: 'top',
-        handOffset: null,
-        extraInfo: '⏳ Baada ya kuingiza code — subiri kidogo. WhatsApp itatuma notification ya "New device linked". Hiyo inamaanisha bot iko live!',
-    },
-
-    // ══ STEP 6 — Wait / Retry ════════════════════════════════
-    {
-        id: 'wait-confirm',
-        icon: '⏳', iconBg: 'linear-gradient(135deg,#f59e0b,#d97706)',
-        badge: 'Hatua 6 ya 7', badgeIcon: '⏳',
-        title: 'Subiri Uthibitisho',
-        subtitle: 'WhatsApp inatuma notification',
-        body: 'Ukiona "Bot Inafanya Kazi! ✅" — umefanikiwa! 🎉\n\nUkiona bado spinner inazunguka — subiri sekunde 30 zaidi.\n\nCode haikuja? Bonyeza "Omba code mpya" halafu rudia hatua za WhatsApp tena.',
-        target: 'btn-confirm-connect', targetPad: 10,
-        xp: 85, skipable: false,
-        btnText: 'Bot Imeunganishwa! ✅', btnIcon: 'verified',
-        achievement: '📲 Code Imeingizwa!', position: 'top',
-        handOffset: { x: 0, y: -55 },
-        extraInfo: '🔄 Kama code ilisha (sekunde 60) kabla haujaitumia — bonyeza "Omba code mpya" chini ya bot section, kisha rudia hatua za WhatsApp tena.',
-    },
-
-    // ══ STEP 7 — Done! ═══════════════════════════════════════
-    {
-        id: 'done',
-        icon: '🎉', iconBg: 'linear-gradient(135deg,#f59e0b,#ef4444)',
-        badge: 'Umefanikiwa! 🏆', badgeIcon: '🏆',
-        title: 'Hongera! Duka Lako Liko Hai!',
-        subtitle: 'Bot yako ya AI inafanya kazi saa 24',
-        body: 'Umeweka msingi kamili wa biashara ya kisasa! 🙌\n\nBot yako sasa itajibu wateja kiotomatiki — hata ukilala usiku. 😴\n\nTutaonana upande wa pesa! 💰🚀',
-        target: null, xp: 100, skipable: false,
-        btnText: 'Anza Kufanya Biashara! 💰', btnIcon: 'rocket_launch',
-        achievement: '🤖 Bot Iko Live!', position: 'center',
-    },
-];
-
-// ── Core Tour Functions ────────────────────────────────────
-function obStart() {
-    _obStep    = 0;
-    _tourActive = true;
-    document.getElementById('tour-overlay').classList.add('active');
-    document.body.style.overflow = 'hidden';
-    _tourRenderStep(0);
-}
-
-function obClose() {
-    localStorage.setItem(_OB_KEY, '1');
-    _tourActive = false;
-    clearTimeout(_obTypeTimer);
-    _tourHideAll();
-    document.body.style.overflow = '';
-}
-
-function obNext() {
-    clearTimeout(_obTypeTimer);
-    if (_obStep >= _tourSteps.length - 1) {
-        _tourShowConfetti();
-        setTimeout(() => obClose(), 2200);
-        return;
-    }
-    const prev = _tourSteps[_obStep];
-    _obStep++;
-    // Show achievement if defined on NEXT step
-    if (_tourSteps[_obStep].achievement) {
-        _tourShowAchievement(_tourSteps[_obStep].achievement);
-    }
-    _tourRenderStep(_obStep);
-}
-
-function obGoToAction() {
-    const step = _tourSteps[_obStep];
-    // Settings-related steps
-    if (['shop-name','whatsapp-number','save-profile','get-code','enter-code','wait-confirm'].includes(step.id)) {
-        // Stay on settings page — just go to next step
-        // First scroll to bot section if needed
-        if (['get-code','enter-code','wait-confirm'].includes(step.id)) {
-            const botEl = document.getElementById('bot-section');
-            if (botEl) botEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        setTimeout(() => obNext(), 400);
-    } else if (step.id === 'add-product') {
-        obClose(); setTimeout(() => goToAddProduct(), 350);
-    } else if (step.id === 'messages') {
-        obClose(); setTimeout(() => nbGo('chats'), 350);
-    } else {
-        obNext();
-    }
-}
-
-// ── Render a single step ───────────────────────────────────
-function _tourRenderStep(idx) {
-    const step    = _tourSteps[idx];
-    const card    = document.getElementById('tour-card');
-    const content = document.getElementById('tour-content');
-    const xpFill  = document.getElementById('tour-xp-fill');
-    if (!card || !content) return;
-
-    // Hide card while transitioning
-    card.classList.remove('visible');
-    _tourHideSpotlight();
-
-    setTimeout(() => {
-        // Update XP bar
-        if (xpFill) xpFill.style.width = step.xp + '%';
-
-        // Spotlight target element
-        if (step.target) {
-            _tourSpotlight(step.target, step.targetPad || 10, step.handOffset);
-        }
-
-        // Position card
-        _tourPositionCard(step);
-
-        // Build card content
-        const isLast = idx === _tourSteps.length - 1;
-        const btnFn  = step.target ? 'obGoToAction()' : 'obNext()';
-
-        content.innerHTML = `
-            <div style="text-align:center;margin-bottom:16px;">
-                <div style="display:inline-flex;align-items:center;gap:5px;"
-                     class="tour-step-badge">
-                    <span>${step.badgeIcon}</span>
-                    <span>${step.badge}</span>
-                </div>
-                <div class="tour-icon-wrap" style="background:${step.iconBg};
-                     box-shadow:0 8px 28px rgba(0,0,0,0.35);">
-                    ${step.icon}
-                </div>
-                <div style="font-size:20px;font-weight:900;color:white;
-                            line-height:1.25;margin-bottom:5px;">
-                    ${step.title}
-                </div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:600;">
-                    ${step.subtitle}
-                </div>
-            </div>
-            <div id="tour-typewriter"
-                 style="font-size:13px;color:rgba(255,255,255,0.65);
-                        line-height:1.8;background:rgba(255,255,255,0.04);
-                        border-radius:14px;padding:14px 16px;
-                        border:1px solid rgba(255,255,255,0.07);
-                        min-height:72px;margin-bottom:14px;">
-            </div>
-            ${step.target ? `
-            <div style="background:rgba(37,208,120,0.08);
-                        border:1.5px dashed rgba(37,208,120,0.4);
-                        border-radius:12px;padding:9px 14px;margin-bottom:10px;
-                        display:flex;align-items:center;gap:8px;
-                        animation:tourCardIn 0.4s ease 0.3s both;">
-                <span style="font-size:20px;animation:tourHandTap 1.2s ease-in-out infinite;">👆</span>
-                <span style="font-size:12px;color:#4ade80;font-weight:700;">
-                    Imeangaziwa hapo — bonyeza huko!
-                </span>
-            </div>` : ''}
-            ${step.extraInfo ? `
-            <div style="background:rgba(245,158,11,0.08);
-                        border:1.5px solid rgba(245,158,11,0.25);
-                        border-radius:12px;padding:10px 14px;margin-bottom:10px;
-                        display:flex;align-items:flex-start;gap:8px;
-                        animation:tourCardIn 0.4s ease 0.4s both;">
-                <span style="font-size:16px;flex-shrink:0;margin-top:1px;">💡</span>
-                <span style="font-size:11px;color:rgba(245,158,11,0.9);font-weight:600;line-height:1.6;">
-                    ${step.extraInfo}
-                </span>
-            </div>` : ''}
-            <button class="tour-next-btn" onclick="${btnFn}">
-                <span class="material-symbols-outlined" style="font-size:20px;">${step.btnIcon}</span>
-                <span>${step.btnText}</span>
-            </button>
-            ${step.skipable ? `
-            <div style="text-align:center;">
-                <button class="tour-skip-btn" onclick="obClose()">
-                    Ruka mwongozo
-                </button>
-            </div>` : ''}
-        `;
-
-        // Show card
-        card.classList.add('visible');
-
-        // Typewriter
-        _tourTypeWriter(step.body, 'tour-typewriter');
-
-        // Particle burst on icon
-        _tourBurstParticles();
-
-    }, 220);
-}
-
-// ── Spotlight a UI element ─────────────────────────────────
-function _tourSpotlight(targetId, pad, handOffset) {
-    const el   = document.getElementById(targetId);
-    const ring = document.getElementById('tour-pulse-ring');
-    const hand = document.getElementById('tour-hand');
-    const hole = document.getElementById('tour-hole');
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-    const x = rect.left   - pad;
-    const y = rect.top    - pad;
-    const w = rect.width  + pad * 2;
-    const h = rect.height + pad * 2;
-
-    // SVG mask hole — creates the transparent spotlight
-    if (hole) {
-        hole.setAttribute('x', x);
-        hole.setAttribute('y', y);
-        hole.setAttribute('width', w);
-        hole.setAttribute('height', h);
-        hole.setAttribute('rx', Math.min(20, h/2));
-    }
-
-    // Pulse ring
-    if (ring) {
-        ring.style.display = 'block';
-        ring.style.left   = x + 'px';
-        ring.style.top    = y + 'px';
-        ring.style.width  = w + 'px';
-        ring.style.height = h + 'px';
-        ring.style.borderRadius = Math.min(20, h/2) + 'px';
-    }
-
-    // Tap hand — positioned near element
-    if (hand && handOffset) {
-        hand.style.display = 'block';
-        hand.style.left = (rect.left + rect.width/2 + handOffset.x) + 'px';
-        hand.style.top  = (rect.top  + rect.height/2 + handOffset.y) + 'px';
-    }
-}
-
-function _tourHideSpotlight() {
-    const ring = document.getElementById('tour-pulse-ring');
-    const hand = document.getElementById('tour-hand');
-    const hole = document.getElementById('tour-hole');
-    if (ring) ring.style.display = 'none';
-    if (hand) hand.style.display = 'none';
-    if (hole) { hole.setAttribute('width','0'); hole.setAttribute('height','0'); }
-}
-
-function _tourHideAll() {
-    const overlay = document.getElementById('tour-overlay');
-    const card    = document.getElementById('tour-card');
-    const conf    = document.getElementById('tour-confetti');
-    if (overlay) overlay.classList.remove('active');
-    if (card)    { card.classList.remove('visible'); card.style.animation = 'tourCardOut 0.3s ease both'; setTimeout(()=>{card.style.animation='';},350); }
-    if (conf)    conf.style.display = 'none';
-    _tourHideSpotlight();
-}
-
-// ── Position card above or below spotlight ─────────────────
-function _tourPositionCard(step) {
-    const card = document.getElementById('tour-card');
-    if (!card) return;
-
-    if (step.position === 'center' || !step.target) {
-        card.style.top    = '50%';
-        card.style.bottom = 'auto';
-        card.style.maxHeight = '85vh';
-        card.style.overflowY = 'auto';
-        card.style.transform = 'translate(-50%,-50%)';
-        return;
-    }
-
-    const el = document.getElementById(step.target);
-    if (!el) { card.style.top='50%'; card.style.transform='translate(-50%,-50%)'; return; }
-
-    const rect = el.getBoundingClientRect();
-    const pad  = (step.targetPad || 10);
-    card.style.maxHeight = '70vh';
-    card.style.overflowY = 'auto';
-
-    // Explicit position override from step definition
-    if (step.position === 'bottom') {
-        // Card below the element
-        const below = rect.bottom + pad + 12;
-        if (below + 300 < window.innerHeight) {
-            card.style.top    = below + 'px';
-            card.style.bottom = 'auto';
-            card.style.transform = 'translateX(-50%)';
-        } else {
-            card.style.top    = '10px';
-            card.style.bottom = 'auto';
-            card.style.transform = 'translateX(-50%)';
-        }
-        return;
-    }
-
-    const spaceAbove = rect.top - pad;
-    if (spaceAbove > 280) {
-        card.style.bottom = (window.innerHeight - rect.top + pad + 12) + 'px';
-        card.style.top    = 'auto';
-        card.style.transform = 'translateX(-50%)';
-    } else {
-        card.style.top    = '10px';
-        card.style.bottom = 'auto';
-        card.style.transform = 'translateX(-50%)';
-    }
-}
-
-// ── Typewriter ──────────────────────────────────────────────
-function _tourTypeWriter(text, elId) {
-    clearTimeout(_obTypeTimer);
-    const el = document.getElementById(elId);
-    if (!el) return;
-    const allChars = [];
-    text.split('\n').forEach((line, li, arr) => {
-        for (const c of line) allChars.push({ c, br: false });
-        if (li < arr.length - 1) allChars.push({ c: '', br: true });
-    });
-    let i = 0; let html = '';
-    function tick() {
-        if (i >= allChars.length) { el.innerHTML = html; return; }
-        const item = allChars[i++];
-        html += item.br ? '<br>' : (item.c==='<'?'&lt;':item.c==='&'?'&amp;':item.c);
-        el.innerHTML = html + '<span style="opacity:0.5;">▌</span>';
-        _obTypeTimer = setTimeout(tick, item.br ? 110 : (Math.random()>0.88 ? 50 : 18));
-    }
-    tick();
-}
-
-// ── Particle burst on step icon ────────────────────────────
-function _tourBurstParticles() {
-    const wrap = document.querySelector('.tour-icon-wrap');
-    if (!wrap) return;
-    const colors = ['#25d078','#4ade80','#f59e0b','#60a5fa','#a78bfa','#f472b6'];
-    for (let i = 0; i < 10; i++) {
-        const p = document.createElement('div');
-        p.className = 'tour-particle';
-        p.style.background = colors[i % colors.length];
-        const angle = (i / 10) * 360;
-        const dist  = 40 + Math.random() * 25;
-        const tx = Math.cos(angle * Math.PI/180) * dist;
-        const ty = Math.sin(angle * Math.PI/180) * dist;
-        p.style.top  = '50%'; p.style.left = '50%';
-        p.style.animationDuration = (0.5 + Math.random() * 0.3) + 's';
-        p.style.animationDelay    = (Math.random() * 0.1) + 's';
-        p.style.setProperty('--tx', tx + 'px');
-        p.style.setProperty('--ty', ty + 'px');
-        p.style.transform = `translate(-50%,-50%)`;
-        p.style.animation = `none`;
-        wrap.appendChild(p);
-        // Animate manually
-        requestAnimationFrame(() => {
-            p.style.transition = `transform ${0.5+Math.random()*0.3}s ease-out, opacity ${0.5+Math.random()*0.2}s ease-out`;
-            p.style.transform  = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`;
-            p.style.opacity    = '0';
-        });
-        setTimeout(() => p.remove(), 900);
-    }
-}
-
-// ── Achievement popup ──────────────────────────────────────
-function _tourShowAchievement(text) {
-    const el = document.getElementById('tour-achievement');
-    const tx = document.getElementById('tour-achievement-text');
-    if (!el) return;
-    if (tx) tx.textContent = text;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-// ── Confetti celebration ────────────────────────────────────
-function _tourShowConfetti() {
-    const conf = document.getElementById('tour-confetti');
-    if (!conf) return;
-    conf.style.display = 'block';
-    conf.innerHTML = '';
-    const colors = ['#25d078','#4ade80','#f59e0b','#60a5fa','#f472b6','#a78bfa','#fb923c'];
-    for (let i = 0; i < 60; i++) {
-        const p = document.createElement('div');
-        p.className = 'conf-piece';
-        p.style.background = colors[i % colors.length];
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-        p.style.animationDelay    = (Math.random() * 0.8) + 's';
-        p.style.width  = (6 + Math.random() * 8) + 'px';
-        p.style.height = (6 + Math.random() * 8) + 'px';
-        p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        conf.appendChild(p);
-    }
-    // Show final achievement
-    _tourShowAchievement('🎉 Umefanikiwa! Karibu LinkaMarket!');
-    setTimeout(() => { conf.style.display='none'; conf.innerHTML=''; }, 3500);
-}
-
-// ── Called from loadDashboard ──────────────────────────────
-function checkShouldShowOnboarding(profile, products) {
-    // Logic moved into loadDashboard for single source of truth
-}
 
 
 
-// ── M-Pesa Payment Modal ──────────────────────────────────
-function ppPayMpesa() {
-    // Update amount display based on selected plan
-    const amountEl = document.getElementById('mpesa-amount-display');
-    const labelEl  = document.getElementById('mpesa-plan-label');
-    if (amountEl) amountEl.textContent = _ppPlan === 'annual' ? 'TZS 50,000' : 'TZS 5,000';
-    if (labelEl)  labelEl.textContent  = _ppPlan === 'annual' ? 'Mpango wa Mwaka Mzima' : 'Mpango wa Kila Mwezi';
-
-    const ov = document.getElementById('mpesa-overlay');
-    if (ov) { ov.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-}
-
-function mpesaClose() {
-    const ov = document.getElementById('mpesa-overlay');
-    const sh = document.getElementById('mpesa-sheet');
-    if (!ov) return;
-    if (sh) { sh.style.transition = 'transform 0.28s ease'; sh.style.transform = 'translateY(100%)'; }
-    ov.style.opacity = '0'; ov.style.transition = 'opacity 0.28s';
-    setTimeout(() => {
-        ov.style.display = 'none';
-        ov.style.opacity = ''; ov.style.transition = '';
-        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
-        document.body.style.overflow = '';
-    }, 300);
-}
-
-function mpesaCopyNumber() {
-    navigator.clipboard.writeText('+255696102700').then(() => {
-        showToastMsg('✅ Namba imenakiliwa! Weka kwenye M-Pesa', 'success');
-    }).catch(() => {
-        showToastMsg('Namba: +255 696 102 700', 'info');
-    });
-}
+// mpesaClose/ppPayMpesa replaced by snippeClose/snippeOpen
 
 
 // ════════════════════════════════════════════════════════════
@@ -9923,36 +8812,32 @@ async function obStep1Next() {
     const raw  = (document.getElementById('ob-whatsapp')?.value || '').trim().replace(/^0+/, '');
     const full = code + raw;
 
-    if (!name) {
-        showToastMsg('Tafadhali weka jina la duka lako 🏪', 'warn');
-        document.getElementById('ob-shop-name')?.focus(); return;
-    }
-    if (!raw || raw.length < 7) {
-        showToastMsg('Tafadhali weka namba ya WhatsApp 📱', 'warn');
-        document.getElementById('ob-whatsapp')?.focus(); return;
+    if (!name || raw.length < 7) {
+        showToastMsg('Weka Jina na Namba ya WhatsApp 📱', 'warn');
+        return;
     }
 
     const btn = document.getElementById('ob-btn-1');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;flex-shrink:0;"></span>&nbsp;Inahifadhi...';
+        btn.innerHTML = 'Inahifadhi...';
     }
+
     try {
         const { data:{ user } } = await sb.auth.getUser();
-        if (!user) throw new Error('Tafadhali ingia kwanza');
+        // Update DB so we know they passed Step 1
         await sb.from('profiles').update({
             business_name:   name,
             whatsapp_number: full,
             phone_number:    full,
         }).eq('id', user.id);
-        localStorage.setItem('temp_shop_name', name);
+
         showScreen('step-2', true);
     } catch(e) {
         showToastMsg('Hitilafu: ' + e.message, 'warn');
-    } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<span style="font-size:18px;">✨</span> Endelea — Anza Sasa';
+            btn.innerHTML = 'Endelea — Anza Sasa';
         }
     }
 }
@@ -10067,15 +8952,18 @@ async function ob2ConfirmConnected() {
 }
 
 function ob2ShowConnected() {
-    clearInterval(_ob2PollTimer); clearInterval(_ob2CodeTimer);
-    if (typeof _tourShowConfetti === 'function') _tourShowConfetti();
+    clearInterval(_ob2PollTimer);
+    clearInterval(_ob2CodeTimer);
+    // Explicitly hide previous steps
+    const s2 = document.getElementById('step-2');
+    if (s2) s2.classList.add('hidden');
     showScreen('step-3', true);
     showToastMsg('🎉 Bot imeunganishwa! Karibu LinkaMarket!', 'success');
 }
 
 function ob3GoToDashboard() {
     localStorage.setItem(_OB_KEY, '1');
-    showScreen('step-5', true);
+    // Final check/load to show Dashboard
     loadDashboard();
 }
 
@@ -10400,502 +9288,499 @@ function scrollToProducts() {
   </div>
 </div>
 
-<!-- ═══════════ PAYWALL SCREEN ═══════════ -->
-<div id="paywall-overlay">
-  <div style="max-width:480px;width:100%;margin:0 auto;padding:32px 20px 56px;display:flex;flex-direction:column;position:relative;">
-    <div style="position:fixed;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(37,208,120,0.13),transparent 70%);pointer-events:none;"></div>
-    <div style="position:fixed;bottom:-60px;right:-60px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent 70%);pointer-events:none;"></div>
-    <!-- Logo -->
-    <div style="text-align:center;margin-bottom:26px;animation:pwSlideUp 0.4s ease;">
-      <div style="font-size:26px;font-weight:900;color:white;letter-spacing:-0.5px;margin-bottom:10px;">LINKA<span style="color:#25d078;">MARKET</span></div>
-      <div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0f172a;border-radius:99px;padding:5px 14px;font-size:12px;font-weight:900;">
-        <span class="material-symbols-outlined" style="font-size:14px;">star</span>Siku 7 Bure — Bila Kadi ya Benki
-      </div>
-    </div>
-    <!-- Hero -->
-    <div style="text-align:center;margin-bottom:22px;animation:pwFloat 3s ease-in-out infinite;">
-      <div style="width:88px;height:88px;border-radius:28px;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 50px rgba(37,208,120,0.4);">
-        <span class="material-symbols-outlined" style="font-size:44px;color:white;">storefront</span>
-      </div>
-    </div>
-    <!-- Headline -->
-    <div style="text-align:center;margin-bottom:26px;animation:pwSlideUp 0.4s ease 0.1s both;">
-      <div style="font-size:25px;font-weight:900;color:white;line-height:1.25;margin-bottom:10px;">Duka Lako Linafanya Kazi<br><span style="color:#25d078;">Hata Ukilala 😴</span></div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;max-width:300px;margin:0 auto;">Bot yako ya WhatsApp inajibu wateja, inaonyesha bei, na inachukua maagizo — <strong style="color:rgba(255,255,255,0.8);">bila wewe kuwepo</strong></div>
-    </div>
-    <!-- Features -->
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:26px;">
-      <div class="pw-feat-row" style="animation-delay:0.15s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(37,208,120,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bot ya WhatsApp 24/7</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Inajibu wateja kiotomatiki — usiku na mchana</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
-      <div class="pw-feat-row" style="animation-delay:0.2s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛒</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Duka la Bidhaa Bila Kikomo</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Ongeza bidhaa nyingi unavyotaka na picha</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
-      <div class="pw-feat-row" style="animation-delay:0.25s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔗</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Link ya Duka Lako</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Shiriki na wateja — wanunue moja kwa moja</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
-      <div class="pw-feat-row" style="animation-delay:0.3s;"><div style="width:40px;height:40px;border-radius:12px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📊</div><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Takwimu za Mauzo</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Ona wateja, maagizo, na mauzo yako yote</div></div><span class="material-symbols-outlined" style="font-size:16px;color:#25d078;flex-shrink:0;">check_circle</span></div>
-    </div>
-    <!-- Price -->
-    <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(37,208,120,0.3);border-radius:20px;padding:20px;margin-bottom:20px;animation:pwPop 0.4s ease 0.3s both;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div><div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Baada ya siku 7 bure</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:32px;font-weight:900;color:white;">5,000</span><span style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:700;">TZS / mwezi</span></div></div>
-        <div style="text-align:center;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px;">Sawa na</div><div style="font-size:14px;font-weight:900;color:#25d078;">~167 TZS</div><div style="font-size:10px;color:rgba(255,255,255,0.3);">kwa siku</div></div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <div style="flex:1;background:rgba(37,208,120,0.1);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(37,208,120,0.2);"><div style="font-size:11px;font-weight:800;color:#25d078;">✅ Siku 7 Bure</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">Hakuna malipo sasa</div></div>
-        <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.07);"><div style="font-size:11px;font-weight:800;color:white;">❌ Bila Mkataba</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">Acha wakati wowote</div></div>
-      </div>
-    </div>
-    <!-- CTA -->
-    <button class="pw-cta-btn" onclick="pwStartTrial()">
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;"><span class="material-symbols-outlined" style="font-size:22px;">rocket_launch</span><span>Anza Siku 7 Bure — Bila Malipo</span></div>
-    </button>
-    <div style="text-align:center;margin-top:10px;font-size:11px;color:rgba(255,255,255,0.28);">Hakuna kadi ya benki · Hakuna mkataba · Acha lini unataka</div>
-    <div style="text-align:center;margin-top:18px;">
-      <button onclick="pwCheckPayment(event)" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;">Tayari nimelipa — angalia hali yangu</button>
-    </div>
-    <div style="text-align:center;margin-top:14px;">
-      <button onclick="tcOpen()" style="background:none;border:none;color:rgba(255,255,255,0.22);font-size:11px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;">
-        <span class="material-symbols-outlined" style="font-size:13px;">gavel</span>
-        Masharti ya Huduma &amp; Sera ya Faragha
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ PAYMENT PAGE ═══════════ -->
-<div id="pw-payment-page">
-  <div style="position:fixed;top:-100px;right:-100px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(37,208,120,0.1),transparent 70%);pointer-events:none;"></div>
-  <div style="position:fixed;bottom:-80px;left:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.08),transparent 70%);pointer-events:none;"></div>
-  <div style="max-width:480px;width:100%;margin:0 auto;padding:0 20px 64px;display:flex;flex-direction:column;">
-    <!-- Header -->
-    <div style="display:flex;align-items:center;gap:14px;padding:20px 0 24px;">
-      <button onclick="pwClosePaymentPage()" style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-        <span class="material-symbols-outlined" style="font-size:20px;color:rgba(255,255,255,0.65);">arrow_back</span>
-      </button>
-      <div style="flex:1;"><div style="font-size:18px;font-weight:900;color:white;">Pata Premium</div><div style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:1px;">Fungua nguvu zote za LinkaMarket</div></div>
-      <div id="pp-trial-badge" style="display:none;background:rgba(37,208,120,0.13);border:1px solid rgba(37,208,120,0.3);border-radius:99px;padding:5px 11px;font-size:11px;font-weight:800;color:#25d078;flex-shrink:0;"><span id="pp-days-left">7</span> siku</div>
-    </div>
-    <!-- Hero -->
-    <div style="text-align:center;margin-bottom:26px;animation:ppFloat 3.5s ease-in-out infinite;">
-      <div style="width:94px;height:94px;border-radius:30px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 60px rgba(245,158,11,0.4);">
-        <span class="material-symbols-outlined" style="font-size:50px;color:white;">workspace_premium</span>
-      </div>
-      <div style="font-size:23px;font-weight:900;color:white;line-height:1.25;margin-bottom:8px;">Biashara Yako,<br><span style="color:#f59e0b;">Nguvu Kamili</span> 🚀</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.42);max-width:280px;margin:0 auto;line-height:1.6;">Bot ya AI, duka kamili, takwimu — yote kwa bei ya chai moja kwa siku</div>
-    </div>
-    <!-- Plans -->
-    <div style="margin-bottom:20px;">
-      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:11px;">Chagua Mpango</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="pp-plan-card selected" id="plan-monthly" onclick="ppSelectPlan('monthly')" style="animation-delay:0.05s;">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div id="radio-monthly" style="width:20px;height:20px;border-radius:50%;border:2px solid #25d078;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <div id="radio-monthly-dot" style="width:10px;height:10px;border-radius:50%;background:#25d078;"></div>
-              </div>
-              <div><div style="font-size:14px;font-weight:800;color:white;">Kila Mwezi</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px;">Acha lini unataka</div></div>
-            </div>
-            <div style="text-align:right;"><div style="font-size:20px;font-weight:900;color:white;">5,000 <span style="font-size:11px;color:rgba(255,255,255,0.38);">TZS</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);">/ mwezi</div></div>
-          </div>
-        </div>
-        <div class="pp-plan-card" id="plan-annual" onclick="ppSelectPlan('annual')" style="animation-delay:0.1s;position:relative;overflow:hidden;">
-          <div style="position:absolute;top:11px;right:-1px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:9px;font-weight:900;padding:3px 10px 3px 12px;border-radius:99px 0 0 99px;letter-spacing:0.3px;">BORA ZAIDI</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div id="radio-annual" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <div id="radio-annual-dot" style="width:10px;height:10px;border-radius:50%;background:transparent;"></div>
-              </div>
-              <div><div style="font-size:14px;font-weight:800;color:white;">Mwaka Mzima</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:2px;">Okoa miezi 2 bure</div></div>
-            </div>
-            <div style="text-align:right;"><div style="font-size:20px;font-weight:900;color:#f59e0b;">50,000 <span style="font-size:11px;color:rgba(255,255,255,0.38);">TZS</span></div><div style="font-size:10px;color:rgba(255,255,255,0.28);text-decoration:line-through;">60,000 TZS</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Features -->
-    <div style="margin-bottom:22px;">
-      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:11px;">Unachopata</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="pp-feat-row" style="animation-delay:0.1s;"><span style="font-size:19px;">🤖</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bot ya WhatsApp ya AI</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Inajibu wateja 24/7 kwa Kiswahili</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
-        <div class="pp-feat-row" style="animation-delay:0.14s;"><span style="font-size:19px;">🛒</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Bidhaa Bila Kikomo</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Ongeza bidhaa, picha, bei — bila ukomo</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
-        <div class="pp-feat-row" style="animation-delay:0.18s;"><span style="font-size:19px;">📊</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Takwimu za Mauzo</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Mwenendo wa wateja na mauzo yako</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
-        <div class="pp-feat-row" style="animation-delay:0.22s;"><span style="font-size:19px;">🔗</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Link ya Duka Lako</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Shiriki na wateja — wanunue moja kwa moja</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
-        <div class="pp-feat-row" style="animation-delay:0.26s;"><span style="font-size:19px;">💬</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:white;">Mazungumzo ya Wateja</div><div style="font-size:11px;color:rgba(255,255,255,0.38);margin-top:1px;">Ona kila mazungumzo kati ya bot na wateja</div></div><span class="material-symbols-outlined" style="font-size:15px;color:#25d078;flex-shrink:0;">check</span></div>
-      </div>
-    </div>
-    <!-- Trust strip -->
-    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:22px;padding:13px;background:rgba(255,255,255,0.03);border-radius:14px;border:1px solid rgba(255,255,255,0.06);">
-      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">🔒</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Salama</div></div>
-      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">📱</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">M-Pesa/Tigo</div></div>
-      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">❌</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Bila Mkataba</div></div>
-      <div style="text-align:center;"><div style="font-size:17px;margin-bottom:3px;">⚡</div><div style="font-size:10px;color:rgba(255,255,255,0.36);font-weight:700;">Papo Hapo</div></div>
-    </div>
-    <!-- Pay button area — M-Pesa primary, card secondary -->
-    <div style="position:sticky;bottom:24px;display:flex;flex-direction:column;gap:10px;">
-
-      <!-- PRIMARY: M-Pesa / Mobile Money -->
-      <button class="pp-pay-btn" id="pp-pay-btn" onclick="ppPayMpesa()">
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;">
-          <span style="font-size:22px;">📱</span>
-          <span id="pp-pay-btn-text">Lipa kwa M-Pesa / Tigo / Airtel</span>
-        </div>
-      </button>
-
-      <!-- SECONDARY: Card via Selar -->
-      <button onclick="ppPay()" style="
-        width:100%;padding:14px;
-        background:rgba(255,255,255,0.06);
-        color:rgba(255,255,255,0.6);
-        border:1.5px solid rgba(255,255,255,0.12);
-        border-radius:16px;font-size:13px;font-weight:700;
-        cursor:pointer;font-family:inherit;
-        display:flex;align-items:center;justify-content:center;gap:8px;
-        transition:background 0.2s;
-      ">
-        <span class="material-symbols-outlined" style="font-size:18px;">credit_card</span>
-        Lipa kwa Kadi ya Benki (Selar)
-      </button>
-
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.2);">Salama · Hakuna data kuhifadhiwa</div>
-      <div style="text-align:center;">
-        <button onclick="tcOpen()" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:10px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;">
-          <span class="material-symbols-outlined" style="font-size:12px;">gavel</span>
-          Masharti ya Huduma
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════════════
-     TERMS & CONDITIONS MODAL
-═══════════════════════════════════════════════════════ -->
-<div id="tc-overlay" onclick="if(event.target===this)tcClose()">
-  <div id="tc-sheet">
-
-    <!-- Header -->
-    <div style="background:linear-gradient(140deg,#0a1f10 0%,#0d2918 60%,#0a2a1a 100%);padding:26px 20px 22px;flex-shrink:0;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(37,208,120,0.06);pointer-events:none;"></div>
-      <div style="position:absolute;bottom:-40px;left:-40px;width:150px;height:150px;border-radius:50%;background:rgba(37,208,120,0.04);pointer-events:none;"></div>
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;">
-        <div>
-          <div style="font-size:34px;margin-bottom:8px;">⚖️</div>
-          <div style="font-size:20px;font-weight:900;color:white;line-height:1.2;">Masharti ya Huduma</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:5px;font-weight:500;">LinkaMarket · Terms &amp; Conditions</div>
-        </div>
-        <button onclick="tcClose()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:4px;">
-          <span class="material-symbols-outlined" style="font-size:19px;color:white;">close</span>
-        </button>
-      </div>
-      <!-- Trust badges -->
-      <div style="display:flex;gap:8px;margin-top:16px;position:relative;">
-        <div style="background:rgba(37,208,120,0.15);border:1px solid rgba(37,208,120,0.25);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:#25d078;display:flex;align-items:center;gap:4px;">
-          <span class="material-symbols-outlined" style="font-size:12px;">verified</span>Halisi
-        </div>
-        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
-          <span class="material-symbols-outlined" style="font-size:12px;">lock</span>Salama
-        </div>
-        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:4px 12px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:4px;">
-          <span class="material-symbols-outlined" style="font-size:12px;">calendar_month</span>Machi 2026
-        </div>
-      </div>
-    </div>
-
-    <!-- Scrollable body -->
-    <div style="flex:1;overflow-y:auto;padding:20px 18px 0;scrollbar-width:none;">
-
-      <!-- Quick summary cards -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;">
-        <div style="background:rgba(37,208,120,0.08);border:1.5px solid rgba(37,208,120,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.1s both;">
-          <div style="font-size:22px;margin-bottom:6px;">✅</div>
-          <div style="font-size:11px;font-weight:900;color:#25d078;margin-bottom:3px;">Unaruhusiwa</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Kuuza bidhaa halisi, kupokea maagizo, kutumia bot ya AI</div>
-        </div>
-        <div style="background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.15s both;">
-          <div style="font-size:22px;margin-bottom:6px;">🚫</div>
-          <div style="font-size:11px;font-weight:900;color:#ef4444;margin-bottom:3px;">Haruhuswi</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Bidhaa haramu, udanganyifu, au matumizi mabaya ya bot</div>
-        </div>
-        <div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.2s both;">
-          <div style="font-size:22px;margin-bottom:6px;">💳</div>
-          <div style="font-size:11px;font-weight:900;color:#f59e0b;margin-bottom:3px;">Malipo</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Siku 5 bure, kisha TZS 5,000/mwezi. Acha wakati wowote</div>
-        </div>
-        <div style="background:rgba(59,130,246,0.08);border:1.5px solid rgba(59,130,246,0.2);border-radius:16px;padding:14px;animation:tcFadeIn 0.4s ease 0.25s both;">
-          <div style="font-size:22px;margin-bottom:6px;">🔒</div>
-          <div style="font-size:11px;font-weight:900;color:#60a5fa;margin-bottom:3px;">Faragha</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);line-height:1.55;">Data yako haishirikishwi. Unaweza kufuta akaunti lolote wakati</div>
-        </div>
-      </div>
-
-      <!-- Sections -->
-      <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:20px;">
-
-        <div class="tc-section" style="animation-delay:0.1s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">📋</span> 1. Huduma Tunayotoa
-          </div>
-          <div class="tc-section-body">
-            LinkaMarket ni jukwaa la <span class="tc-highlight">biashara ya kidijitali</span> linaloruhusu wafanyabiashara wadogo Tanzania kuunda duka la mtandaoni, kutumia bot ya WhatsApp ya AI, na kupokea maagizo kutoka kwa wateja moja kwa moja.<br><br>
-            Huduma inajumuisha: duka la bidhaa, bot ya AI ya WhatsApp, takwimu za mauzo, na link ya duka lako.
-          </div>
-        </div>
-
-        <div class="tc-section" style="animation-delay:0.15s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">💰</span> 2. Malipo na Usajili
-          </div>
-          <div class="tc-section-body">
-            • <span class="tc-highlight">Siku 5 bure</span> — hakuna malipo, hakuna kadi ya benki<br>
-            • Baada ya siku 5: <span class="tc-highlight">TZS 5,000/mwezi</span> au <span class="tc-highlight">TZS 50,000/mwaka</span><br>
-            • Malipo yanafanywa kupitia <span class="tc-highlight">Selar</span> (M-Pesa, Tigo Pesa, Airtel)<br>
-            • Baada ya kulipa, huduma inafunguliwa <span class="tc-highlight">moja kwa moja otomatiki</span><br>
-            • Unaweza kuacha huduma <span class="tc-warn">wakati wowote</span> bila adhabu<br>
-            • <span class="tc-warn">Hakuna marejesho</span> ya malipo yaliyofanywa tayari
-          </div>
-        </div>
-
-        <div class="tc-section" style="animation-delay:0.2s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">🤖</span> 3. Bot ya WhatsApp — Sheria
-          </div>
-          <div class="tc-section-body">
-            • Bot inatumia namba yako ya WhatsApp — <span class="tc-warn">lazima iwe namba yako halisi</span><br>
-            • Bot inajibu wateja wanaokupelekea ujumbe tu — <span class="tc-highlight">haipeleki spam</span><br>
-            • Majibu yanachukua dakika 1–30 kwa makusudi (kulinda namba yako dhidi ya ban)<br>
-            • LinkaMarket <span class="tc-highlight">haiwajibiki</span> iwapo WhatsApp itabadilisha sera zake<br>
-            • Usijaribu kutumia bot kwa madhumuni ya udanganyifu — tutafunga akaunti yako
-          </div>
-        </div>
-
-        <div class="tc-section" style="animation-delay:0.25s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">🛡️</span> 4. Sera ya Faragha
-          </div>
-          <div class="tc-section-body">
-            • Tunakusanya: jina la duka, namba ya WhatsApp, bidhaa, mazungumzo ya bot<br>
-            • <span class="tc-highlight">Hatuuzi wala kushirikisha</span> data yako kwa mtu yeyote wa tatu<br>
-            • Data inawekwa kwenye seva salama za <span class="tc-highlight">Supabase</span> (SSL/TLS)<br>
-            • Unaweza kuomba kufutwa kwa data yako yote — tutafanya ndani ya siku 7<br>
-            • Tunaweza kutumia takwimu zisizo na jina kuboresha huduma
-          </div>
-        </div>
-
-        <div class="tc-section" style="animation-delay:0.3s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">⚠️</span> 5. Mipaka ya Wajibu
-          </div>
-          <div class="tc-section-body">
-            LinkaMarket inafanya kazi <span class="tc-warn">kwa bidii kuboresha huduma</span>, lakini haiwezi kuhakikisha:<br><br>
-            • Upatikanaji wa huduma wakati wote (matengenezo ya dharura yanaweza kutokea)<br>
-            • Mapato ya biashara yako (inategemea bidhaa na wateja wako)<br>
-            • Bot kujibu kwa usahihi 100% (AI inaweza kufanya makosa)<br><br>
-            Kwa hiyo, <span class="tc-highlight">LinkaMarket haiwajibiki</span> kwa hasara yoyote ya biashara inayotokana na kutumia huduma hii.
-          </div>
-        </div>
-
-        <div class="tc-section" style="animation-delay:0.35s;">
-          <div class="tc-section-title">
-            <span style="font-size:18px;">📞</span> 6. Mawasiliano ya Msaada
-          </div>
-          <div class="tc-section-body">
-            Una swali? Tatizo? Tuko hapa kukusaidia.<br><br>
-            <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">
-              <!-- WhatsApp contact -->
-              <a href="https://wa.me/255696102700" target="_blank" style="display:flex;align-items:center;gap:12px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:14px;padding:13px 15px;text-decoration:none;">
-                <div style="width:40px;height:40px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <span class="material-symbols-outlined" style="font-size:20px;color:white;">chat</span>
-                </div>
-                <div>
-                  <div style="font-size:13px;font-weight:800;color:#25d078;">WhatsApp Customer Care</div>
-                  <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">+255 696 102 700</div>
-                  <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px;">Jibu ndani ya masaa 24</div>
-                </div>
-                <span class="material-symbols-outlined" style="font-size:18px;color:rgba(37,208,120,0.6);margin-left:auto;flex-shrink:0;">arrow_forward</span>
-              </a>
-              <!-- Response time note -->
-              <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
-                <span style="font-size:16px;flex-shrink:0;">⏰</span>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Tunajaribu kujibu kila swali ndani ya <strong style="color:rgba(255,255,255,0.7);">masaa 24</strong>. Masaa ya kazi: Jumatatu – Jumamosi, 8am – 9pm EAT</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style="text-align:center;padding:16px 0 4px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.6;">
-          LinkaMarket · Masharti ya Huduma v1.0<br>
-          Imewekwa: Machi 2026 · Tanzania 🇹🇿<br>
-          Kwa kutumia LinkaMarket unakubali masharti haya yote
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Sticky footer -->
-    <div style="padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,0.08);background:#0a1628;flex-shrink:0;">
-      <button onclick="tcClose()" style="width:100%;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(37,208,120,0.3);">
-        <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
-        Nimeelewa — Nakubali Masharti
-      </button>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════════════
-     APP TOUR — GAME-LIKE ANIMATED GUIDE
-════════════════════════════════════════════════════ -->
-
-<!-- Dark overlay with spotlight hole (SVG mask) -->
-<div id="tour-overlay">
-  <svg id="tour-svg" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <mask id="tour-mask">
-        <rect width="100%" height="100%" fill="white"/>
-        <rect id="tour-hole" x="0" y="0" width="0" height="0" rx="16" fill="black"/>
-      </mask>
-    </defs>
-    <rect width="100%" height="100%" fill="rgba(4,14,8,0.82)" mask="url(#tour-mask)"/>
-  </svg>
-</div>
-
-<!-- Pulsing ring around highlighted element -->
-<div id="tour-pulse-ring"></div>
-
-<!-- Animated tap hand -->
-<div id="tour-hand">👆</div>
-
-<!-- Achievement popup -->
-<div id="tour-achievement">
-  <span style="font-size:18px;">🏆</span>
-  <span id="tour-achievement-text">Hatua Imekamilika!</span>
-</div>
-
-<!-- Confetti container -->
-<div id="tour-confetti"></div>
-
-<!-- Main tour card -->
-<div id="tour-card">
-  <!-- XP Progress bar -->
-  <div class="tour-xp-bar">
-    <div class="tour-xp-fill" id="tour-xp-fill" style="width:0%"></div>
-  </div>
-  <!-- Dynamic content injected by JS -->
-  <div id="tour-content"></div>
-</div>
 
 
 
 <!-- ═══════════════════════════════════════════════════
-     M-PESA PAYMENT MODAL
+     SNIPPE PAYMENT SHEET
+     Beautiful plan selector + phone input + live status
 ═══════════════════════════════════════════════════ -->
-<div id="mpesa-overlay" onclick="if(event.target===this)mpesaClose()" style="
-    display:none;position:fixed;inset:0;z-index:6000;
-    background:rgba(4,14,8,0.85);backdrop-filter:blur(10px);
-    align-items:flex-end;justify-content:center;
-">
-  <div id="mpesa-sheet" style="
-    width:100%;max-width:480px;
-    background:linear-gradient(160deg,#0a1f10 0%,#071428 100%);
-    border-radius:28px 28px 0 0;
-    border-top:1px solid rgba(37,208,120,0.25);
-    box-shadow:0 -20px 60px rgba(0,0,0,0.5);
-    animation:chSlideUp 0.42s cubic-bezier(0.34,1.15,0.64,1);
-    max-height:92vh;overflow-y:auto;
+<style>
+@keyframes snCardIn {
+    from { opacity:0; transform:translateY(30px) scale(0.96); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes snShine {
+    0%   { left:-100%; }
+    100% { left:200%; }
+}
+@keyframes snPulseGlow {
+    0%,100% { box-shadow:0 0 0 0 rgba(37,208,120,0.5); }
+    50%     { box-shadow:0 0 0 10px rgba(37,208,120,0); }
+}
+@keyframes snCheckPop {
+    0%   { transform:scale(0) rotate(-20deg); opacity:0; }
+    60%  { transform:scale(1.15) rotate(5deg); opacity:1; }
+    100% { transform:scale(1) rotate(0deg); opacity:1; }
+}
+@keyframes snSpinRing {
+    to { transform:rotate(360deg); }
+}
+@keyframes snBadgePop {
+    0%,100% { transform:scale(1); }
+    50%     { transform:scale(1.06); }
+}
+</style>
+
+<div id="snippe-overlay"
+     onclick="if(event.target===this)snippeClose()"
+     style="display:none;position:fixed;inset:0;z-index:6000;
+            background:rgba(2,8,6,0.88);backdrop-filter:blur(12px);
+            align-items:flex-end;justify-content:center;">
+
+  <div id="snippe-sheet" style="
+      width:100%;max-width:480px;
+      background:linear-gradient(160deg,#080e1a 0%,#060d18 100%);
+      border-radius:28px 28px 0 0;
+      border-top:1px solid rgba(37,208,120,0.2);
+      box-shadow:0 -24px 80px rgba(0,0,0,0.7);
+      animation:chSlideUp 0.38s cubic-bezier(0.34,1.15,0.64,1);
+      max-height:96vh;overflow-y:auto;
   ">
-    <div style="padding:14px 0 0;text-align:center;">
-      <div style="width:38px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto;"></div>
+    <!-- handle -->
+    <div style="padding:14px 0 0;text-align:center;flex-shrink:0;">
+      <div style="width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:0 auto;"></div>
     </div>
 
-    <div style="padding:22px 22px 32px;">
+    <div style="padding:18px 20px 36px;">
 
-      <!-- Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-        <div>
-          <div style="font-size:20px;font-weight:900;color:white;">Lipa kwa Mobile Money</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;">M-Pesa · Tigo Pesa · Airtel Money · Halopesa</div>
+      <!-- ══ SCREEN: Plan + Phone ═══════════════════════════════ -->
+      <div id="sn-screen-input">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div>
+            <div style="font-size:11px;font-weight:800;color:rgba(37,208,120,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">LinkaMarket Premium</div>
+            <div style="font-size:21px;font-weight:900;color:white;line-height:1.2;">Chagua Mpango<br>Unaokufaa</div>
+          </div>
+          <button onclick="snippeClose()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:rgba(255,255,255,0.5);">close</span>
+          </button>
         </div>
-        <button onclick="mpesaClose()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-          <span class="material-symbols-outlined" style="font-size:19px;color:rgba(255,255,255,0.6);">close</span>
+
+        <!-- VALUE STRIP -->
+        <div style="background:rgba(37,208,120,0.07);border:1px solid rgba(37,208,120,0.15);border-radius:14px;padding:10px 14px;margin-bottom:18px;display:flex;gap:10px;align-items:center;">
+          <span style="font-size:18px;flex-shrink:0;">💡</span>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">
+            Hutapoteza wateja kwa kuchelewa · Wateja wanapata majibu <strong style="color:#25d078;">papo hapo</strong> · Unaongeza mauzo hata <strong style="color:#25d078;">ukiwa offline</strong>
+          </div>
+        </div>
+
+        <!-- PLAN CARDS -->
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+
+          <!-- PLAN 1: MONTHLY -->
+          <div id="sn-card-monthly" onclick="snippeSelectPlan('monthly')" style="
+              border-radius:20px;padding:18px;
+              border:2px solid rgba(255,255,255,0.1);
+              background:rgba(255,255,255,0.03);
+              cursor:pointer;transition:all 0.22s;
+              position:relative;overflow:hidden;
+              animation:snCardIn 0.4s ease 0.05s both;">
+            <!-- shine sweep -->
+            <div class="sn-shine" style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent);pointer-events:none;"></div>
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+              <!-- Radio -->
+              <div id="sn-radio-monthly" style="width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:border-color 0.2s;">
+                <div id="sn-dot-monthly" style="width:10px;height:10px;border-radius:50%;background:transparent;transition:background 0.2s;"></div>
+              </div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <span style="font-size:16px;">🟣</span>
+                  <div style="font-size:15px;font-weight:900;color:white;">AI WhatsApp Seller</div>
+                  <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.06);border-radius:99px;padding:2px 8px;text-transform:uppercase;letter-spacing:0.5px;">Kila Mwezi</div>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:10px;">
+                  <span style="font-size:26px;font-weight:900;color:white;">5,000</span>
+                  <span style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:700;">TZS / mwezi</span>
+                </div>
+                <!-- Features -->
+                <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.6);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>AI inajibu wateja wako 24/7
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.6);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Inafunga mauzo hata ukiwa offline
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.6);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Templates 50 za kuuza (Swahili ready)
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.6);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Setup ya haraka + msaada
+                  </div>
+                </div>
+                <!-- Risk-free badge -->
+                <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,208,120,0.08);border:1px solid rgba(37,208,120,0.2);border-radius:99px;padding:4px 10px;">
+                  <span style="font-size:11px;">🛡️</span>
+                  <span style="font-size:10px;font-weight:800;color:#25d078;">Jaribu siku 7 — tunarudisha hela ukiona haikusaidii</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PLAN 2: ANNUAL (HERO) -->
+          <div id="sn-card-annual" onclick="snippeSelectPlan('annual')" style="
+              border-radius:20px;padding:18px;
+              border:2px solid #25d078;
+              background:linear-gradient(135deg,rgba(37,208,120,0.1),rgba(22,163,74,0.06));
+              cursor:pointer;transition:all 0.22s;
+              position:relative;overflow:hidden;
+              animation:snCardIn 0.4s ease 0.12s both;
+              box-shadow:0 0 0 1px rgba(37,208,120,0.08),0 8px 32px rgba(37,208,120,0.12);">
+            <!-- BEST VALUE badge -->
+            <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:900;padding:5px 14px 5px 10px;border-radius:0 18px 0 14px;text-transform:uppercase;letter-spacing:0.5px;animation:snBadgePop 2s ease-in-out infinite;">🔥 Best Value</div>
+            <!-- shine sweep -->
+            <div class="sn-shine" style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);pointer-events:none;animation:snShine 3s ease-in-out infinite;animation-delay:1s;"></div>
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+              <!-- Radio -->
+              <div id="sn-radio-annual" style="width:22px;height:22px;border-radius:50%;border:2px solid #25d078;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:border-color 0.2s;">
+                <div id="sn-dot-annual" style="width:10px;height:10px;border-radius:50%;background:#25d078;transition:background 0.2s;"></div>
+              </div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                  <span style="font-size:16px;">🟢</span>
+                  <div style="font-size:15px;font-weight:900;color:white;">AI WhatsApp Seller</div>
+                  <div style="font-size:10px;font-weight:800;color:#25d078;background:rgba(37,208,120,0.12);border-radius:99px;padding:2px 8px;text-transform:uppercase;letter-spacing:0.5px;">Mwaka Mzima</div>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:3px;">
+                  <span style="font-size:26px;font-weight:900;color:#25d078;">50,000</span>
+                  <span style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:700;">TZS / mwaka</span>
+                </div>
+                <div style="font-size:11px;color:rgba(245,158,11,0.8);font-weight:800;margin-bottom:10px;">💰 Unaokoa TZS 10,000 kwa mwaka</div>
+                <!-- Features -->
+                <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.7);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Kila kitu cha mpango wa mwezi
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.7);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Msaada wa priority — tunajibu wewe kwanza
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.7);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Updates zote mpya bure
+                  </div>
+                  <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,0.7);">
+                    <span style="color:#25d078;font-size:14px;flex-shrink:0;">✔</span>Hakuna usumbufu wa kulipa kila mwezi
+                  </div>
+                </div>
+                <!-- Risk-free + serious badge -->
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(37,208,120,0.08);border:1px solid rgba(37,208,120,0.2);border-radius:99px;padding:4px 10px;">
+                    <span style="font-size:11px;">🛡️</span>
+                    <span style="font-size:10px;font-weight:800;color:#25d078;">Jaribu siku 7 — tunarudisha hela ukiona haikusaidii</span>
+                  </div>
+                  <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:99px;padding:4px 10px;">
+                    <span style="font-size:11px;">🔥</span>
+                    <span style="font-size:10px;font-weight:800;color:#f59e0b;">Chaguo bora kwa wafanyabiashara serious</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /plan cards -->
+
+        <!-- PHONE INPUT -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Namba ya Simu ya Kulipa</div>
+          <div style="display:flex;gap:8px;">
+            <div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:0 12px;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span style="font-size:14px;">🇹🇿</span>
+              <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);">+255</span>
+            </div>
+            <input id="snippe-phone" type="tel" inputmode="numeric" placeholder="712 345 678" maxlength="10"
+              style="flex:1;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 16px;font-size:18px;font-weight:700;color:white;font-family:inherit;outline:none;transition:border-color 0.2s,background 0.2s;"
+              onfocus="this.style.borderColor='#25d078';this.style.background='rgba(37,208,120,0.05)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='rgba(255,255,255,0.05)'"
+              oninput="this.value=this.value.replace(/\D/g,'')">
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:6px;line-height:1.5;">M-Pesa · Airtel Money · Tigo · Halotel · Namba yoyote ya Tanzania</div>
+        </div>
+
+        <!-- USSD explain -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 14px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:20px;flex-shrink:0;margin-top:1px;">📲</span>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.65;">
+            Ukibonyeza <strong style="color:white;">Lipa Sasa</strong>, simu yako itapata ujumbe wa USSD. Ingiza PIN yako ya Mobile Money — malipo yatakamilika <strong style="color:#25d078;">moja kwa moja</strong>. Hutahitaji kutoka kwenye app.
+          </div>
+        </div>
+
+        <!-- PAY BUTTON -->
+        <button id="sn-pay-btn" onclick="snippeInitiatePayment()" style="
+            width:100%;padding:18px;
+            background:linear-gradient(135deg,#25d078,#16a34a);
+            color:white;border:none;border-radius:18px;
+            font-size:16px;font-weight:900;cursor:pointer;
+            font-family:inherit;position:relative;overflow:hidden;
+            box-shadow:0 4px 24px rgba(37,208,120,0.4);
+            animation:snPulseGlow 2.5s ease-in-out infinite;
+            transition:transform 0.15s;">
+          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);animation:snShine 3s ease-in-out infinite;animation-delay:0.5s;pointer-events:none;"></div>
+          <div id="sn-pay-btn-inner" style="display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;">
+            <span class="material-symbols-outlined" style="font-size:21px;">payments</span>
+            <span id="sn-pay-btn-text">Lipa Sasa — TZS 50,000</span>
+          </div>
         </button>
-      </div>
 
-      <!-- Amount card -->
-      <div id="mpesa-amount-card" style="background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:18px;padding:18px;margin-bottom:18px;text-align:center;">
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Kiasi cha Kulipa</div>
-        <div id="mpesa-amount-display" style="font-size:36px;font-weight:900;color:#25d078;">TZS 5,000</div>
-        <div id="mpesa-plan-label" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Mpango wa Kila Mwezi</div>
-      </div>
+        <div style="text-align:center;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.2);">Malipo yanashughulikiwa salama na Snippe · SSL encrypted</div>
 
-      <!-- Steps -->
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+      </div><!-- /sn-screen-input -->
 
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">1</div>
-            <div style="font-size:13px;font-weight:800;color:white;">Piga *150*00# au fungua app yako</div>
-          </div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;padding-left:38px;">
-            M-Pesa: *150*00# &nbsp;·&nbsp; Tigo: *150*01# &nbsp;·&nbsp; Airtel: *150*60# &nbsp;·&nbsp; Halotel: *150*88#
-          </div>
+      <!-- ══ SCREEN: Waiting for PIN ════════════════════════════ -->
+      <div id="sn-screen-waiting" style="display:none;text-align:center;padding:16px 0 8px;">
+
+        <div style="position:relative;width:88px;height:88px;margin:0 auto 20px;">
+          <div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(37,208,120,0.15);"></div>
+          <div style="position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:#25d078;animation:snSpinRing 0.9s linear infinite;"></div>
+          <div style="position:absolute;inset:8px;border-radius:50%;background:rgba(37,208,120,0.08);display:flex;align-items:center;justify-content:center;font-size:32px;">📱</div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">2</div>
-            <div style="font-size:13px;font-weight:800;color:white;">Tuma pesa kwa namba hii</div>
-          </div>
-          <!-- Number to pay to -->
-          <div style="margin-left:38px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.3);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="mpesaCopyNumber()">
-            <div>
-              <div style="font-size:22px;font-weight:900;color:#25d078;letter-spacing:1px;">+255 696 102 700</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">LinkaMarket · Kathim</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-              <span class="material-symbols-outlined" style="font-size:20px;color:#25d078;">content_copy</span>
-              <span style="font-size:9px;color:rgba(37,208,120,0.6);font-weight:700;">COPY</span>
-            </div>
-          </div>
+        <div style="font-size:20px;font-weight:900;color:white;margin-bottom:8px;">Angalia Simu Yako!</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:6px;">
+          Ujumbe wa USSD umetumwa kwa<br>
+          <strong id="sn-display-phone" style="color:#25d078;font-size:17px;">+255...</strong>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:24px;">Ingiza PIN yako ya Mobile Money kumaliza</div>
+
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 16px;display:inline-flex;align-items:center;gap:8px;margin-bottom:24px;">
+          <span class="material-symbols-outlined" style="font-size:15px;color:rgba(255,255,255,0.25);">schedule</span>
+          <span id="sn-countdown" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.35);">Inasubiri... 04:00</span>
         </div>
 
-        <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 15px;border:1px solid rgba(255,255,255,0.08);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:white;flex-shrink:0;">3</div>
-            <div style="font-size:13px;font-weight:800;color:white;">Tuma picha ya risiti hapa</div>
-          </div>
-          <div style="margin-left:38px;">
-            <a href="https://wa.me/255696102700?text=Nimelipa%20LinkaMarket%20Premium%20-%20hii%20ni%20risiti%20yangu" 
-               target="_blank"
-               style="display:flex;align-items:center;gap:10px;background:rgba(37,208,120,0.1);border:1.5px solid rgba(37,208,120,0.25);border-radius:12px;padding:11px 14px;text-decoration:none;">
-              <div style="width:34px;height:34px;background:linear-gradient(135deg,#25d078,#16a34a);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <span class="material-symbols-outlined" style="font-size:18px;color:white;">chat</span>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:800;color:#25d078;">Tuma Risiti WhatsApp</div>
-                <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px;">+255 696 102 700</div>
-              </div>
-              <span class="material-symbols-outlined" style="font-size:18px;color:rgba(37,208,120,0.5);margin-left:auto;">open_in_new</span>
-            </a>
-            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:8px;text-align:center;line-height:1.5;">
-              Akaunti yako itafunguliwa ndani ya <strong style="color:rgba(255,255,255,0.5);">dakika 30</strong> — saa za kazi 8am–9pm
-            </div>
-          </div>
+        <button onclick="snippeClose()" style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:10px 28px;color:rgba(255,255,255,0.3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Ghairi</button>
+
+      </div><!-- /sn-screen-waiting -->
+
+      <!-- ══ SCREEN: Success ════════════════════════════════════ -->
+      <div id="sn-screen-success" style="display:none;text-align:center;padding:16px 0 8px;">
+
+        <div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#25d078,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 50px rgba(37,208,120,0.45);animation:snCheckPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both;">
+          <span class="material-symbols-outlined" style="font-size:52px;color:white;font-variation-settings:'FILL' 1;">check_circle</span>
         </div>
 
-      </div>
+        <div style="font-size:22px;font-weight:900;color:white;margin-bottom:8px;">Malipo Yamekamilika! 🎉</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:28px;">
+          Usajili wako wa LinkaMarket umewashwa.<br>
+          <strong style="color:#25d078;">Karibu Premium!</strong> 🚀
+        </div>
 
-      <!-- Already paid check -->
-      <button onclick="pwCheckPayment(event)" style="width:100%;padding:15px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:16px;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span class="material-symbols-outlined" style="font-size:18px;">verified</span>
-        Tayari nimetuma — angalia hali yangu
-      </button>
+        <button onclick="snippeSuccess()" style="width:100%;padding:17px;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:18px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 24px rgba(37,208,120,0.4);">
+          Endelea kwa Dashboard →
+        </button>
 
-      <div style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.6;">
-        Una tatizo? Piga WhatsApp +255 696 102 700<br>
-        Tunajibu haraka wakati wa kazi
-      </div>
+      </div><!-- /sn-screen-success -->
 
-    </div>
-  </div>
-</div>
+      <!-- ══ SCREEN: Failed ═════════════════════════════════════ -->
+      <div id="sn-screen-failed" style="display:none;text-align:center;padding:16px 0 8px;">
+
+        <div style="font-size:56px;margin-bottom:14px;">😕</div>
+        <div style="font-size:20px;font-weight:900;color:white;margin-bottom:8px;">Malipo Hayakufanikiwa</div>
+        <div id="sn-fail-reason" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:26px;line-height:1.65;">Angalia salio lako na ujaribu tena.</div>
+
+        <button onclick="snippeRetry()" style="width:100%;padding:16px;background:rgba(37,208,120,0.08);border:1.5px solid rgba(37,208,120,0.3);color:#25d078;border-radius:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+          Jaribu Tena
+        </button>
+        <button onclick="snippeClose()" style="background:none;border:none;color:rgba(255,255,255,0.28);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;">
+          Funga
+        </button>
+
+      </div><!-- /sn-screen-failed -->
+
+    </div><!-- /padding -->
+  </div><!-- /sheet -->
+</div><!-- /overlay -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// SNIPPE PAYMENT LOGIC
+// ═══════════════════════════════════════════════════
+let _snPlan      = 'annual'; // default to annual (the one you push)
+let _snReference = null;
+let _snPollTimer = null;
+let _snCountdown = null;
+
+function snippeOpen(plan) {
+    _snPlan = plan || 'annual';
+    snippeSelectPlan(_snPlan);
+    _snShowScreen('input');
+    const ov = document.getElementById('snippe-overlay');
+    if (ov) { ov.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+
+function snippeClose() {
+    clearInterval(_snPollTimer);
+    clearInterval(_snCountdown);
+    const ov = document.getElementById('snippe-overlay');
+    const sh = document.getElementById('snippe-sheet');
+    if (!ov) return;
+    if (sh) { sh.style.transition = 'transform 0.28s ease'; sh.style.transform = 'translateY(100%)'; }
+    ov.style.opacity = '0'; ov.style.transition = 'opacity 0.28s';
+    setTimeout(() => {
+        ov.style.display = 'none';
+        ov.style.opacity = ''; ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function snippeSelectPlan(plan) {
+    _snPlan = plan;
+    const isAnnual = plan === 'annual';
+
+    // Cards
+    const mCard = document.getElementById('sn-card-monthly');
+    const aCard = document.getElementById('sn-card-annual');
+    if (mCard) { mCard.style.borderColor = isAnnual ? 'rgba(255,255,255,0.1)' : '#25d078'; mCard.style.background = isAnnual ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg,rgba(37,208,120,0.1),rgba(22,163,74,0.06))'; }
+    if (aCard) { aCard.style.borderColor = isAnnual ? '#25d078' : 'rgba(255,255,255,0.1)'; aCard.style.background = isAnnual ? 'linear-gradient(135deg,rgba(37,208,120,0.1),rgba(22,163,74,0.06))' : 'rgba(255,255,255,0.03)'; }
+
+    // Radio dots
+    const mDot = document.getElementById('sn-dot-monthly');
+    const aDot = document.getElementById('sn-dot-annual');
+    const mRad = document.getElementById('sn-radio-monthly');
+    const aRad = document.getElementById('sn-radio-annual');
+    if (mDot) mDot.style.background = isAnnual ? 'transparent' : '#25d078';
+    if (aDot) aDot.style.background = isAnnual ? '#25d078' : 'transparent';
+    if (mRad) mRad.style.borderColor = isAnnual ? 'rgba(255,255,255,0.2)' : '#25d078';
+    if (aRad) aRad.style.borderColor = isAnnual ? '#25d078' : 'rgba(255,255,255,0.2)';
+
+    // Button text
+    const txt = document.getElementById('sn-pay-btn-text');
+    if (txt) txt.textContent = isAnnual ? 'Lipa Sasa — TZS 50,000' : 'Lipa Sasa — TZS 5,000';
+
+    // Sync outer payment page radios too
+    if (typeof ppSelectPlan === 'function') {
+        const mCard2 = document.getElementById('plan-monthly');
+        const aCard2 = document.getElementById('plan-annual');
+        const mDot2 = document.getElementById('radio-monthly-dot');
+        const aDot2 = document.getElementById('radio-annual-dot');
+        if (mCard2) { if(isAnnual) mCard2.classList.remove('selected'); else mCard2.classList.add('selected'); }
+        if (aCard2) { if(isAnnual) aCard2.classList.add('selected'); else aCard2.classList.remove('selected'); }
+        if (mDot2) mDot2.style.background = isAnnual ? 'transparent' : '#25d078';
+        if (aDot2) aDot2.style.background = isAnnual ? '#25d078' : 'transparent';
+    }
+}
+
+function _snShowScreen(name) {
+    ['input','waiting','success','failed'].forEach(s => {
+        const el = document.getElementById('sn-screen-' + s);
+        if (el) el.style.display = 'none';
+    });
+    const t = document.getElementById('sn-screen-' + name);
+    if (t) t.style.display = 'block';
+}
+
+async function snippeInitiatePayment() {
+    const rawPhone = (document.getElementById('snippe-phone')?.value || '').trim();
+    if (!rawPhone || rawPhone.length < 9) {
+        showToastMsg('Ingiza namba yako ya simu 📱', 'warn');
+        document.getElementById('snippe-phone')?.focus();
+        return;
+    }
+
+    const btn = document.getElementById('sn-pay-btn');
+    if (btn) {
+        btn.disabled = true;
+        document.getElementById('sn-pay-btn-inner').innerHTML =
+            '<span style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:snSpinRing 0.7s linear infinite;display:inline-block;"></span>' +
+            '<span>Inatuma...</span>';
+    }
+
+    try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { showToastMsg('Tafadhali ingia kwanza.', 'warn'); _snResetBtn(); return; }
+
+        const res = await fetch(SUPABASE_URL + '/functions/v1/snippe-pay', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + session.access_token,
+                'apikey': SUPABASE_KEY,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone: rawPhone, plan: _snPlan }),
+        });
+
+        const result = await res.json();
+        if (!res.ok || !result.success) throw new Error(result.error || 'Hitilafu ya malipo — jaribu tena');
+
+        _snReference = result.reference;
+        const dispEl = document.getElementById('sn-display-phone');
+        if (dispEl) dispEl.textContent = '+255' + rawPhone.replace(/^0/, '');
+        _snShowScreen('waiting');
+        _snStartCountdown(240);
+        _snStartPoll();
+
+    } catch(e) {
+        showToastMsg('❌ ' + e.message, 'warn');
+        _snResetBtn();
+    }
+}
+
+function _snResetBtn() {
+    const btn = document.getElementById('sn-pay-btn');
+    if (btn) {
+        btn.disabled = false;
+        document.getElementById('sn-pay-btn-inner').innerHTML =
+            '<span class="material-symbols-outlined" style="font-size:21px;">payments</span>' +
+            '<span id="sn-pay-btn-text">Lipa Sasa — TZS ' + (_snPlan === 'annual' ? '50,000' : '5,000') + '</span>';
+    }
+}
+
+function _snStartCountdown(seconds) {
+    clearInterval(_snCountdown);
+    let secs = seconds;
+    const el = document.getElementById('sn-countdown');
+    const tick = () => {
+        if (!el) return;
+        const m = Math.floor(secs / 60), s = secs % 60;
+        el.textContent = 'Inasubiri... ' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        if (secs <= 0) { clearInterval(_snCountdown); el.textContent = '⏰ Muda umeisha'; el.style.color = '#f87171'; }
+        secs--;
+    };
+    tick();
+    _snCountdown = setInterval(tick, 1000);
+}
+
+function _snStartPoll() {
+    clearInterval(_snPollTimer);
+    let tries = 0;
+    _snPollTimer = setInterval(async () => {
+        if (++tries > 75) { clearInterval(_snPollTimer); _snShowFailed('Muda wa malipo umeisha. Jaribu tena.'); return; }
+        try {
+            const { data: { user } } = await sb.auth.getUser();
+            if (!user) return;
+            const { data: p } = await sb.from('profiles')
+                .select('subscription_status,pending_payment_reference')
+                .eq('id', user.id).single();
+            if (p?.subscription_status === 'active') {
+                clearInterval(_snPollTimer); clearInterval(_snCountdown);
+                _snShowScreen('success');
+            } else if (p?.pending_payment_reference === null && tries > 3) {
+                clearInterval(_snPollTimer); clearInterval(_snCountdown);
+                _snShowFailed('Malipo yalikataliwa. Angalia salio lako na ujaribu tena.');
+            }
+        } catch(e) {}
+    }, 4000);
+}
+
+function _snShowFailed(reason) {
+    const el = document.getElementById('sn-fail-reason');
+    if (el) el.textContent = reason || 'Jaribu tena.';
+    _snShowScreen('failed');
+}
+
+function snippeRetry() {
+    clearInterval(_snPollTimer); clearInterval(_snCountdown);
+    _snReference = null;
+    _snResetBtn();
+    _snShowScreen('input');
+}
+
+function snippeSuccess() {
+    snippeClose();
+    pwHide();
+    showToastMsg('🎉 Karibu LinkaMarket Premium!', 'success');
+    setTimeout(() => loadDashboard(), 400);
+}
+</script>
 
 </body>
 </html>
