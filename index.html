@@ -154,24 +154,32 @@
         flex-direction: column;
     }
     .screen-wrapper {
-        height: 100%;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
         width: 100%;
         display: flex;
         flex-direction: column;
-        overflow-y: auto; 
-        position: relative;
-        padding-bottom: 100px;
-        background-color: white; 
+        overflow-y: auto;
+        background: white;
+        z-index: 10;
     }
 
-    /* FIXED: Mauzo Bottom Navigation Layout */
+    /* Dashboard is always the top layer when active */
     #step-5.screen-wrapper {
         background-color: var(--bg-body);
+        z-index: 100 !important;
         display: flex;
         flex-direction: column;
-        overflow: hidden; 
-        height: 100vh;    
+        overflow: hidden;
+        height: 100vh;
         padding-bottom: 0;
+    }
+
+    /* Hidden screens are completely removed — no overlap possible */
+    .hidden {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
     }
 
     .content-area {
@@ -370,7 +378,7 @@
         display: flex; align-items: center;
     }
 
-    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     .close-btn {
         position: absolute; top: 20px; right: 20px; background: none;
@@ -4365,88 +4373,100 @@
     }
 
     
-    /* ═══════════ ONBOARDING PILLS STYLE ═══════════ */
-    .ob-pill {
-        position: absolute;
-        display: inline-flex; align-items: center; gap: 8px;
-        background: white;
-        border-radius: 99px;
-        padding: 10px 16px 10px 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
-        font-size: 12px; font-weight: 800; color: #0f172a;
-        white-space: nowrap;
-        animation: obPillIn 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
-        animation-delay: var(--delay, 0s);
-        cursor: default;
-        transition: transform 0.2s, box-shadow 0.2s;
+    /* ═══════════ NEW ONBOARDING CHAT STYLES ═══════════ */
+    .ob-chat-row {
+        display: flex; align-items: flex-end; gap: 8px;
+        animation: ob1SlideUp 0.45s cubic-bezier(0.34,1.2,0.64,1) both;
     }
-    .ob-pill:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 8px 28px rgba(0,0,0,0.15); }
-    .ob-pill-icon { font-size: 20px; flex-shrink: 0; }
-    .ob-pill-text { font-size: 12px; font-weight: 800; }
-    .ob-pill-wide { padding: 10px 18px 10px 12px; }
-    .ob-pill-blue { background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #1d4ed8; box-shadow: 0 4px 20px rgba(59,130,246,0.12); }
-    .ob-pill-green { background: linear-gradient(135deg,#f0fdf4,#dcfce7); color: #15803d; box-shadow: 0 4px 20px rgba(37,208,120,0.15); }
-    .ob-pill-center {
-        width: 96px; height: 96px; border-radius: 28px !important;
-        padding: 0 !important; display: flex !important;
-        align-items: center; justify-content: center;
-        background: white !important;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
-        border: 3px solid rgba(255,255,255,0.9);
+    .ob-chat-bot  { flex-direction: row; }
+    .ob-chat-customer { flex-direction: row-reverse; }
+    .ob-chat-hidden { opacity: 0; }
+    .ob-chat-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; flex-shrink: 0;
     }
-    .ob-pill-bot { background: linear-gradient(135deg,#dbeafe,#bfdbfe) !important; }
-    @keyframes obPillIn {
-        from { opacity:0; transform: scale(0.7) translateY(12px); }
-        to   { opacity:1; transform: scale(1) translateY(0); }
+    .ob-avatar-bot      { background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 3px 10px rgba(99,102,241,0.35); }
+    .ob-avatar-customer { background: linear-gradient(135deg,#e2e8f0,#cbd5e1); }
+    .ob-chat-bubble {
+        max-width: 76%; padding: 10px 14px;
+        font-size: 13px; font-weight: 600; line-height: 1.55;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
-    @keyframes obPillFloat1 {
-        0%,100% { transform: translateY(0px) rotate(0deg); }
-        33%     { transform: translateY(-6px) rotate(1deg); }
-        66%     { transform: translateY(3px) rotate(-0.5deg); }
+    .ob-bubble-bot {
+        background: white; color: #1e1b4b;
+        border-radius: 18px 18px 18px 4px;
+        border: 1.5px solid rgba(99,102,241,0.12);
     }
-    @keyframes obPillFloat2 {
-        0%,100% { transform: translateY(0px) rotate(0deg); }
-        40%     { transform: translateY(5px) rotate(-1deg); }
-        70%     { transform: translateY(-4px) rotate(0.8deg); }
+    .ob-bubble-customer {
+        background: linear-gradient(135deg,#6366f1,#4f46e5);
+        color: white; border-radius: 18px 18px 4px 18px;
     }
-    .ob-pill { animation: obPillIn 0.5s cubic-bezier(0.34,1.2,0.64,1) both, obPillFloat1 4s ease-in-out infinite; animation-delay: var(--delay, 0s), calc(var(--delay, 0s) + 0.5s); }
-    .ob-pill:nth-child(even) { animation: obPillIn 0.5s cubic-bezier(0.34,1.2,0.64,1) both, obPillFloat2 3.5s ease-in-out infinite; animation-delay: var(--delay, 0s), calc(var(--delay, 0s) + 0.5s); }
-    @keyframes ob1CardFloat {
-        0%,100% { transform: translateX(-50%) translateY(0); }
-        50%      { transform: translateX(-50%) translateY(-10px); }
+    .ob-typing-indicator {
+        display: flex; align-items: center; gap: 4px;
+        padding: 12px 16px !important; min-width: 56px;
     }
-    @keyframes ob1BadgePop {
-        0%,100% { transform: scale(1); }
-        50%      { transform: scale(1.07); }
+    .ob-typing-indicator span {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #a5b4fc; display: inline-block;
+        animation: obTypingDot 1.2s ease-in-out infinite;
     }
-    @keyframes ob1SlideUp {
-        from { opacity:0; transform:translateY(18px); }
-        to   { opacity:1; transform:translateY(0); }
+    .ob-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .ob-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes obTypingDot {
+        0%,60%,100% { transform: translateY(0); opacity:0.4; }
+        30%         { transform: translateY(-5px); opacity:1; }
     }
-    @keyframes ob1Pulse {
-        0%,100% { opacity:0.5; }
-        50%      { opacity:1; }
+    /* Page 2 illustration animations */
+    @keyframes ob2PersonFloat1 {
+        0%,100% { transform: translateY(-50%) translateY(0); }
+        50%      { transform: translateY(-50%) translateY(-8px); }
     }
-    @keyframes ob2BotFloat {
-        0%,100% { transform: translateY(0); }
-        50%      { transform: translateY(-8px); }
+    @keyframes ob2PersonFloat2 {
+        0%,100% { transform: translateY(-50%) translateY(0); }
+        50%      { transform: translateY(-50%) translateY(6px); }
     }
-    /* Responsive: on desktop, constrain to phone width */
-    @media (min-width: 520px) {
-        #step-1, #step-2, #step-3 {
-            align-items: center;
-            justify-content: center;
-        }
-        #step-1 > div, #step-2 > div, #step-3 > div {
-            max-width: 390px;
-            width: 100%;
-        }
-        #step-1 > *:first-child,
-        #step-2 > *:first-child,
-        #step-3 > *:first-child {
-            max-width: 390px;
-        }
+    @keyframes ob2MsgFloat1 {
+        0%,100% { transform: translateX(-50%) translateY(0); opacity:1; }
+        50%      { transform: translateX(-50%) translateY(-6px); opacity:0.8; }
     }
+    @keyframes ob2MsgFloat2 {
+        0%,100% { transform: translateX(-50%) translateY(0); opacity:1; }
+        50%      { transform: translateX(-50%) translateY(5px); opacity:0.8; }
+    }
+    @keyframes ob2CodeRing1 {
+        from { transform: translate(-50%,-50%) rotate(0deg); }
+        to   { transform: translate(-50%,-50%) rotate(360deg); }
+    }
+    @keyframes ob2CodeRing2 {
+        from { transform: translate(-50%,-50%) rotate(0deg); }
+        to   { transform: translate(-50%,-50%) rotate(-360deg); }
+    }
+    @keyframes ob2CodePulse {
+        0%,100% { text-shadow: 0 0 40px rgba(165,180,252,0.6),0 0 80px rgba(99,102,241,0.3); }
+        50%      { text-shadow: 0 0 60px rgba(165,180,252,0.9),0 0 120px rgba(99,102,241,0.5); }
+    }
+    /* Page 3 celebration animations */
+    @keyframes ob3RingPulse {
+        0%,100% { transform: translate(-50%,-50%) scale(1); opacity:1; }
+        50%      { transform: translate(-50%,-50%) scale(1.1); opacity:0.6; }
+    }
+    @keyframes ob3CheckPop {
+        from { transform: scale(0); opacity:0; }
+        to   { transform: scale(1); opacity:1; }
+    }
+    @keyframes ob3FloatBadge1 {
+        0%,100% { transform: translateY(0) rotate(0deg); }
+        50%      { transform: translateY(-8px) rotate(10deg); }
+    }
+    @keyframes ob3FloatBadge2 {
+        0%,100% { transform: translateY(0) rotate(0deg); }
+        50%      { transform: translateY(6px) rotate(-8deg); }
+    }
+    
+    .ob-pill { display:none; }
+    @keyframes ob1SlideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @media (min-width:520px) { #step-1,#step-2,#step-3 { align-items:center; justify-content:center; } #step-1>div,#step-2>div,#step-3>div { max-width:390px; width:100%; } }
 
     </style>
 </head>
@@ -4665,11 +4685,149 @@
      PAGE 1 — Duka Lako la AI
 ══════════════════════════════════════════════════════ -->
 <div id="step-1" class="screen-wrapper hidden" style="
-    position:fixed;inset:0;z-index:200;
-    background:linear-gradient(170deg,#e8f5e9 0%,#e3f2fd 40%,#f3e5f5 100%);
-    display:flex;flex-direction:column;
-    overflow:hidden;
+    position:fixed;inset:0;
+    background:linear-gradient(160deg,#eef2ff 0%,#e0e7ff 35%,#ede9fe 70%,#faf5ff 100%);
+    display:flex;flex-direction:column;overflow:hidden;
 ">
+    <!-- LinkaMarket logo top -->
+    <div style="text-align:center;padding:28px 20px 0;flex-shrink:0;">
+        <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1e1b4b;letter-spacing:-0.5px;">LinkaMarket</div>
+    </div>
+
+    <!-- Animated chat section -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 20px;gap:10px;min-height:0;overflow:hidden;" id="ob1-chat-area">
+
+        <!-- Bot message 1 -->
+        <div class="ob-chat-row ob-chat-bot" style="animation-delay:0.1s;">
+            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
+            <div class="ob-chat-bubble ob-bubble-bot">
+                Habari! Mimi ni AI Bot wako wa biashara 👋<br>
+                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">LinkaMarket AI · Sasa hivi</span>
+            </div>
+        </div>
+
+        <!-- Customer message 1 -->
+        <div class="ob-chat-row ob-chat-customer" style="animation-delay:0.5s;">
+            <div class="ob-chat-bubble ob-bubble-customer">
+                Habari! Je, mna viatu vya watoto?
+            </div>
+            <div class="ob-chat-avatar ob-avatar-customer">👤</div>
+        </div>
+
+        <!-- Bot reply - typing then message -->
+        <div class="ob-chat-row ob-chat-bot" style="animation-delay:0.9s;" id="ob1-typing-row">
+            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
+            <div class="ob-chat-bubble ob-bubble-bot ob-typing-indicator" id="ob1-typing">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="ob-chat-row ob-chat-bot ob-chat-hidden" style="animation-delay:1.8s;" id="ob1-reply-row">
+            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
+            <div class="ob-chat-bubble ob-bubble-bot">
+                Ndio! 🎉 Tuna viatu vizuri sana:<br>
+                👟 <strong>Nike Kids</strong> — Tsh 45,000<br>
+                👟 <strong>Adidas Jr</strong> — Tsh 38,000<br>
+                Unataka kupiga order? 📦
+                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">LinkaMarket AI · Sasa hivi</span>
+            </div>
+        </div>
+
+        <!-- Customer orders -->
+        <div class="ob-chat-row ob-chat-customer ob-chat-hidden" style="animation-delay:2.5s;" id="ob1-order-row">
+            <div class="ob-chat-bubble ob-bubble-customer">
+                Nipe moja ya Nike! 🛒
+            </div>
+            <div class="ob-chat-avatar ob-avatar-customer">👤</div>
+        </div>
+
+        <!-- Bot confirms -->
+        <div class="ob-chat-row ob-chat-bot ob-chat-hidden" style="animation-delay:3.1s;" id="ob1-confirm-row">
+            <div class="ob-chat-avatar ob-avatar-bot">🤖</div>
+            <div class="ob-chat-bubble ob-bubble-bot">
+                ✅ Order imepokewa! Tutakufikia hivi karibuni 🚀<br>
+                <span style="font-size:11px;opacity:0.65;margin-top:3px;display:block;">Bot inafanya kazi 24/7 — hata ukiwa umelala 😴</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom white panel -->
+    <div style="
+        background:white;border-radius:32px 32px 0 0;
+        padding:24px 24px 32px;
+        box-shadow:0 -8px 40px rgba(99,102,241,0.12);
+        flex-shrink:0;
+    ">
+        <!-- Progress dots -->
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:18px;">
+            <div style="width:24px;height:6px;border-radius:3px;background:#6366f1;"></div>
+            <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
+            <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
+        </div>
+
+        <div style="font-size:22px;font-weight:900;color:#0f172a;line-height:1.25;margin-bottom:5px;letter-spacing:-0.5px;">
+            Duka Lako la AI<br>Linaanza Hapa 🚀
+        </div>
+        <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:18px;">
+            Weka jina la biashara na namba ya WhatsApp — Bot yako itajibu wateja kiotomatiki saa 24
+        </div>
+
+        <!-- Business name -->
+        <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Jina la Duka</div>
+            <div style="position:relative;">
+                <span class="material-symbols-outlined" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:17px;color:#a5b4fc;">storefront</span>
+                <input type="text" id="ob-shop-name" placeholder="Mfano: Duka la Asha Fashion"
+                    style="width:100%;padding:13px 13px 13px 40px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:14px;font-weight:600;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color 0.2s,background 0.2s;"
+                    onfocus="this.style.borderColor='#6366f1';this.style.background='#eef2ff'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+            </div>
+        </div>
+
+        <!-- WhatsApp number -->
+        <div style="margin-bottom:18px;">
+            <div style="font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Namba ya WhatsApp</div>
+            <div style="display:flex;gap:8px;">
+                <select id="ob-country-code" style="padding:13px 8px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:13px;font-weight:800;font-family:inherit;outline:none;cursor:pointer;flex-shrink:0;min-width:100px;-webkit-appearance:none;">
+                    <option value="+255">🇹🇿 +255</option>
+                    <option value="+254">🇰🇪 +254</option>
+                    <option value="+256">🇺🇬 +256</option>
+                    <option value="+250">🇷🇼 +250</option>
+                    <option value="+233">🇬🇭 +233</option>
+                    <option value="+234">🇳🇬 +234</option>
+                </select>
+                <input type="tel" id="ob-whatsapp" placeholder="712 345 678"
+                    style="flex:1;padding:13px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;color:#0f172a;font-size:14px;font-weight:600;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color 0.2s,background 0.2s;"
+                    onfocus="this.style.borderColor='#6366f1';this.style.background='#eef2ff'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+            </div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:5px;display:flex;align-items:center;gap:4px;">
+                <span class="material-symbols-outlined" style="font-size:11px;">info</span>
+                Tumia namba yenye umri wa miezi 2+ (salama zaidi)
+            </div>
+        </div>
+
+        <button id="ob-btn-1" onclick="obStep1Next()" style="
+            width:100%;padding:16px;
+            background:linear-gradient(135deg,#6366f1,#4f46e5);
+            color:white;border:none;border-radius:16px;
+            font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;
+            box-shadow:0 8px 24px rgba(99,102,241,0.4);
+            display:flex;align-items:center;justify-content:center;gap:10px;
+            transition:transform 0.15s,box-shadow 0.15s;
+        "
+        onmousedown="this.style.transform='scale(0.97)'"
+        onmouseup="this.style.transform='scale(1)'"
+        ontouchstart="this.style.transform='scale(0.97)'"
+        ontouchend="this.style.transform='scale(1)'">
+            <span style="font-size:17px;">✨</span>
+            Endelea — Anza Sasa
+        </button>
+        <div style="text-align:center;margin-top:8px;font-size:11px;color:#94a3b8;">
+            Siku 5 bure · Bila kadi ya benki · Bila mkataba
+        </div>
+    </div>
+</div>
     <!-- Floating feature pills — top section -->
     <div id="ob1-pills" style="
         flex:1;position:relative;
@@ -4822,102 +4980,82 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════
-     PAGE 2 — Unganisha WhatsApp na AI
+     PAGE 2 — Connect WhatsApp + Get Code
 ══════════════════════════════════════════════════════ -->
 <div id="step-2" class="screen-wrapper hidden" style="
-    position:fixed;inset:0;z-index:200;
-    background:linear-gradient(170deg,#e8eaf6 0%,#e3f2fd 40%,#e8f5e9 100%);
-    display:flex;flex-direction:column;
-    overflow:hidden;
+    position:fixed;inset:0;
+    background:linear-gradient(160deg,#eef2ff 0%,#e0e7ff 40%,#ede9fe 100%);
+    display:flex;flex-direction:column;overflow:hidden;
 ">
-    <!-- Floating bot feature pills -->
-    <div style="
-        flex:1;position:relative;
-        display:flex;align-items:center;justify-content:center;
-        min-height:0;padding:60px 20px 0;overflow:visible;
-    ">
-        <!-- Pill 1 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0s;top:12%;left:3%;">
-            <span class="ob-pill-icon">🔑</span>
-            <span class="ob-pill-text">Code ya 8 Tarakimu</span>
+    <div style="text-align:center;padding:28px 20px 0;flex-shrink:0;position:relative;">
+        <button onclick="showScreen('step-1',true)" style="position:absolute;left:20px;top:28px;background:rgba(99,102,241,0.1);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#6366f1;">arrow_back</span>
+        </button>
+        <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#1e1b4b;">LinkaMarket</div>
+    </div>
+
+    <!-- Central illustration area -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 24px;min-height:0;">
+
+        <!-- Two-person connection illustration -->
+        <div style="position:relative;width:220px;height:160px;margin-bottom:8px;">
+            <!-- Glow circle background -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%);"></div>
+
+            <!-- Person left (merchant) -->
+            <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;animation:ob2PersonFloat1 3s ease-in-out infinite;">
+                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 20px rgba(99,102,241,0.4);">😊</div>
+                <div style="width:36px;height:50px;border-radius:18px 18px 12px 12px;background:linear-gradient(160deg,#6366f1,#4f46e5);box-shadow:0 4px 14px rgba(99,102,241,0.3);"></div>
+                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:0.5px;">Wewe</div>
+            </div>
+
+            <!-- Floating message bubbles in center -->
+            <div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);white-space:nowrap;">
+                <div style="background:white;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:800;color:#6366f1;box-shadow:0 3px 12px rgba(99,102,241,0.2);animation:ob2MsgFloat1 2.2s ease-in-out infinite;">💬 Agizo limetumwa</div>
+            </div>
+            <div style="position:absolute;bottom:30px;left:50%;transform:translateX(-50%);white-space:nowrap;">
+                <div style="background:white;border-radius:10px;padding:5px 10px;font-size:10px;font-weight:800;color:#25d078;box-shadow:0 3px 12px rgba(37,208,120,0.2);animation:ob2MsgFloat2 2.8s ease-in-out infinite 0.4s;">🤖 Bot ilijibu!</div>
+            </div>
+
+            <!-- Person right (customer) -->
+            <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;animation:ob2PersonFloat2 3.4s ease-in-out infinite 0.5s;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#a5b4fc,#818cf8);border:2px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(99,102,241,0.2);">😊</div>
+                <div style="width:32px;height:46px;border-radius:16px 16px 10px 10px;background:linear-gradient(160deg,#a5b4fc,#818cf8);box-shadow:0 4px 12px rgba(99,102,241,0.2);"></div>
+                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:0.5px;">Mteja</div>
+            </div>
         </div>
-        <!-- Pill 2 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0.15s;top:8%;right:2%;">
-            <span class="ob-pill-icon">⚡</span>
-            <span class="ob-pill-text">Inaanza Papo Hapo</span>
+
+        <div style="font-size:22px;font-weight:900;color:#1e1b4b;text-align:center;line-height:1.25;margin-bottom:6px;">
+            Connect Your Shop
         </div>
-        <!-- Pill 3 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0.3s;top:30%;left:0%;">
-            <span class="ob-pill-icon">🛡️</span>
-            <span class="ob-pill-text">Anti-Ban Protection</span>
-        </div>
-        <!-- Pill 4 -->
-        <div class="ob-pill ob-pill-blue ob-pill-wide" style="--delay:0.45s;top:27%;right:0%;">
-            <span class="ob-pill-icon">🇹🇿</span>
-            <span class="ob-pill-text">Kiswahili cha Asili</span>
-        </div>
-        <!-- Pill 5 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0.6s;top:50%;left:4%;">
-            <span class="ob-pill-icon">📱</span>
-            <span class="ob-pill-text">Linked Devices</span>
-        </div>
-        <!-- Pill 6 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0.75s;top:48%;right:4%;">
-            <span class="ob-pill-icon">💬</span>
-            <span class="ob-pill-text">Jibu Otomatiki</span>
-        </div>
-        <!-- Center bot icon -->
-        <div class="ob-pill ob-pill-center ob-pill-bot" style="--delay:0.2s;top:50%;left:50%;transform:translate(-50%,-50%);">
-            <span style="font-size:50px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.15));animation:ob2BotFloat 2.5s ease-in-out infinite;">🤖</span>
-        </div>
-        <!-- Pill 8 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:0.9s;bottom:8%;left:6%;">
-            <span class="ob-pill-icon">⏱️</span>
-            <span class="ob-pill-text">Jibu 1-30 Dak</span>
-        </div>
-        <!-- Pill 9 -->
-        <div class="ob-pill ob-pill-blue" style="--delay:1.05s;bottom:6%;right:5%;">
-            <span class="ob-pill-icon">🔒</span>
-            <span class="ob-pill-text">Data Salama</span>
+        <div style="font-size:13px;color:#64748b;text-align:center;line-height:1.6;max-width:280px;">
+            Tap below to receive your unique WhatsApp connection code and start managing sales.
         </div>
     </div>
 
-    <!-- Bottom white panel -->
-    <div style="
-        background:white;border-radius:32px 32px 0 0;
-        padding:28px 24px 36px;
-        box-shadow:0 -8px 40px rgba(0,0,0,0.08);
-        flex-shrink:0;
-        max-height:60vh;overflow-y:auto;
-    ">
+    <!-- Bottom panel -->
+    <div style="background:white;border-radius:32px 32px 0 0;padding:24px 24px 36px;box-shadow:0 -8px 40px rgba(99,102,241,0.12);flex-shrink:0;">
         <!-- Progress dots -->
-        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:22px;">
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:18px;">
             <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
-            <div style="width:24px;height:6px;border-radius:3px;background:#3b82f6;"></div>
+            <div style="width:24px;height:6px;border-radius:3px;background:#6366f1;"></div>
             <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
-        </div>
-
-        <div style="font-size:24px;font-weight:900;color:#0f172a;line-height:1.25;margin-bottom:6px;letter-spacing:-0.5px;">
-            Unganisha AI na<br>WhatsApp Yako 🤖
-        </div>
-        <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:20px;">
-            Bot itajibu wateja wako kiotomatiki — hata ukiwa umelala usiku wa manane 😴
         </div>
 
         <!-- STATE A: Get code button -->
         <div id="ob2-setup-state">
-            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:14px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
-                <span style="font-size:20px;flex-shrink:0;">💡</span>
-                <div style="font-size:12px;color:#0369a1;font-weight:600;line-height:1.65;">
-                    Tutakupa code ya tarakimu 8 → ingiza kwenye WhatsApp yako → bot inaanza kufanya kazi <strong>papo hapo</strong>
+            <div style="background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:14px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:18px;flex-shrink:0;">💡</span>
+                <div style="font-size:12px;color:#4338ca;font-weight:600;line-height:1.65;">
+                    Tutakupa code ya tarakimu 8 → ingiza kwenye WhatsApp yako → bot inaanza kufanya kazi <strong>papo hapo!</strong>
                 </div>
             </div>
             <button id="ob2-get-code-btn" onclick="ob2GetCode()" style="
-                width:100%;padding:18px;
-                background:linear-gradient(135deg,#3b82f6,#1d4ed8);
-                color:white;border:none;border-radius:18px;
+                width:100%;padding:16px;
+                background:linear-gradient(135deg,#6366f1,#4f46e5);
+                color:white;border:none;border-radius:16px;
                 font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;
-                box-shadow:0 8px 24px rgba(59,130,246,0.35);
+                box-shadow:0 8px 24px rgba(99,102,241,0.4);
                 display:flex;align-items:center;justify-content:center;gap:10px;
                 transition:transform 0.15s;
             "
@@ -4925,81 +5063,92 @@
             onmouseup="this.style.transform='scale(1)'"
             ontouchstart="this.style.transform='scale(0.97)'"
             ontouchend="this.style.transform='scale(1)'">
-                <span class="material-symbols-outlined" style="font-size:22px;">phonelink_ring</span>
-                Pata Code ya WhatsApp Bot
+                <span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span>
+                Pata WhatsApp Code
             </button>
-            <button onclick="showScreen('step-1',true)" style="width:100%;background:none;border:none;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:10px;margin-top:4px;">
-                ← Rudi nyuma
-            </button>
+            <div style="text-align:center;margin-top:10px;font-size:11px;color:#94a3b8;">Need help? Contact support</div>
         </div>
 
-        <!-- STATE B: Code shown (hidden default) -->
+        <!-- STATE B: Code shown -->
         <div id="ob2-code-state" style="display:none;">
-            <!-- Code display -->
+            <!-- Animated code box -->
             <div style="
-                background:linear-gradient(135deg,#064e44,#075e54);
+                background:linear-gradient(135deg,#1e1b4b,#312e81);
                 border-radius:20px;padding:22px 20px;text-align:center;
-                margin-bottom:14px;position:relative;overflow:hidden;
-                box-shadow:0 8px 32px rgba(6,78,68,0.4);
+                margin-bottom:16px;position:relative;overflow:hidden;
+                box-shadow:0 12px 40px rgba(30,27,75,0.4);
+                border:1px solid rgba(165,180,252,0.2);
             ">
-                <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
-                <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">🔑 CODE YAKO</div>
+                <!-- Animated glow rings -->
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;border:1.5px solid rgba(165,180,252,0.08);animation:ob2CodeRing1 3s linear infinite;pointer-events:none;"></div>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;border:1.5px solid rgba(165,180,252,0.12);animation:ob2CodeRing2 2.2s linear infinite reverse;pointer-events:none;"></div>
+
+                <div style="font-size:10px;font-weight:800;color:rgba(165,180,252,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;position:relative;">🔑 CODE YAKO</div>
                 <div id="ob2-pair-code" style="
-                    font-size:42px;font-weight:900;color:#4ade80;
-                    font-family:monospace;letter-spacing:8px;
-                    text-shadow:0 0 30px rgba(74,222,128,0.5);
+                    font-size:44px;font-weight:900;
+                    font-family:monospace;letter-spacing:10px;
+                    color:#a5b4fc;
+                    text-shadow:0 0 40px rgba(165,180,252,0.6),0 0 80px rgba(99,102,241,0.3);
+                    position:relative;
+                    animation:ob2CodePulse 2s ease-in-out infinite;
                 ">- - - -</div>
-                <div id="ob2-timer" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;font-weight:700;">⏱ Inaisha kwa sekunde 60...</div>
+                <div id="ob2-timer" style="font-size:11px;color:rgba(165,180,252,0.5);margin-top:8px;font-weight:700;position:relative;">⏱ Inaisha kwa sekunde 60...</div>
+
+                <!-- Copy button -->
                 <button onclick="ob2CopyCode()" style="
-                    margin-top:12px;background:rgba(255,255,255,0.12);
-                    border:1px solid rgba(255,255,255,0.2);border-radius:10px;
-                    padding:8px 18px;color:white;font-size:12px;font-weight:800;
+                    margin-top:14px;
+                    background:rgba(165,180,252,0.15);
+                    border:1.5px solid rgba(165,180,252,0.3);
+                    border-radius:12px;padding:10px 24px;
+                    color:#a5b4fc;font-size:13px;font-weight:800;
                     cursor:pointer;font-family:inherit;
-                    display:inline-flex;align-items:center;gap:6px;
-                ">
-                    <span class="material-symbols-outlined" style="font-size:15px;">content_copy</span>
+                    display:inline-flex;align-items:center;gap:8px;
+                    transition:all 0.2s;position:relative;
+                "
+                onmouseenter="this.style.background='rgba(165,180,252,0.25)'"
+                onmouseleave="this.style.background='rgba(165,180,252,0.15)'">
+                    <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
                     Nakili Code
                 </button>
             </div>
 
-            <!-- Steps card -->
+            <!-- WhatsApp steps -->
             <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:16px;overflow:hidden;margin-bottom:12px;">
-                <div style="background:linear-gradient(135deg,#075e54,#128c7e);padding:10px 14px;">
+                <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:10px 14px;">
                     <div style="font-size:12px;font-weight:900;color:white;">📱 Fuata hatua kwenye WhatsApp yako:</div>
                 </div>
                 <div style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:24px;height:24px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">1</div>
-                        <div style="font-size:12px;color:#374151;font-weight:600;">Fungua <strong>WhatsApp</strong> → gonga <strong>⋮ dots tatu</strong> → <strong>Settings</strong></div>
+                        <div style="width:24px;height:24px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">1</div>
+                        <div style="font-size:12px;color:#374151;font-weight:600;">Fungua <strong>WhatsApp</strong> → gonga <strong>⋮</strong> → <strong>Settings → Linked Devices</strong></div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="width:24px;height:24px;border-radius:50%;background:#075e54;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">2</div>
-                        <div style="font-size:12px;color:#374151;font-weight:600;">Gonga <strong>Linked Devices</strong> → <strong>Link a Device</strong></div>
+                        <div style="width:24px;height:24px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">2</div>
+                        <div style="font-size:12px;color:#374151;font-weight:600;">Gonga <strong>Link a Device</strong> → <strong>Link with phone number</strong></div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div style="width:24px;height:24px;border-radius:50%;background:#25d078;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;">3</div>
-                        <div style="font-size:12px;color:#374151;font-weight:600;">Chagua <strong>Link with phone number</strong> → <strong>ingiza code</strong></div>
+                        <div style="font-size:12px;color:#374151;font-weight:600;">Ingiza <strong>code</strong> uliyoona hapo juu ☝️</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Waiting -->
-            <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <div style="width:16px;height:16px;border:2.5px solid #bbf7d0;border-top-color:#16a34a;border-radius:50%;animation:spin360 0.8s linear infinite;flex-shrink:0;"></div>
+            <!-- Waiting indicator -->
+            <div style="background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="width:16px;height:16px;border:2.5px solid #c7d2fe;border-top-color:#6366f1;border-radius:50%;animation:spin360 0.8s linear infinite;flex-shrink:0;"></div>
                 <div>
-                    <div style="font-size:12px;font-weight:800;color:#15803d;">Inasubiri uunganisho...</div>
-                    <div style="font-size:10px;color:#4b7c59;margin-top:1px;">Angalia taarifa ya WhatsApp kwenye simu yako 📲</div>
+                    <div style="font-size:12px;font-weight:800;color:#4338ca;">Inasubiri uunganisho...</div>
+                    <div style="font-size:10px;color:#6366f1;margin-top:1px;opacity:0.7;">Angalia taarifa ya WhatsApp kwenye simu yako 📲</div>
                 </div>
             </div>
 
             <button onclick="ob2ConfirmConnected()" style="
-                width:100%;padding:16px;
+                width:100%;padding:15px;
                 background:linear-gradient(135deg,#25d078,#16a34a);
                 color:white;border:none;border-radius:16px;
                 font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;
                 display:flex;align-items:center;justify-content:center;gap:8px;
-                box-shadow:0 6px 20px rgba(37,208,120,0.3);
-                margin-bottom:8px;
+                box-shadow:0 6px 20px rgba(37,208,120,0.3);margin-bottom:8px;
             ">
                 <span class="material-symbols-outlined" style="font-size:20px;">check_circle</span>
                 Nimeingiza Code — Thibitisha
@@ -5012,87 +5161,70 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════
-     PAGE 3 — Celebration / Connected
+     PAGE 3 — WhatsApp Connected! Celebration
 ══════════════════════════════════════════════════════ -->
 <div id="step-3" class="screen-wrapper hidden" style="
-    position:fixed;inset:0;z-index:200;
-    background:linear-gradient(170deg,#f0fdf4 0%,#dcfce7 40%,#bbf7d0 100%);
-    display:flex;flex-direction:column;
-    overflow:hidden;
+    position:fixed;inset:0;
+    background:linear-gradient(160deg,#eef2ff 0%,#e0e7ff 40%,#f0fdf4 100%);
+    display:flex;flex-direction:column;overflow:hidden;
 ">
-    <!-- Confetti pills floating -->
-    <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:60px 20px 0;overflow:visible;">
-        <div class="ob-pill ob-pill-green" style="--delay:0s;top:12%;left:4%;">
-            <span class="ob-pill-icon">✅</span><span class="ob-pill-text">Bot Imeunganishwa!</span>
+    <div style="text-align:center;padding:28px 20px 0;flex-shrink:0;position:relative;">
+        <button onclick="ob3GoToDashboard()" style="position:absolute;right:20px;top:28px;background:rgba(99,102,241,0.1);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#6366f1;">close</span>
+        </button>
+        <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#1e1b4b;">LinkaMarket</div>
+    </div>
+
+    <!-- Celebration illustration -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px;min-height:0;">
+        <!-- Big success circle with check -->
+        <div style="position:relative;margin-bottom:20px;">
+            <!-- Outer pulse ring -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;border-radius:50%;background:rgba(37,208,120,0.08);animation:ob3RingPulse 2s ease-in-out infinite;"></div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:130px;height:130px;border-radius:50%;background:rgba(37,208,120,0.12);animation:ob3RingPulse 2s ease-in-out infinite 0.3s;"></div>
+            <!-- Main circle -->
+            <div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(99,102,241,0.4);animation:ob3CheckPop 0.6s cubic-bezier(0.34,1.5,0.64,1) both;position:relative;">
+                <span class="material-symbols-outlined" style="font-size:48px;color:white;font-variation-settings:'FILL' 1;">check_circle</span>
+            </div>
+            <!-- Floating emoji badges -->
+            <div style="position:absolute;top:-8px;right:-14px;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,0.1);animation:ob3FloatBadge1 2.5s ease-in-out infinite;">😊</div>
+            <div style="position:absolute;bottom:-6px;left:-16px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 10px rgba(0,0,0,0.08);animation:ob3FloatBadge2 3s ease-in-out infinite 0.5s;">✨</div>
         </div>
-        <div class="ob-pill ob-pill-green" style="--delay:0.2s;top:8%;right:3%;">
-            <span class="ob-pill-icon">🎉</span><span class="ob-pill-text">Hongera!</span>
+
+        <div style="font-size:26px;font-weight:900;color:#1e1b4b;text-align:center;line-height:1.25;margin-bottom:8px;animation:ob1SlideUp 0.5s ease 0.3s both;">
+            WhatsApp Connected!
         </div>
-        <div class="ob-pill ob-pill-green" style="--delay:0.4s;top:32%;left:1%;">
-            <span class="ob-pill-icon">💰</span><span class="ob-pill-text">Pesa Inaingia</span>
-        </div>
-        <div class="ob-pill ob-pill-green ob-pill-wide" style="--delay:0.6s;top:29%;right:0%;">
-            <span class="ob-pill-icon">😴</span><span class="ob-pill-text">Lala — Bot Inauza</span>
-        </div>
-        <div class="ob-pill ob-pill-green" style="--delay:0.8s;top:52%;left:5%;">
-            <span class="ob-pill-icon">🚀</span><span class="ob-pill-text">Biashara Live!</span>
-        </div>
-        <div class="ob-pill ob-pill-green" style="--delay:1s;top:50%;right:4%;">
-            <span class="ob-pill-icon">⭐</span><span class="ob-pill-text">AI Yako</span>
-        </div>
-        <!-- Center -->
-        <div class="ob-pill ob-pill-center" style="--delay:0.1s;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#25d078,#16a34a);box-shadow:0 8px 40px rgba(37,208,120,0.5);">
-            <span style="font-size:52px;animation:ob2BotFloat 2s ease-in-out infinite;">🎊</span>
-        </div>
-        <div class="ob-pill ob-pill-green" style="--delay:1.2s;bottom:8%;left:7%;">
-            <span class="ob-pill-icon">📦</span><span class="ob-pill-text">Ongeza Bidhaa</span>
-        </div>
-        <div class="ob-pill ob-pill-green" style="--delay:1.4s;bottom:5%;right:6%;">
-            <span class="ob-pill-icon">🏆</span><span class="ob-pill-text">Umefanikiwa!</span>
+        <div style="font-size:14px;color:#64748b;text-align:center;line-height:1.6;max-width:260px;animation:ob1SlideUp 0.5s ease 0.5s both;">
+            Your shop is now linked and ready to go. Bot yako itajibu wateja kiotomatiki 24/7 🚀
         </div>
     </div>
 
     <!-- Bottom panel -->
-    <div style="
-        background:white;border-radius:32px 32px 0 0;
-        padding:28px 24px 40px;
-        box-shadow:0 -8px 40px rgba(0,0,0,0.08);
-        flex-shrink:0;
-    ">
+    <div style="background:white;border-radius:32px 32px 0 0;padding:24px 24px 40px;box-shadow:0 -8px 40px rgba(99,102,241,0.12);flex-shrink:0;">
         <!-- Progress dots -->
-        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:22px;">
+        <div style="display:flex;justify-content:center;gap:6px;margin-bottom:20px;">
             <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
             <div style="width:8px;height:6px;border-radius:3px;background:#e2e8f0;"></div>
             <div style="width:24px;height:6px;border-radius:3px;background:#25d078;"></div>
         </div>
 
-        <div style="font-size:28px;font-weight:900;color:#0f172a;line-height:1.25;margin-bottom:6px;letter-spacing:-0.5px;">
-            Hongera! 🎉<br>Duka Lako Liko Hai!
-        </div>
-        <div style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:22px;">
-            Bot yako ya AI imeunganishwa na WhatsApp — sasa itajibu wateja wako kiotomatiki saa 24, hata ukiwa umelala 😴
-        </div>
-
         <button onclick="ob3GoToDashboard()" style="
-            width:100%;padding:18px;
-            background:linear-gradient(135deg,#25d078,#16a34a);
-            color:white;border:none;border-radius:18px;
-            font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;
-            box-shadow:0 8px 24px rgba(37,208,120,0.35);
+            width:100%;padding:17px;
+            background:linear-gradient(135deg,#6366f1,#4f46e5);
+            color:white;border:none;border-radius:16px;
+            font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;
+            box-shadow:0 8px 24px rgba(99,102,241,0.4);
             display:flex;align-items:center;justify-content:center;gap:10px;
-            transition:transform 0.15s;
+            transition:transform 0.15s;animation:ob1SlideUp 0.5s ease 0.7s both;
         "
         onmousedown="this.style.transform='scale(0.97)'"
         onmouseup="this.style.transform='scale(1)'"
         ontouchstart="this.style.transform='scale(0.97)'"
         ontouchend="this.style.transform='scale(1)'">
-            <span class="material-symbols-outlined" style="font-size:22px;">rocket_launch</span>
-            Anza Kufanya Biashara! 💰
+            <span class="material-symbols-outlined" style="font-size:20px;">rocket_launch</span>
+            Get Started
         </button>
-
-        <div style="text-align:center;margin-top:10px;font-size:11px;color:#94a3b8;">
-            Hatua inayofuata: Ongeza bidhaa zako za kwanza
-        </div>
+        <div style="text-align:center;margin-top:10px;font-size:11px;color:#94a3b8;">Need help? Contact support</div>
     </div>
 </div>
 
@@ -6271,45 +6403,113 @@
     function trackSignup() { if(window.amp) amp.logEvent("Signup Completed"); }
     function trackAddProduct(productName, price) { if(window.amp) amp.logEvent("Product Added", { product_name: productName, price: price }); }
     
+    // ── Customer Storefront Loaders ──────────────────────────
+    async function loadCustomerStorefrontBySlug(slug) {
+        try {
+            IS_CUSTOMER_MODE = true;
+            const { data: profile, error } = await sb.from('profiles')
+                .select('id,business_name,whatsapp_number,phone_number,store_slug,store_template')
+                .eq('store_slug', slug).single();
+            if (error || !profile) { IS_CUSTOMER_MODE = false; const { data:{session} } = await sb.auth.getSession(); session ? (showScreen('step-5',false), loadDashboard()) : showScreen('step-auth',true); return; }
+            CURRENT_MERCHANT_DATA = profile; CUSTOMER_MERCHANT_ID = profile.id;
+            await loadCustomerStorefrontData(profile);
+        } catch(e) { console.error('loadCustomerStorefrontBySlug:', e); IS_CUSTOMER_MODE = false; showScreen('step-auth', true); }
+    }
+    async function loadCustomerStorefront(merchantId) {
+        try {
+            IS_CUSTOMER_MODE = true;
+            const { data: profile, error } = await sb.from('profiles')
+                .select('id,business_name,whatsapp_number,phone_number,store_slug,store_template')
+                .eq('id', merchantId).single();
+            if (error || !profile) { IS_CUSTOMER_MODE = false; showScreen('step-auth', true); return; }
+            CURRENT_MERCHANT_DATA = profile; CUSTOMER_MERCHANT_ID = profile.id;
+            await loadCustomerStorefrontData(profile);
+        } catch(e) { console.error('loadCustomerStorefront:', e); IS_CUSTOMER_MODE = false; showScreen('step-auth', true); }
+    }
+    async function loadCustomerStorefrontData(profile) {
+        if (!profile) { showScreen('step-auth', true); return; }
+        showScreen('customer-storefront', true);
+        trackStoreView(profile.id);
+        const nameEl = document.getElementById('storefront-shop-name');
+        if (nameEl) nameEl.textContent = profile.business_name || 'Duka';
+        const { data: products } = await sb.from('products').select('*, product_images(image_url)').eq('merchant_id', profile.id).eq('is_active', true).order('created_at', { ascending: false });
+        renderSmartStorefront(products || []);
+    }
+
     // --- INIT ---
     // ✅ FIX: Robust Initialization Logic
     window.addEventListener('load', async () => {
         // 1. Check if Supabase loaded
-        if (typeof sb === 'undefined') {
-            document.getElementById('global-loader').innerHTML = '<p style="color:red; font-weight:bold;">Error: Database not loaded. Check internet.</p>';
+        if (typeof sb === 'undefined' || !sb) {
+            const loader = document.getElementById('global-loader');
+            if (loader) {
+                loader.innerHTML = '<p style="color:#ef4444;font-weight:700;text-align:center;padding:20px;font-size:14px;">Hitilafu: Hifadhidata haikupakia.<br>Angalia muunganiko wako wa mtandao.</p>';
+                setTimeout(() => { loader.style.opacity='0'; loader.style.transition='opacity 0.3s'; setTimeout(()=>loader.remove(),350); }, 2500);
+            }
+            showScreen('step-auth', true);
             return;
         }
 
+        // 2. GOOGLE OAUTH FIX: Listen for auth state changes FIRST
+        // When Google redirects back, Supabase fires SIGNED_IN before getSession() resolves.
+        // Without this, getSession() returns null and user stays stuck on loader/auth screen.
+        let _authHandled = false;
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session && !_authHandled) {
+                _authHandled = true;
+                // Remove loader immediately
+                const loader = document.getElementById('global-loader');
+                if (loader) { loader.style.opacity='0'; setTimeout(()=>loader.remove(),300); }
+                // Navigate based on profile
+                try {
+                    const { data: prof } = await sb.from('profiles')
+                        .select('business_name').eq('id', session.user.id).single();
+                    if (!prof?.business_name) {
+                        showScreen('step-1', true);
+                    } else {
+                        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                        loadDashboard();
+                    }
+                } catch(e) {
+                    history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                    loadDashboard();
+                }
+            }
+        });
+
         try {
             typewriterEffect();
-
-            // Show PWA install card on auth screen
-            const authScreen = document.getElementById('step-auth');
-            if (authScreen && !authScreen.classList.contains('hidden')) {
-                showPWAInstallCard();
-            }
 
             const urlParams = new URLSearchParams(window.location.search);
             const merchantId = urlParams.get('merchant');
             const step = urlParams.get('step');
             
-            // Fix path slug logic to avoid issues with local files
             let pathSlug = window.location.pathname.replace(/^\//, '').replace(/\/$/, '');
-            if (pathSlug.includes('.html') || pathSlug.includes('file:')) {
-                pathSlug = ''; // Ignore local file paths
+            if (pathSlug.includes('.html') || window.location.protocol === 'file:') {
+                pathSlug = '';
             }
             
             if (pathSlug && pathSlug !== '') {
-                console.log('🛍️ Customer Mode: Loading storefront from slug:', pathSlug);
                 await loadCustomerStorefrontBySlug(pathSlug);
             } else if (merchantId) {
-                console.log('🛍️ Customer Mode (Legacy): Loading storefront for merchant:', merchantId);
                 await loadCustomerStorefront(merchantId);
             } else {
-                // Default flow
-                const { data: { session }, error } = await sb.auth.getSession();
+                // 3. Check for Google OAuth hash in URL — if present, let onAuthStateChange handle it
+                if (window.location.hash && window.location.hash.includes('access_token')) {
+                    // Supabase is processing the token — onAuthStateChange will fire and handle navigation
+                    // Just wait — loader will be removed by the listener above
+                    return;
+                }
+
+                // Default flow — 8s timeout so loader never hangs on slow connections
+                const sessionResult = await Promise.race([
+                    sb.auth.getSession(),
+                    new Promise((_,reject) => setTimeout(()=>reject(new Error('timeout')),8000))
+                ]).catch(() => ({ data: { session: null }, error: 'timeout' }));
+                const { data: { session }, error } = sessionResult;
                 
                 if (session) {
+                    _authHandled = true; // prevent double-navigation from onAuthStateChange
                     if (step) {
                         if (step === 'add-product') showScreen('step-add-product', false);
                         else showScreen('step-' + step, false);
@@ -6337,14 +6537,15 @@
             }
         } catch (error) {
             console.error("Critical Init Error:", error);
-            // Fallback to Auth screen if logic fails
             showScreen('step-auth', true);
         } finally {
-            // Hide global loader
-            const loader = document.getElementById('global-loader');
-            if(loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.remove(), 300);
+            // Only remove loader if OAuth hash is NOT present (OAuth case handled above)
+            if (!window.location.hash.includes('access_token')) {
+                const loader = document.getElementById('global-loader');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 300);
+                }
             }
         }
     });
@@ -6511,11 +6712,44 @@
         }, 150);
     }
     
+    // ── Animate chat bubbles on step-1 ───────────────────────
+    function ob1StartChatAnimation() {
+        const rows = [
+            { id: 'ob1-typing-row',  delay: 900  },
+            { id: 'ob1-reply-row',   delay: 2200, hideTyping: true },
+            { id: 'ob1-order-row',   delay: 3200 },
+            { id: 'ob1-confirm-row', delay: 4100 },
+        ];
+        rows.forEach(({ id, delay, hideTyping }) => {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) { el.classList.remove('ob-chat-hidden'); el.style.animation = 'ob1SlideUp 0.45s cubic-bezier(0.34,1.2,0.64,1) both'; }
+                if (hideTyping) {
+                    const t = document.getElementById('ob1-typing-row');
+                    if (t) t.style.display = 'none';
+                }
+            }, delay);
+        });
+        // Loop animation every 7s
+        setTimeout(() => ob1ResetChat(), 5500);
+    }
+    let _ob1ChatLoop = null;
+    function ob1ResetChat() {
+        const ids = ['ob1-typing-row','ob1-reply-row','ob1-order-row','ob1-confirm-row'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.classList.add('ob-chat-hidden'); el.style.display=''; el.style.animation=''; }
+        });
+        clearTimeout(_ob1ChatLoop);
+        _ob1ChatLoop = setTimeout(() => ob1StartChatAnimation(), 800);
+    }
+
+    // ── Trigger chat anim when step-1 becomes visible ────────
     function showScreen(stepId, animate) {
-        // Screen list
         ['step-auth', 'step-1', 'step-2', 'step-3', 'step-3-5', 'step-4', 'step-5', 'step-add-product', 'product-detail-page', 'customer-storefront', 'step-profile'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
         const target = document.getElementById(stepId);
         if(target) { target.classList.remove('hidden'); if (animate) { target.classList.remove('fade-in'); void target.offsetWidth; target.classList.add('fade-in'); } }
+        if (stepId === 'step-1') { clearTimeout(_ob1ChatLoop); setTimeout(() => ob1StartChatAnimation(), 500); }
     }
     
     function triggerFeedback(btnId) { const btn = document.getElementById(btnId); if(btn) { btn.classList.add('pressed'); if (navigator.vibrate) navigator.vibrate(50); setTimeout(() => btn.classList.remove('pressed'), 150); } }
@@ -6553,101 +6787,79 @@
     }
 
 
-    // --- DASHBOARD LOGIC (UPDATED WITH DELETE BUTTON) ---
+    // --- DASHBOARD LOGIC ---
     async function loadDashboard() {
-        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-        showScreen('step-5', true);
-        typeWriterHero();
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) { showScreen('step-auth', true); return; }
+
+        // 1. Fetch profile FIRST — decide screen before rendering anything
+        const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+
+        // 2. THE PERMANENT FIX: business_name in DB = not a new user
+        if (profile && profile.business_name) {
+            localStorage.setItem(_OB_KEY, '1');
+            document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase();
+            // Explicitly force step-1 hidden before showing dashboard
+            const ob1 = document.getElementById('step-1');
+            const ob2 = document.getElementById('step-2');
+            const ob3 = document.getElementById('step-3');
+            if (ob1) ob1.classList.add('hidden');
+            if (ob2) ob2.classList.add('hidden');
+            if (ob3) ob3.classList.add('hidden');
+            history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+            showScreen('step-5', true);
+        } else {
+            // Truly new user — no name in DB
+            showScreen('step-1', true);
+            return;
+        }
+
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item')[0]?.classList.add('active');
-        // Fire-and-forget subscription check — never blocks products/name load
+        typeWriterHero();
         setTimeout(() => checkSubscription().catch(()=>{}), 800);
-        
-        const { data: { user } } = await sb.auth.getUser();
-        if (!user) return;
 
-        const { data: profile } = await sb.from('profiles').select('business_name, whatsapp_number, bot_connection_status').eq('id', user.id).single();
-        if(profile && profile.business_name) { document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase(); }
         const alertCard = document.getElementById('setup-alert');
-        if(!profile || !profile.whatsapp_number || !profile.business_name) { alertCard.classList.remove('hidden'); } else { alertCard.classList.add('hidden'); }
+        if (!profile.whatsapp_number) {
+            alertCard.classList.remove('hidden'); alertCard.style.display = 'flex';
+        } else {
+            alertCard.classList.add('hidden'); alertCard.style.display = 'none';
+        }
 
-        const { data: products, error } = await sb.from('products').select(`*, product_images(image_url)`).eq('merchant_id', user.id).eq('is_active', true).order('created_at', { ascending: false });
+        const { data: products } = await sb.from('products').select(`*, product_images(image_url)`).eq('merchant_id', user.id).eq('is_active', true).order('created_at', { ascending: false });
         GLOBAL_PRODUCTS = products || [];
-        // Show onboarding if new user has no products or no bot
-        checkShouldShowOnboarding(profile, products);
 
         const container = document.getElementById('products-container');
         if(container) {
             container.innerHTML = '';
             if(products && products.length > 0) {
-                // Create grid wrapper
                 const grid = document.createElement('div');
                 grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:0;';
                 container.appendChild(grid);
                 products.forEach((p, index) => {
                     const img = getProductImage(p);
                     const safeName = (p.name || 'Product').replace(/'/g, "\\'");
-                    
                     let stockBadge = '';
                     if (p.total_stock === 0) stockBadge = '<span class="stock-badge-modern" style="color:red;">Out of Stock</span>';
                     else if (p.total_stock <= (p.low_stock_alert || 5)) stockBadge = `<span class="stock-badge-modern" style="color:orange;">Low Stock</span>`;
-
                     const fullDesc = p.full_description || p.description || '';
                     const safeDesc = fullDesc.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
                     const html = `
-                    <div class="modern-product-card" style="animation-delay: ${index * 0.1}s; position: relative;">
-                        <!-- EDIT & DELETE BUTTONS (Merchant Only) -->
-                        <div style="position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 8px;">
-                            <!-- EDIT BUTTON -->
-                            <button class="product-edit-btn" onclick="event.stopPropagation(); openProductEditModal('${p.id}')" 
-                                    title="Edit Product"
-                                    style="width: 40px; height: 40px; border-radius: 50%; 
-                                           background: linear-gradient(135deg, #667eea, #764ba2); border: 2px solid white; 
-                                           color: white; display: flex; align-items: center; justify-content: center; 
-                                           cursor: pointer; box-shadow: 0 2px 12px rgba(102, 126, 234, 0.4); 
-                                           transition: all 0.3s ease; border: none;">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
+                    <div class="modern-product-card" style="animation-delay:${index*0.1}s;position:relative;">
+                        <div style="position:absolute;top:10px;right:10px;z-index:10;display:flex;gap:8px;">
+                            <button class="product-edit-btn" onclick="event.stopPropagation();openProductEditModal('${p.id}')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(102,126,234,0.4);">
+                                <span class="material-symbols-outlined" style="font-size:18px;">edit</span>
                             </button>
-
-                            <!-- DELETE BUTTON -->
-                            <button class="product-delete-btn" onclick="event.stopPropagation(); confirmDeleteProduct('${p.id}', '${safeName}')" 
-                                    title="Delete Product"
-                                    style="width: 36px; height: 36px; border-radius: 50%; 
-                                           background: linear-gradient(135deg, #ef4444, #dc2626); border: 2px solid white; 
-                                           color: white; display: flex; align-items: center; justify-content: center; 
-                                           cursor: pointer; box-shadow: 0 2px 12px rgba(239, 68, 68, 0.4); 
-                                           transition: all 0.3s ease; border: none;">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                            <button class="product-delete-btn" onclick="event.stopPropagation();confirmDeleteProduct('${p.id}','${safeName}')" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);border:none;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(239,68,68,0.4);">
+                                <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
                             </button>
                         </div>
-                        
-                        <div class="modern-img-wrapper" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')">
+                        <div class="modern-img-wrapper" onclick="openProductDetailPage('${p.id}','${safeName}','${p.selling_price}','${p.total_stock}','${img}','${safeDesc}')">
                             <img src="${img}" class="modern-img">
                             ${stockBadge}
-                            ${p.discount_percent ? `
-                                <div style="
-                                    position:absolute; 
-                                    top:10px; 
-                                    left:10px; 
-                                    background: linear-gradient(135deg, #ef4444, #dc2626); 
-                                    color:white; 
-                                    padding:6px 12px; 
-                                    border-radius:50px; 
-                                    font-size:11px; 
-                                    font-weight:800;
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 4px;
-                                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-                                    animation: offerPulse 2s ease-in-out infinite;
-                                ">
-                                    <span style="font-size: 14px;">🔥</span>
-                                    <span>-${p.discount_percent}% OFFER</span>
-                                </div>
-                            ` : ''}
+                            ${p.discount_percent ? `<div style="position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;padding:6px 12px;border-radius:50px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(239,68,68,0.4);animation:offerPulse 2s ease-in-out infinite;"><span style="font-size:14px;">🔥</span><span>-${p.discount_percent}% OFFER</span></div>` : ''}
                         </div>
-                        <div class="modern-details" style="padding: 12px;" onclick="openProductDetailPage('${p.id}', '${safeName}', '${p.selling_price}', '${p.total_stock}', '${img}', '${safeDesc}')">
+                        <div class="modern-details" style="padding:12px;" onclick="openProductDetailPage('${p.id}','${safeName}','${p.selling_price}','${p.total_stock}','${img}','${safeDesc}')">
                             <h4 class="modern-title">${p.name}</h4>
                             <p class="modern-price">Tsh ${p.selling_price.toLocaleString()}</p>
                         </div>
@@ -6655,12 +6867,7 @@
                     grid.innerHTML += html;
                 });
             } else {
-                container.innerHTML = `
-                <div style="grid-column: 1/-1; padding:40px; text-align:center; color:#9ca3af; display:flex; flex-direction:column; align-items:center;">
-                    <span class="material-symbols-outlined" style="font-size:48px; opacity:0.5; margin-bottom:10px;">storefront</span>
-                    <p>Karibu! Duka lako liko wazi.</p>
-                    <button onclick="goToAddProduct()" style="margin-top:10px; color:#25d078; font-weight:700; background:none; border:none; cursor:pointer;">Anza kuweka bidhaa &rarr;</button>
-                </div>`;
+                container.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;display:flex;flex-direction:column;align-items:center;"><span class="material-symbols-outlined" style="font-size:48px;opacity:0.5;margin-bottom:10px;">storefront</span><p>Karibu! Duka lako liko wazi.</p><button onclick="goToAddProduct()" style="margin-top:10px;color:#25d078;font-weight:700;background:none;border:none;cursor:pointer;">Anza kuweka bidhaa &rarr;</button></div>`;
             }
         }
     }
@@ -8269,7 +8476,7 @@ async function getBotCode() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: fullPhone, merchant_id: user.id }),
-                signal: AbortSignal.timeout(12000)
+                signal: AbortSignal.timeout(30000)
             });
             const json = await res.json();
             if (!res.ok) throw new Error(json?.error || 'Kosa la seva: ' + res.status);
@@ -8359,12 +8566,13 @@ async function botConfirmConnection() {
     try {
         const { data: { user } } = await sb.auth.getUser();
         if (!user) throw new Error('Tafadhali ingia kwanza');
-        const res = await fetch(BOT_URL + '/status?merchant=' + user.id, {
+        const res = await fetch(BOT_URL + '/status?merchant_id=' + user.id, {
             signal: AbortSignal.timeout(10000)
         });
         if (!res.ok) throw new Error('Seva haijibu — jaribu tena');
         const d = await res.json();
-        if (d.connected) {
+        const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
+        if (isConnected) {
             await botFinishConnection(user);
         } else {
             showToastMsg('⏳ Bado haijaunganishwa. Hakikisha umeweka code sahihi kwenye WhatsApp kisha jaribu tena.', 'warn');
@@ -8428,13 +8636,14 @@ function startBotPairPoll(merchantId) {
             return;
         }
         try {
-            const res = await fetch(BOT_URL + '/status?merchant=' + merchantId, {
-                signal: AbortSignal.timeout(4000)
+            const res = await fetch(BOT_URL + '/status?merchant_id=' + merchantId, {
+                signal: AbortSignal.timeout(10000)
             });
             if (!res.ok) return;
             const d = await res.json();
-            // Auto-detected connection before user tapped confirm
-            if (d.connected && !BOT_CONNECTED) {
+            // Auto-detected connection — check real Render response fields
+            const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
+            if (isConnected && !BOT_CONNECTED) {
                 const { data: { user } } = await sb.auth.getUser();
                 if (user) await botFinishConnection(user);
             }
@@ -8449,12 +8658,13 @@ function startBotStatusPoll() {
         try {
             const { data: { user } } = await sb.auth.getUser();
             if (!user) return;
-            const res = await fetch(BOT_URL + '/status?merchant=' + user.id, {
-                signal: AbortSignal.timeout(7000)
+            const res = await fetch(BOT_URL + '/status?merchant_id=' + user.id, {
+                signal: AbortSignal.timeout(10000)
             });
             if (res.ok) {
                 const d = await res.json();
-                if (d.connected) {
+                const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
+                if (isConnected) {
                     setBotStatus('online', 'Online ✅');
                 } else {
                     setBotStatus('error', 'Imekatika');
@@ -9638,15 +9848,8 @@ function _tourShowConfetti() {
 }
 
 // ── Called from loadDashboard ──────────────────────────────
-async function checkShouldShowOnboarding(profile, products) {
-    try {
-        if (localStorage.getItem(_OB_KEY)) return;
-        const hasProducts = products && products.length > 0;
-        const hasBot      = profile && profile.bot_connection_status === 'connected';
-        if (!hasProducts || !hasBot) {
-            setTimeout(() => obStart(), 1200);
-        }
-    } catch(e) {}
+function checkShouldShowOnboarding(profile, products) {
+    // Logic moved into loadDashboard for single source of truth
 }
 
 
@@ -9713,9 +9916,6 @@ let _ob2CodeTimer = null;
 // ════════════════════════════════════════════════════════════
 // ONBOARDING LOGIC v2
 // ════════════════════════════════════════════════════════════
-let _ob2PairCode = '';
-let _ob2PollTimer = null;
-let _ob2CodeTimer = null;
 
 async function obStep1Next() {
     const name = (document.getElementById('ob-shop-name')?.value || '').trim();
@@ -9759,42 +9959,62 @@ async function obStep1Next() {
 
 async function ob2GetCode() {
     const btn = document.getElementById('ob2-get-code-btn');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span style="width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;flex-shrink:0;"></span>&nbsp;Inaomba code...';
-    }
+    if (btn) { btn.disabled = true; btn.innerHTML = 'Subiri...'; }
     try {
-        const { data:{ user } } = await sb.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-        const res = await fetch('https://linka-ai-1.onrender.com/pair', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id })
+        // Await user fully — user.id is guaranteed not undefined
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user || !user.id) throw new Error('Tafadhali ingia tena (Session expired)');
+
+        const merchantId = user.id;
+
+        // Get phone from DB
+        const { data: prof } = await sb.from('profiles').select('whatsapp_number').eq('id', merchantId).single();
+        const phone = (prof?.whatsapp_number || '').replace(/[^0-9]/g, '');
+        if (!phone) throw new Error('Namba ya WhatsApp haipo. Rudi hatua ya kwanza.');
+
+        // Call Render server with guaranteed merchant_id
+        const res = await fetch(BOT_URL + '/pair', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, merchant_id: merchantId }),
+            signal: AbortSignal.timeout(30000)
         });
         const data = await res.json();
-        const pcode = data.code || data.pairingCode || data.pair_code || '- - - -';
-        _ob2PairCode = pcode;
-        const codeEl = document.getElementById('ob2-pair-code');
-        if (codeEl) codeEl.textContent = pcode;
+        if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
 
+        if (data.reconnecting === true) {
+            showToastMsg('🔄 Session ilipatikana — inaungana tena...', 'info');
+            startBotPairPoll(merchantId);
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Pata WhatsApp Code'; }
+            return;
+        }
+
+        _ob2PairCode = data.code || data.pairingCode || data.pair_code || '';
+        if (!_ob2PairCode) throw new Error('Code haikuja — jaribu tena');
+
+        const codeEl = document.getElementById('ob2-pair-code');
+        if (codeEl) codeEl.textContent = botFmtCode(_ob2PairCode);
         document.getElementById('ob2-setup-state').style.display = 'none';
         document.getElementById('ob2-code-state').style.display = 'block';
 
-        let secs = 60;
+        let secs = 180;
         clearInterval(_ob2CodeTimer);
         _ob2CodeTimer = setInterval(() => {
             secs--;
             const t = document.getElementById('ob2-timer');
-            if (t) t.textContent = secs > 0 ? `⏱ Inaisha kwa sekunde ${secs}...` : '⏰ Code imeisha — omba nyingine';
+            if (t) {
+                const m = Math.floor(secs/60), s = secs%60;
+                t.textContent = secs > 0 ? `⏱ Inaisha kwa ${m>0?m+':'+String(s).padStart(2,'0')+' dakika':'sekunde '+s}...` : '⏰ Code imeisha — omba nyingine';
+                t.style.color = secs <= 30 ? '#f87171' : 'rgba(165,180,252,0.5)';
+            }
             if (secs <= 0) clearInterval(_ob2CodeTimer);
         }, 1000);
 
-        ob2StartPoll();
+        startBotPairPoll(merchantId);
+
     } catch(e) {
-        showToastMsg('Hitilafu: ' + e.message + ' — jaribu tena', 'warn');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px;">phonelink_ring</span> Pata Code ya WhatsApp Bot';
-        }
+        alert('Bot Error: ' + e.message);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Pata WhatsApp Code'; }
     }
 }
 
