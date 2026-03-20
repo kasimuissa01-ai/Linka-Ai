@@ -11,7 +11,8 @@ import {
 import pino       from 'pino'
 import NodeCache  from 'node-cache'
 import { createClient } from '@supabase/supabase-js'
-import { mkdirSync } from 'fs'
+import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'fs'
+import { join } from 'path'
 
 // ── Express ───────────────────────────────────────────────────
 const app  = express()
@@ -27,7 +28,7 @@ const logger = pino({
     : undefined
 })
 
-// ── Supabase (service role — full DB access) ──────────────────
+// ── Supabase ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || ''
 const SUPABASE_KEY = process.env.SUPABASE_KEY || ''
 
@@ -40,20 +41,136 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false }
 })
 
-// ── Edge Function URL — all AI goes through here ──────────────
 const AI_EDGE_URL = `${SUPABASE_URL}/functions/v1/ai-reply`
 
 // ── In-memory state ───────────────────────────────────────────
-// Map of merchantId → { sock, connected, config, connectedAt }
 const merchants  = new Map()
-const dailyCache = new NodeCache({ stdTTL: 86400 })  // resets each day
-const msgDedup   = new NodeCache({ stdTTL: 3600  })  // dedup window 1h
+const dailyCache = new NodeCache({ stdTTL: 86400 })
+const msgDedup   = new NodeCache({ stdTTL: 3600  })
 
 // ═══════════════════════════════════════════════════════════════
-// API ROUTES — called by the LinkaMarket HTML app
+// SESSION STORAGE IN SUPABASE
+// FIX: Store Baileys auth files in Supabase DB instead of disk.
+// Render's filesystem is ephemeral — it wipes on every restart/deploy.
+// Supabase persists forever regardless of server restarts.
 // ═══════════════════════════════════════════════════════════════
 
-// Health check
+async function loadSessionFromSupabase(merchantId) {
+  try {
+    const { data, error } = await sb
+      .from('bot_sessions')
+      .select('session_data')
+      .eq('merchant_id', merchantId)
+      .single()
+
+    if (error || !data) return null
+    return data.session_data // JSON object with creds + keys
+  } catch (e) {
+    logger.warn(`[${merchantId}] loadSession error: ${e.message}`)
+    return null
+  }
+}
+
+async function saveSessionToSupabase(merchantId, sessionData) {
+  try {
+    await sb.from('bot_sessions').upsert({
+      merchant_id:  merchantId,
+      session_data: sessionData,
+      updated_at:   new Date().toISOString()
+    }, { onConflict: 'merchant_id' })
+  } catch (e) {
+    logger.warn(`[${merchantId}] saveSession error: ${e.message}`)
+  }
+}
+
+async function deleteSessionFromSupabase(merchantId) {
+  try {
+    await sb.from('bot_sessions').delete().eq('merchant_id', merchantId)
+  } catch (e) {
+    logger.warn(`[${merchantId}] deleteSession error: ${e.message}`)
+  }
+}
+
+// ── Supabase-backed auth state (replaces useMultiFileAuthState) ──
+// Mirrors the Baileys interface but reads/writes from Supabase
+async function useSupabaseAuthState(merchantId) {
+  // Load existing session from Supabase
+  let sessionData = await loadSessionFromSupabase(merchantId)
+
+  // Also keep a local temp folder as write-through cache
+  // so Baileys file operations still work internally
+  const sessPath = `/tmp/sessions/${merchantId}`
+  mkdirSync(sessPath, { recursive: true })
+
+  // If we have data from Supabase, write it to temp disk for Baileys
+  if (sessionData) {
+    try {
+      for (const [filename, fileContent] of Object.entries(sessionData)) {
+        const filePath = join(sessPath, filename)
+        writeFileSync(filePath, JSON.stringify(fileContent), 'utf8')
+      }
+      logger.info(`[${merchantId}] ✅ Session loaded from Supabase`)
+    } catch (e) {
+      logger.warn(`[${merchantId}] Failed to write session to temp: ${e.message}`)
+    }
+  }
+
+  // Use Baileys' built-in multifile auth on the temp folder
+  const { state, saveCreds: _saveCreds } = await useMultiFileAuthState(sessPath)
+
+  // Override saveCreds to also persist to Supabase
+  const saveCreds = async () => {
+    // Let Baileys save to temp disk first
+    await _saveCreds()
+
+    // Read all session files from temp disk and save to Supabase
+    try {
+      const files = readdirSync(sessPath)
+      const newSessionData = {}
+      for (const file of files) {
+        const filePath = join(sessPath, file)
+        const raw = readFileSync(filePath, 'utf8')
+        try {
+          newSessionData[file] = JSON.parse(raw)
+        } catch {
+          newSessionData[file] = raw
+        }
+      }
+      await saveSessionToSupabase(merchantId, newSessionData)
+    } catch (e) {
+      logger.warn(`[${merchantId}] saveCreds Supabase sync failed: ${e.message}`)
+    }
+  }
+
+  return { state, saveCreds }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KEEP-ALIVE PING
+// FIX: Render free tier spins down after 15 min of no traffic.
+// Self-ping every 10 minutes keeps the server awake 24/7.
+// ═══════════════════════════════════════════════════════════════
+
+function startKeepAlive() {
+  const selfUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+  const interval = 10 * 60 * 1000 // every 10 minutes
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${selfUrl}/`)
+      logger.info(`💓 Keep-alive ping → ${res.status}`)
+    } catch (e) {
+      logger.warn(`💓 Keep-alive failed: ${e.message}`)
+    }
+  }, interval)
+
+  logger.info(`💓 Keep-alive started — pinging every 10 min → ${selfUrl}`)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API ROUTES
+// ═══════════════════════════════════════════════════════════════
+
 app.get('/', (req, res) => {
   res.json({
     service:   'LinkaMarket WhatsApp Bot',
@@ -63,7 +180,6 @@ app.get('/', (req, res) => {
   })
 })
 
-// ── DEBUG: Show active merchants and their state ──────────
 app.get('/debug', (req, res) => {
   const state = {}
   for (const [id, m] of merchants) {
@@ -79,7 +195,6 @@ app.get('/debug', (req, res) => {
   res.json({ merchants: state, ai_edge_url: AI_EDGE_URL })
 })
 
-// ── DEBUG: Test Edge Function directly ───────────────────
 app.post('/test-edge', async (req, res) => {
   const { merchant_id, message } = req.body
   if (!merchant_id || !message) return res.status(400).json({ error: 'merchant_id and message required' })
@@ -102,10 +217,10 @@ app.post('/test-edge', async (req, res) => {
   }
 })
 
-// Merchant status check (polled every 15s by app)
+// FIX: Accept both ?merchant_id= and ?merchant= so both app and dashboard work
 app.get('/status', (req, res) => {
-  const merchantId = req.query.merchant
-  if (!merchantId) return res.status(400).json({ error: 'merchant required' })
+  const merchantId = req.query.merchant_id || req.query.merchant
+  if (!merchantId) return res.status(400).json({ error: 'merchant_id required' })
 
   const m       = merchants.get(merchantId)
   const botAge  = m?.connectedAt
@@ -115,6 +230,7 @@ app.get('/status', (req, res) => {
 
   res.json({
     connected:    m?.connected || false,
+    merchants:    merchants.size,  // used by app to detect server is up
     phone:        m?.config?.wa_number || '',
     today_count:  dailyCache.get(dayKey) || 0,
     daily_limit:  getDailyLimit(botAge),
@@ -122,7 +238,6 @@ app.get('/status', (req, res) => {
   })
 })
 
-// Request pair code — merchant taps "Pata Code" in app
 app.post('/pair', async (req, res) => {
   const { phone, merchant_id } = req.body
 
@@ -130,7 +245,7 @@ app.post('/pair', async (req, res) => {
     return res.status(400).json({ error: 'phone and merchant_id required' })
   }
 
-  // Clean up old session if merchant is re-pairing
+  // Clean up old socket if re-pairing
   if (merchants.has(merchant_id)) {
     try { merchants.get(merchant_id).sock?.end() } catch {}
   }
@@ -144,12 +259,9 @@ app.post('/pair', async (req, res) => {
   try {
     const code = await initBot(merchant_id, phone)
 
-    // BUG 1 FIX: 'already_registered' means the session exists and the socket
-    // is reconnecting in the background. Don't treat this as an error —
-    // tell the frontend the bot is reconnecting so it keeps polling /status.
     if (code === 'already_registered') {
       logger.info(`[${merchant_id}] Session exists — reconnecting in background`)
-      return res.json({ code: null, reconnecting: true, message: 'Bot inaungana tena — subiri sekunde 15 kisha angalia hali.' })
+      return res.json({ code: null, reconnecting: true, message: 'Bot inaungana tena — subiri sekunde 15' })
     }
 
     logger.info(`Pair code for ${merchant_id}: ${code}`)
@@ -160,11 +272,10 @@ app.post('/pair', async (req, res) => {
   }
 })
 
-// Update bot settings (auto_reply, quiet_hours) from app toggles
 app.post('/settings', async (req, res) => {
-  const merchantId = req.headers['x-merchant-id']
+  const merchantId = req.headers['x-merchant-id'] || req.body.merchant_id
   const { setting, value } = req.body
-  if (!merchantId) return res.status(401).json({ error: 'x-merchant-id header required' })
+  if (!merchantId) return res.status(401).json({ error: 'merchant_id required' })
 
   const m = merchants.get(merchantId)
   if (m?.config) {
@@ -174,13 +285,15 @@ app.post('/settings', async (req, res) => {
   res.json({ ok: true })
 })
 
-// Disconnect merchant's bot
 app.post('/disconnect', async (req, res) => {
   const { merchant_id } = req.body
   if (!merchant_id) return res.status(400).json({ error: 'merchant_id required' })
 
   try { merchants.get(merchant_id)?.sock?.end() } catch {}
   merchants.delete(merchant_id)
+
+  // Delete session from Supabase so re-pair is required
+  await deleteSessionFromSupabase(merchant_id)
 
   await sb.from('profiles').update({
     bot_connection_status: 'disconnected'
@@ -194,29 +307,24 @@ app.post('/disconnect', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 async function initBot(merchantId, phone) {
-  const sessPath = `./sessions/${merchantId}`
-  mkdirSync(sessPath, { recursive: true })
-
-  const { state, saveCreds } = await useMultiFileAuthState(sessPath)
+  // FIX: Use Supabase-backed auth state instead of local filesystem
+  const { state, saveCreds } = await useSupabaseAuthState(merchantId)
   const { version }          = await fetchLatestBaileysVersion()
 
   const sock = makeWASocket({
     version,
-    logger:                       pino({ level: 'silent' }),
+    logger:                         pino({ level: 'silent' }),
     auth: {
       creds: state.creds,
       keys:  makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
     },
-    printQRInTerminal:            false,  // pair code only
+    printQRInTerminal:              false,
     generateHighQualityLinkPreview: false,
-    syncFullHistory:              false,
-    markOnlineOnConnect:          false,  // don't show as "online" 24/7
+    syncFullHistory:                false,
+    markOnlineOnConnect:            false,
     getMessage: async () => undefined,
   })
 
-  // ── BUG 4 FIX: Always ensure the merchants entry exists before using it ──
-  // This handles the case where merchants.delete() was called on logout
-  // and then initBot is called again on reconnect — the entry is gone.
   if (!merchants.has(merchantId)) {
     merchants.set(merchantId, {
       connected:   false,
@@ -254,26 +362,27 @@ async function initBot(merchantId, phone) {
         bot_last_seen:         new Date().toISOString()
       }).eq('id', merchantId)
 
-      // ── SHIELD 6: Reconnect cooldown — random delay, not instant ──
-      if (code !== DisconnectReason.loggedOut) {
-        const delay = randomBetween(8000, 25000)
-        logger.info(`⏳ Reconnecting [${merchantId}] in ${Math.round(delay/1000)}s`)
-        // BUG 3 FIX: wrap in async IIFE so errors are caught, not silently dropped
+      if (code === DisconnectReason.loggedOut) {
+        // User explicitly logged out from WhatsApp → delete session, require re-pair
+        logger.warn(`[${merchantId}] Logged out — deleting session, requires re-pair`)
+        await deleteSessionFromSupabase(merchantId)
+        merchants.delete(merchantId)
+      } else {
+        // Any other disconnect (network, timeout, server restart) → reconnect automatically
+        const delay = randomBetween(8000, 20000)
+        logger.info(`⏳ [${merchantId}] Auto-reconnecting in ${Math.round(delay/1000)}s...`)
         setTimeout(async () => {
           try { await initBot(merchantId, phone) } catch(e) {
-            logger.error(`Reconnect failed for [${merchantId}]: ${e.message}`)
+            logger.error(`Reconnect failed [${merchantId}]: ${e.message}`)
           }
         }, delay)
-      } else {
-        logger.warn(`[${merchantId}] Logged out — requires manual re-pair`)
-        merchants.delete(merchantId)
       }
     }
   })
 
+  // FIX: saveCreds now persists to Supabase automatically
   sock.ev.on('creds.update', saveCreds)
 
-  // ── Incoming messages ──────────────────────────────────────
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return
     for (const msg of messages) {
@@ -281,10 +390,6 @@ async function initBot(merchantId, phone) {
     }
   })
 
-  // ── BUG 1 FIX: Request pair code if not registered.
-  // If already registered, do NOT return early — the socket is already
-  // reconnecting in the background via connection.update events above.
-  // We return 'already_registered' as a signal to the /pair route only.
   if (!state.creds.registered) {
     await sleep(1500)
     const code = await sock.requestPairingCode(phone)
@@ -294,67 +399,59 @@ async function initBot(merchantId, phone) {
   return 'already_registered'
 }
 
-// ── Message handler — runs all 8 shields ──────────────────────
+// ═══════════════════════════════════════════════════════════════
+// MESSAGE HANDLING (unchanged — your shields are good)
+// ═══════════════════════════════════════════════════════════════
+
 async function handleMessage(sock, merchantId, msg) {
   const m = merchants.get(merchantId)
   if (!m?.config) return
 
-  // ── SHIELD 1: Inbound-only enforcement ────────────────────
-  if (msg.key.fromMe) return
+  if (msg.key.fromMe)                return
   const jid = msg.key.remoteJid || ''
-  if (jid.includes('@g.us'))        return  // no group chats
-  if (jid.includes('@broadcast'))   return  // no broadcasts
-  if (jid === 'status@broadcast')   return  // no status updates
+  if (jid.includes('@g.us'))         return
+  if (jid.includes('@broadcast'))    return
+  if (jid === 'status@broadcast')    return
 
   const text = extractText(msg)
   if (!text || text.trim().length < 2) return
 
-  // ── SHIELD 1b: Message deduplication ─────────────────────
-  // Baileys can fire the same message twice on reconnect
   if (msgDedup.get(msg.key.id)) return
   msgDedup.set(msg.key.id, true)
 
-  // Check auto-reply is enabled
   if (m.config.auto_reply === false) return
 
   const customerPhone = jid.replace('@s.whatsapp.net', '').replace('@c.us', '')
   const customerName  = msg.pushName || null
   logger.info(`📨 [${merchantId}] "${text.slice(0,50)}" from ${customerPhone}`)
 
-  // Save to inbox immediately (merchant sees it in app)
   const savedId = await saveMessage(merchantId, customerPhone, customerName, text)
 
-  // ── SHIELD 5: Quiet hours (11pm – 6am EAT) ───────────────
   if (m.config.quiet_hours !== false && isQuietHours()) {
     const delay = getQuietHoursDelay()
     const resumeTime = new Date(Date.now() + delay).toLocaleTimeString('en', { timeZone: 'Africa/Dar_es_Salaam' })
-    logger.info(`🌙 [${merchantId}] Quiet hours active — message from ${customerPhone} queued until ~${resumeTime} EAT`)
+    logger.info(`🌙 [${merchantId}] Quiet hours — queued until ~${resumeTime} EAT`)
     setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), delay)
     return
   }
 
-  // ── SHIELD 4: Daily volume ramp ───────────────────────────
-  const botAge  = m.connectedAt
+  const botAge = m.connectedAt
     ? Math.floor((Date.now() - new Date(m.connectedAt).getTime()) / 86400000)
     : 0
-  const dayKey  = `daily:${merchantId}:${today()}`
-  const count   = dailyCache.get(dayKey) || 0
-  const maxDay  = getDailyLimit(botAge)
+  const dayKey = `daily:${merchantId}:${today()}`
+  const count  = dailyCache.get(dayKey) || 0
+  const maxDay = getDailyLimit(botAge)
 
   if (count >= maxDay) {
     logger.warn(`⛔ [${merchantId}] Daily limit ${count}/${maxDay} — skipping`)
-    return  // merchant sees msg in app, replies manually
+    return
   }
 
-  // ── SHIELD 3: Human reading delay before typing starts ───────────────────
-  // Simulates a person picking up their phone, reading the message, then typing.
-  // Total reply time (read + type + send) stays within 45 seconds.
   const readDelay = humanReadDelay(text)
-  logger.info(`⏱️  [${merchantId}] Read pause ${(readDelay/1000).toFixed(1)}s → then typing...`)
+  logger.info(`⏱️  [${merchantId}] Read pause ${(readDelay/1000).toFixed(1)}s...`)
   setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), readDelay)
 }
 
-// ── Generate reply via Edge Function and send ─────────────────
 async function processReply(sock, merchantId, jid, customerPhone, text, savedId, msgKeyId) {
   const m = merchants.get(merchantId)
   if (!m?.connected) {
@@ -363,10 +460,6 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
   }
 
   try {
-    logger.info(`🤖 [${merchantId}] Calling Edge Function for reply...`)
-    logger.info(`🤖 Edge URL: ${AI_EDGE_URL}`)
-
-    // Add a 25s timeout so a hanging Edge Function doesn't block forever
     const controller = new AbortController()
     const timeout    = setTimeout(() => controller.abort(), 25000)
 
@@ -385,17 +478,12 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
           mode:             'auto'
         })
       })
-    } finally {
-      clearTimeout(timeout)
-    }
+    } finally { clearTimeout(timeout) }
 
-    // Log the full response for debugging
     const rawBody = await aiRes.text()
-    logger.info(`🤖 Edge Function response [${aiRes.status}]: ${rawBody.slice(0, 300)}`)
+    logger.info(`🤖 Edge [${aiRes.status}]: ${rawBody.slice(0, 300)}`)
 
-    if (!aiRes.ok) {
-      throw new Error(`Edge Function HTTP ${aiRes.status}: ${rawBody.slice(0, 200)}`)
-    }
+    if (!aiRes.ok) throw new Error(`Edge Function HTTP ${aiRes.status}: ${rawBody.slice(0, 200)}`)
 
     let parsed
     try { parsed = JSON.parse(rawBody) } catch(e) {
@@ -403,11 +491,8 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
     }
 
     const reply = parsed?.reply || parsed?.message || parsed?.response || ''
-    if (!reply) throw new Error(`Edge Function returned no reply field. Keys: ${Object.keys(parsed).join(', ')}`)
+    if (!reply) throw new Error(`No reply field. Keys: ${Object.keys(parsed).join(', ')}`)
 
-    logger.info(`💬 [${merchantId}] Reply ready (${reply.length} chars): "${reply.slice(0,60)}"`)
-
-    // ── SHIELD 2: Typing simulation ──────────────────────────
     await sock.readMessages([{ remoteJid: jid, id: msgKeyId || 'latest', fromMe: false }])
     await sleep(randomBetween(200, 600))
     await sock.sendPresenceUpdate('available', jid)
@@ -415,9 +500,7 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
 
     const typingMs = replyTypingDuration(reply)
     await sock.sendPresenceUpdate('composing', jid)
-    logger.info(`✍️  [${merchantId}] Typing for ${(typingMs/1000).toFixed(1)}s...`)
     await sleep(typingMs)
-
     await sock.sendPresenceUpdate('paused', jid)
     await sleep(randomBetween(350, 750))
 
@@ -438,29 +521,20 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
 
   } catch (err) {
     logger.error(`❌ [${merchantId}] Reply failed: ${err.message}`)
-
-    // ── FALLBACK: Send a holding reply so customer isn't left in silence ──
-    // This fires when the Edge Function is down/misconfigured.
-    // Remove this once Edge Function is confirmed working.
     try {
       const fallback = 'Asante kwa ujumbe wako! 🙏 Tutakujibu hivi karibuni.'
       await sock.sendMessage(jid, { text: fallback })
-      logger.info(`📤 [${merchantId}] Fallback reply sent to ${customerPhone}`)
-
       if (savedId) {
         await sb.from('inbox_messages').update({
-          ai_draft:   fallback,
-          status:     'replied',
-          replied_at: new Date().toISOString()
+          ai_draft: fallback, status: 'replied', replied_at: new Date().toISOString()
         }).eq('id', savedId)
       }
-    } catch(fallbackErr) {
-      logger.error(`❌ [${merchantId}] Even fallback failed: ${fallbackErr.message}`)
+    } catch(e) {
+      logger.error(`❌ [${merchantId}] Fallback also failed: ${e.message}`)
     }
   }
 }
 
-// ── Save incoming message to Supabase inbox ───────────────────
 async function saveMessage(merchantId, customerPhone, customerName, text) {
   try {
     const { data } = await sb.from('inbox_messages').insert({
@@ -479,7 +553,59 @@ async function saveMessage(merchantId, customerPhone, customerName, text) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SHIELD UTILITIES
+// RESTORE SESSIONS ON STARTUP
+// FIX: Sessions now come from Supabase so they survive restarts
+// ═══════════════════════════════════════════════════════════════
+
+async function restoreSessions() {
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('id, whatsapp_number, bot_config')
+      .eq('bot_connection_status', 'connected')
+
+    if (error) { logger.warn('restoreSessions query error:', error.message); return }
+    if (!data?.length) { logger.info('No sessions to restore'); return }
+
+    logger.info(`🔄 Restoring ${data.length} session(s) from Supabase...`)
+    for (const row of data) {
+      const phone = row.whatsapp_number
+      if (!phone) { logger.warn(`[${row.id}] No phone — skipping`); continue }
+
+      // Check if session data actually exists in Supabase before trying
+      const sessionData = await loadSessionFromSupabase(row.id)
+      if (!sessionData) {
+        logger.warn(`[${row.id}] No session data in Supabase — marking disconnected`)
+        await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', row.id)
+        continue
+      }
+
+      merchants.set(row.id, {
+        connected:   false,
+        connectedAt: null,
+        config: {
+          wa_number:   phone,
+          auto_reply:  row.bot_config?.auto_reply  !== false,
+          quiet_hours: row.bot_config?.quiet_hours !== false,
+          ...(row.bot_config || {})
+        }
+      })
+
+      try {
+        await initBot(row.id, phone)
+        logger.info(`✅ Restored [${row.id}]`)
+      } catch(e) {
+        logger.error(`❌ Restore failed [${row.id}]: ${e.message}`)
+      }
+      await sleep(randomBetween(3000, 7000))
+    }
+  } catch(e) {
+    logger.error('restoreSessions error:', e.message)
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
 // ═══════════════════════════════════════════════════════════════
 
 function extractText(msg) {
@@ -490,16 +616,6 @@ function extractText(msg) {
     || ''
 }
 
-// ── SHIELD 3: Human reading delay before typing starts ───────
-// Simulates: person picks up phone, unlocks, opens WhatsApp, reads.
-// Based on message length — longer message = more reading time.
-// Total budget: we aim for the whole reply to land within 45s.
-// readDelay + typingDuration + overhead must stay under 45s.
-//
-// readDelay ranges:
-//   Short msg  (≤30 chars):  8–16 seconds
-//   Medium msg (≤80 chars): 10–20 seconds
-//   Long msg   (80+ chars): 12–23 seconds
 function humanReadDelay(incomingText) {
   const len = (incomingText || '').length
   if (len <= 30) return randomBetween(8_000,  16_000)
@@ -507,24 +623,14 @@ function humanReadDelay(incomingText) {
   return             randomBetween(12_000, 23_000)
 }
 
-// ── SHIELD 2: Realistic typing duration based on reply length ─
-// Humans type ~40–55 wpm on mobile. We simulate that pace.
-// We also add small jitter so it never looks like an exact timer.
-//
-// Short  reply (<80 chars):  4–8  seconds  (quick answer)
-// Medium reply (<180 chars): 7–14 seconds  (normal reply)
-// Long   reply (180+ chars): 12–22 seconds (detailed response)
-//
-// Max is capped at 22s so total always stays under 45s.
 function replyTypingDuration(replyText) {
-  const len     = (replyText || '').length
-  const jitter  = randomBetween(-800, 800)       // ±0.8s human variation
+  const len    = (replyText || '').length
+  const jitter = randomBetween(-800, 800)
   if (len < 80)  return Math.max(4_000,  randomBetween(4_000,  8_000)  + jitter)
   if (len < 180) return Math.max(7_000,  randomBetween(7_000,  14_000) + jitter)
   return               Math.max(12_000, Math.min(randomBetween(12_000, 22_000) + jitter, 22_000))
 }
 
-// SHIELD 4: Ramp up slowly over first 2 weeks
 function getDailyLimit(ageDays) {
   if (ageDays <= 3)  return 10
   if (ageDays <= 7)  return 25
@@ -532,7 +638,6 @@ function getDailyLimit(ageDays) {
   return parseInt(process.env.BOT_MAX_REPLIES || '100')
 }
 
-// SHIELD 5: Quiet hours — 11pm to 6am EAT
 function isQuietHours() {
   const hour = parseInt(new Intl.DateTimeFormat('en', {
     hour: 'numeric', hour12: false, timeZone: 'Africa/Dar_es_Salaam'
@@ -564,51 +669,12 @@ process.on('SIGINT', async () => {
 
 // ── Start ─────────────────────────────────────────────────────
 app.listen(PORT, async () => {
-  logger.info(`🤖 LinkaMarket Bot Server on port ${PORT}`)
-  logger.info(`🧠 AI powered by Supabase Edge Function: ${AI_EDGE_URL}`)
-  // BUG 1 FIX: Reconnect all previously-active merchants on startup
+  logger.info(`🤖 LinkaMarket Bot on port ${PORT}`)
+  logger.info(`🧠 AI Edge: ${AI_EDGE_URL}`)
+
+  // Start keep-alive ping (prevents Render free tier from sleeping)
+  startKeepAlive()
+
+  // Restore all connected sessions from Supabase
   await restoreSessions()
 })
-// ── BUG 1 FIX: Restore sessions on server restart ────────────────────────────
-// When Render/Railway restarts, the in-memory `merchants` map is wiped but
-// session files remain on disk. This reads Supabase for merchants marked
-// 'connected' and re-initialises their socket so the bot replies again
-// without the merchant needing to re-scan or re-pair.
-async function restoreSessions() {
-  try {
-    const { data, error } = await sb
-      .from('profiles')
-      .select('id, whatsapp_number, bot_config')
-      .eq('bot_connection_status', 'connected')
-
-    if (error) { logger.warn('restoreSessions query error:', error.message); return }
-    if (!data?.length) { logger.info('No sessions to restore'); return }
-
-    logger.info(`🔄 Restoring ${data.length} merchant session(s) after restart...`)
-    for (const row of data) {
-      const phone = row.whatsapp_number
-      if (!phone) { logger.warn(`[${row.id}] No phone stored — skipping restore`); continue }
-
-      merchants.set(row.id, {
-        connected:   false,
-        connectedAt: null,
-        config: {
-          wa_number:   phone,
-          auto_reply:  row.bot_config?.auto_reply  !== false,
-          quiet_hours: row.bot_config?.quiet_hours !== false,
-          ...(row.bot_config || {})
-        }
-      })
-      try {
-        await initBot(row.id, phone)
-        logger.info(`✅ Restore started for [${row.id}]`)
-      } catch(e) {
-        logger.error(`❌ Restore failed for [${row.id}]: ${e.message}`)
-      }
-      // Stagger restores so we don't hammer WhatsApp all at once
-      await sleep(randomBetween(3000, 7000))
-    }
-  } catch(e) {
-    logger.error('restoreSessions error:', e.message)
-  }
-}
