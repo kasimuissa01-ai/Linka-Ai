@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import express    from 'express'
-import cors       from 'cors'
+import express   from 'express'
+import cors      from 'cors'
 import {
   makeWASocket,
   useMultiFileAuthState,
@@ -8,19 +8,23 @@ import {
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore,
 } from '@whiskeysockets/baileys'
-import pino       from 'pino'
-import NodeCache  from 'node-cache'
+import pino      from 'pino'
+import NodeCache from 'node-cache'
 import { createClient } from '@supabase/supabase-js'
-import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'fs'
+import { mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
 
-// ── Express ───────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// EXPRESS
+// ─────────────────────────────────────────────────────────────
 const app  = express()
 const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-// ── Logger ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// LOGGER
+// ─────────────────────────────────────────────────────────────
 const logger = pino({
   level: 'info',
   transport: process.env.NODE_ENV !== 'production'
@@ -28,126 +32,148 @@ const logger = pino({
     : undefined
 })
 
-// ── Supabase ──────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// SUPABASE
+// ─────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || ''
 const SUPABASE_KEY = process.env.SUPABASE_KEY || ''
-
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  logger.error('Missing SUPABASE_URL or SUPABASE_KEY env vars')
+  logger.error('Missing SUPABASE_URL or SUPABASE_KEY')
   process.exit(1)
 }
-
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false }
-})
-
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
 const AI_EDGE_URL = `${SUPABASE_URL}/functions/v1/ai-reply`
 
-// ── In-memory state ───────────────────────────────────────────
-const merchants  = new Map()
+// ─────────────────────────────────────────────────────────────
+// IN-MEMORY STATE
+// ─────────────────────────────────────────────────────────────
+const merchants  = new Map()   // active bot sessions
 const dailyCache = new NodeCache({ stdTTL: 86400 })
-const msgDedup   = new NodeCache({ stdTTL: 3600  })
+const msgDedup   = new NodeCache({ stdTTL: 3600 })
 
-// ═══════════════════════════════════════════════════════════════
-// SESSION STORAGE IN SUPABASE
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
+// SESSION HELPERS
+// 
+// HOW IT WORKS:
+//   - On first pair: no session exists → Baileys generates a
+//     fresh pairing code → user enters it in WhatsApp → connected
+//   - On connect: creds are saved to both /tmp AND Supabase
+//   - On restart: creds loaded from Supabase → written to /tmp
+//     → Baileys reconnects automatically without a new code
+//   - On re-pair: /tmp folder AND Supabase row are BOTH deleted
+//     → Baileys starts completely fresh → new code every time
+// ═════════════════════════════════════════════════════════════
 
-async function loadSessionFromSupabase(merchantId) {
+function tmpPath(merchantId) {
+  return `/tmp/wa_sessions/${merchantId}`
+}
+
+// Wipe the /tmp folder for this merchant completely
+function clearTmpSession(merchantId) {
+  const p = tmpPath(merchantId)
+  try {
+    if (existsSync(p)) rmSync(p, { recursive: true, force: true })
+    logger.info(`[${merchantId}] 🗑️ /tmp session cleared`)
+  } catch(e) {
+    logger.warn(`[${merchantId}] clearTmp error: ${e.message}`)
+  }
+}
+
+// Load session JSON from Supabase and write files to /tmp
+async function loadSession(merchantId) {
   try {
     const { data, error } = await sb
       .from('bot_sessions')
       .select('session_data')
       .eq('merchant_id', merchantId)
-      .single()
-    if (error || !data) return null
-    return data.session_data
-  } catch (e) {
+      .maybeSingle()            // returns null if no row — never throws
+
+    if (error) {
+      logger.warn(`[${merchantId}] loadSession DB error: ${error.message}`)
+      return false
+    }
+    if (!data?.session_data) return false
+
+    // Write each session file to /tmp so Baileys can read them
+    const p = tmpPath(merchantId)
+    mkdirSync(p, { recursive: true })
+    for (const [filename, content] of Object.entries(data.session_data)) {
+      writeFileSync(join(p, filename), JSON.stringify(content), 'utf8')
+    }
+    logger.info(`[${merchantId}] ✅ Session loaded from Supabase`)
+    return true
+  } catch(e) {
     logger.warn(`[${merchantId}] loadSession error: ${e.message}`)
-    return null
+    return false
   }
 }
 
-async function saveSessionToSupabase(merchantId, sessionData) {
+// Read /tmp files and save them to Supabase
+async function saveSession(merchantId) {
   try {
-    await sb.from('bot_sessions').upsert({
+    const p = tmpPath(merchantId)
+    if (!existsSync(p)) return
+
+    const files = readdirSync(p)
+    if (!files.length) return
+
+    const sessionData = {}
+    for (const file of files) {
+      const raw = readFileSync(join(p, file), 'utf8')
+      try { sessionData[file] = JSON.parse(raw) }
+      catch { sessionData[file] = raw }
+    }
+
+    const { error } = await sb.from('bot_sessions').upsert({
       merchant_id:  merchantId,
       session_data: sessionData,
       updated_at:   new Date().toISOString()
     }, { onConflict: 'merchant_id' })
-  } catch (e) {
+
+    if (error) logger.error(`[${merchantId}] saveSession DB error: ${error.message}`)
+    else       logger.info(`[${merchantId}] 💾 Session saved to Supabase`)
+  } catch(e) {
     logger.warn(`[${merchantId}] saveSession error: ${e.message}`)
   }
 }
 
-async function deleteSessionFromSupabase(merchantId) {
+// Delete from Supabase
+async function deleteSession(merchantId) {
   try {
     await sb.from('bot_sessions').delete().eq('merchant_id', merchantId)
-    logger.info(`[${merchantId}] 🗑️ Old session deleted from Supabase`)
-  } catch (e) {
+    logger.info(`[${merchantId}] 🗑️ Session deleted from Supabase`)
+  } catch(e) {
     logger.warn(`[${merchantId}] deleteSession error: ${e.message}`)
   }
 }
 
-async function useSupabaseAuthState(merchantId) {
-  let sessionData = await loadSessionFromSupabase(merchantId)
-
-  const sessPath = `/tmp/sessions/${merchantId}`
-  mkdirSync(sessPath, { recursive: true })
-
-  if (sessionData) {
-    try {
-      for (const [filename, fileContent] of Object.entries(sessionData)) {
-        writeFileSync(join(sessPath, filename), JSON.stringify(fileContent), 'utf8')
-      }
-      logger.info(`[${merchantId}] ✅ Session loaded from Supabase`)
-    } catch (e) {
-      logger.warn(`[${merchantId}] Failed to write session to temp: ${e.message}`)
-    }
-  }
-
-  const { state, saveCreds: _saveCreds } = await useMultiFileAuthState(sessPath)
-
-  const saveCreds = async () => {
-    await _saveCreds()
-    try {
-      const files = readdirSync(sessPath)
-      const newSessionData = {}
-      for (const file of files) {
-        const raw = readFileSync(join(sessPath, file), 'utf8')
-        try { newSessionData[file] = JSON.parse(raw) }
-        catch { newSessionData[file] = raw }
-      }
-      await saveSessionToSupabase(merchantId, newSessionData)
-    } catch (e) {
-      logger.warn(`[${merchantId}] saveCreds sync failed: ${e.message}`)
-    }
-  }
-
-  return { state, saveCreds }
+// Full wipe: both /tmp AND Supabase
+async function nukeSession(merchantId) {
+  clearTmpSession(merchantId)
+  await deleteSession(merchantId)
 }
 
-// ═══════════════════════════════════════════════════════════════
-// KEEP-ALIVE PING
-// ═══════════════════════════════════════════════════════════════
-
+// ─────────────────────────────────────────────────────────────
+// KEEP-ALIVE (prevents Render from sleeping)
+// ─────────────────────────────────────────────────────────────
 function startKeepAlive() {
-  const selfUrl  = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
-  const interval = 10 * 60 * 1000
+  const selfUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
   setInterval(async () => {
     try {
-      const res = await fetch(`${selfUrl}/`)
-      logger.info(`💓 Keep-alive ping → ${res.status}`)
-    } catch (e) {
+      const r = await fetch(`${selfUrl}/`)
+      logger.info(`💓 Keep-alive → ${r.status}`)
+    } catch(e) {
       logger.warn(`💓 Keep-alive failed: ${e.message}`)
     }
-  }, interval)
-  logger.info(`💓 Keep-alive started — pinging every 10 min → ${selfUrl}`)
+  }, 10 * 60 * 1000)
+  logger.info(`💓 Keep-alive started → ${selfUrl}`)
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // API ROUTES
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 
+// Health check
 app.get('/', (req, res) => {
   res.json({
     service:   'LinkaMarket WhatsApp Bot',
@@ -157,149 +183,171 @@ app.get('/', (req, res) => {
   })
 })
 
+// Debug — see all connected merchants
 app.get('/debug', (req, res) => {
-  const state = {}
+  const out = {}
   for (const [id, m] of merchants) {
-    state[id] = {
-      connected:           m.connected,
-      connectedAt:         m.connectedAt,
-      phone:               m.config?.wa_number,
-      auto_reply:          m.config?.auto_reply,
-      quiet_hours:         m.config?.quiet_hours,
-      currentlyQuietHours: isQuietHours()
+    out[id] = {
+      connected:   m.connected,
+      connectedAt: m.connectedAt,
+      phone:       m.config?.wa_number,
     }
   }
-  res.json({ merchants: state, ai_edge_url: AI_EDGE_URL })
+  res.json({ merchants: out })
 })
 
-app.post('/test-edge', async (req, res) => {
-  const { merchant_id, message } = req.body
-  if (!merchant_id || !message) return res.status(400).json({ error: 'merchant_id and message required' })
-  try {
-    const controller = new AbortController()
-    const timeout    = setTimeout(() => controller.abort(), 20000)
-    let aiRes
-    try {
-      aiRes = await fetch(AI_EDGE_URL, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
-        body: JSON.stringify({ merchant_id, customer_message: message, mode: 'auto' })
-      })
-    } finally { clearTimeout(timeout) }
-    const body = await aiRes.text()
-    res.json({ status: aiRes.status, ok: aiRes.ok, body: JSON.parse(body) })
-  } catch(e) {
-    res.status(500).json({ error: e.message })
-  }
-})
-
+// Status for a specific merchant
 app.get('/status', (req, res) => {
-  const merchantId = req.query.merchant_id || req.query.merchant
-  if (!merchantId) return res.status(400).json({ error: 'merchant_id required' })
-  const m      = merchants.get(merchantId)
+  const mid    = req.query.merchant_id || req.query.merchant
+  if (!mid) return res.status(400).json({ error: 'merchant_id required' })
+  const m      = merchants.get(mid)
   const botAge = m?.connectedAt
     ? Math.floor((Date.now() - new Date(m.connectedAt).getTime()) / 86400000)
     : 0
-  const dayKey = `daily:${merchantId}:${today()}`
   res.json({
-    connected:    m?.connected || false,
+    connected:    m?.connected === true,
     merchants:    merchants.size,
     phone:        m?.config?.wa_number || '',
-    today_count:  dailyCache.get(dayKey) || 0,
+    today_count:  dailyCache.get(`daily:${mid}:${today()}`) || 0,
     daily_limit:  getDailyLimit(botAge),
     bot_age_days: botAge
   })
 })
 
-// ═══════════════════════════════════════════════════════════════
-// /pair  ← THE MAIN FIX IS IN THIS FUNCTION
+// ─────────────────────────────────────────────────────────────
+// /pair  — THE MAIN ENDPOINT
 //
-// THE BUG (what was happening):
-//   1. User clicks "Pata Code"
-//   2. Old expired session was still saved in bot_sessions table
-//   3. Server loaded that old session → thought merchant was registered
-//   4. Skipped generating a new code → returned { code: null }
-//   5. Frontend received null → showed "Code haikuja" error
+// WHAT IT DOES (clean simple flow):
+//   1. Kill any existing socket for this merchant
+//   2. Wipe BOTH /tmp folder AND Supabase session completely
+//   3. Wait for everything to close
+//   4. Start Baileys fresh — no old data anywhere
+//   5. Baileys sees no creds → calls requestPairingCode()
+//   6. Returns a real 8-character code to the frontend
+//   7. Merchant enters code in WhatsApp → bot connects
 //
-// THE FIX:
-//   Delete the old session from Supabase BEFORE starting the bot.
-//   Now Baileys always starts completely fresh → always generates
-//   a real 8-character pairing code → user can connect.
-// ═══════════════════════════════════════════════════════════════
+// RESULT: "already_registered" can NEVER happen because we
+//         wiped all session data in step 2.
+// ─────────────────────────────────────────────────────────────
 app.post('/pair', async (req, res) => {
   const { phone, merchant_id } = req.body
-
   if (!phone || !merchant_id) {
     return res.status(400).json({ error: 'phone and merchant_id required' })
   }
 
-  // 1. Close any existing socket
+  logger.info(`[${merchant_id}] 📱 Pair request for phone: ${phone}`)
+
+  // Step 1: Kill existing socket
   if (merchants.has(merchant_id)) {
-    try { merchants.get(merchant_id).sock?.end() } catch {}
+    try {
+      merchants.get(merchant_id).sock?.end()
+      logger.info(`[${merchant_id}] Old socket closed`)
+    } catch(e) {}
     merchants.delete(merchant_id)
   }
 
-  // 2. ✅ THE FIX: Delete old session so Baileys starts fresh
-  await deleteSessionFromSupabase(merchant_id)
+  // Step 2: Wipe all session data — /tmp AND Supabase
+  await nukeSession(merchant_id)
 
-  // 3. Short pause to let socket fully close
-  await sleep(1500)
+  // Step 3: Wait for socket to fully close
+  await sleep(2000)
 
-  // 4. Fresh merchant entry
+  // Step 4: Start fresh
   merchants.set(merchant_id, {
     connected:   false,
     connectedAt: null,
-    config: { wa_number: phone, auto_reply: true, quiet_hours: true }
+    config:      { wa_number: phone, auto_reply: true, quiet_hours: true }
   })
 
-  // 5. Start bot — will now always generate a real pair code
   try {
-    const code = await initBot(merchant_id, phone)
+    // Step 5–6: initBot will see no creds and generate a real code
+    const code = await initBot(merchant_id, phone, true)
 
-    if (code === 'already_registered') {
-      logger.warn(`[${merchant_id}] ⚠️ Still got already_registered after delete — unexpected`)
-      return res.json({ code: null, reconnecting: true, message: 'Bot inaungana tena — subiri sekunde 15' })
+    if (!code || code === 'already_registered') {
+      // This should NEVER happen now — but if it does, log it loudly
+      logger.error(`[${merchant_id}] ❌ UNEXPECTED: got no code after full session wipe!`)
+      return res.status(500).json({ error: 'Code haikutolewa. Jaribu tena baada ya sekunde 10.' })
     }
 
-    logger.info(`✅ Pair code for ${merchant_id}: ${code}`)
-    res.json({ code, message: 'Enter this code in WhatsApp → Linked Devices' })
-  } catch (err) {
-    logger.error(`❌ Pair error for ${merchant_id}: ${err.message}`)
+    logger.info(`[${merchant_id}] ✅ Pair code generated: ${code}`)
+    res.json({ code })
+
+  } catch(err) {
+    logger.error(`[${merchant_id}] ❌ Pair failed: ${err.message}`)
     merchants.delete(merchant_id)
     res.status(500).json({ error: err.message })
   }
 })
 
-app.post('/settings', async (req, res) => {
-  const merchantId = req.headers['x-merchant-id'] || req.body.merchant_id
-  const { setting, value } = req.body
-  if (!merchantId) return res.status(401).json({ error: 'merchant_id required' })
-  const m = merchants.get(merchantId)
-  if (m?.config) {
-    m.config[setting] = value
-    logger.info(`[${merchantId}] Setting: ${setting} = ${value}`)
-  }
-  res.json({ ok: true })
-})
-
+// Disconnect a merchant
 app.post('/disconnect', async (req, res) => {
   const { merchant_id } = req.body
   if (!merchant_id) return res.status(400).json({ error: 'merchant_id required' })
+
   try { merchants.get(merchant_id)?.sock?.end() } catch {}
   merchants.delete(merchant_id)
-  await deleteSessionFromSupabase(merchant_id)
-  await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', merchant_id)
+  await nukeSession(merchant_id)
+  await sb.from('profiles')
+    .update({ bot_connection_status: 'disconnected' })
+    .eq('id', merchant_id)
+
   res.json({ ok: true })
 })
 
-// ═══════════════════════════════════════════════════════════════
-// WHATSAPP BOT CORE
-// ═══════════════════════════════════════════════════════════════
+// Update bot settings
+app.post('/settings', async (req, res) => {
+  const mid = req.body.merchant_id || req.headers['x-merchant-id']
+  if (!mid) return res.status(401).json({ error: 'merchant_id required' })
+  const { setting, value } = req.body
+  const m = merchants.get(mid)
+  if (m?.config) m.config[setting] = value
+  res.json({ ok: true })
+})
 
-async function initBot(merchantId, phone) {
-  const { state, saveCreds } = await useSupabaseAuthState(merchantId)
-  const { version }          = await fetchLatestBaileysVersion()
+// Test AI edge function
+app.post('/test-edge', async (req, res) => {
+  const { merchant_id, message } = req.body
+  if (!merchant_id || !message) return res.status(400).json({ error: 'merchant_id and message required' })
+  try {
+    const ctrl    = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 20000)
+    let r
+    try {
+      r = await fetch(AI_EDGE_URL, {
+        method:  'POST',
+        signal:  ctrl.signal,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+        body:    JSON.stringify({ merchant_id, customer_message: message, mode: 'auto' })
+      })
+    } finally { clearTimeout(timeout) }
+    const body = await r.text()
+    res.json({ status: r.status, ok: r.ok, body: JSON.parse(body) })
+  } catch(e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// ═════════════════════════════════════════════════════════════
+// WHATSAPP BOT CORE
+// ═════════════════════════════════════════════════════════════
+
+async function initBot(merchantId, phone, isPairing = false) {
+  // Load session from Supabase into /tmp (if exists)
+  // For pairing: session was already wiped so this returns false
+  // For reconnect: loads saved creds so no code needed
+  await loadSession(merchantId)
+
+  const p = tmpPath(merchantId)
+  mkdirSync(p, { recursive: true })
+
+  const { state, saveCreds: _saveCreds } = await useMultiFileAuthState(p)
+  const { version } = await fetchLatestBaileysVersion()
+
+  // saveCreds: save to /tmp (Baileys does this) then sync to Supabase
+  const saveCreds = async () => {
+    await _saveCreds()
+    await saveSession(merchantId)
+  }
 
   const sock = makeWASocket({
     version,
@@ -312,18 +360,20 @@ async function initBot(merchantId, phone) {
     generateHighQualityLinkPreview: false,
     syncFullHistory:                false,
     markOnlineOnConnect:            false,
-    getMessage: async () => undefined,
+    getMessage:                     async () => undefined,
   })
 
+  // Attach sock to merchant entry
   if (!merchants.has(merchantId)) {
     merchants.set(merchantId, {
       connected:   false,
       connectedAt: null,
-      config: { wa_number: phone, auto_reply: true, quiet_hours: true }
+      config:      { wa_number: phone, auto_reply: true, quiet_hours: true }
     })
   }
   merchants.get(merchantId).sock = sock
 
+  // Connection events
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update
     const m = merchants.get(merchantId)
@@ -332,7 +382,7 @@ async function initBot(merchantId, phone) {
     if (connection === 'open') {
       m.connected   = true
       m.connectedAt = m.connectedAt || new Date().toISOString()
-      logger.info(`✅ [${merchantId}] Connected as ${phone}`)
+      logger.info(`✅ [${merchantId}] Bot connected — ${phone}`)
       await sb.from('profiles').update({
         bot_connection_status: 'connected',
         bot_connected_at:      m.connectedAt,
@@ -341,25 +391,27 @@ async function initBot(merchantId, phone) {
     }
 
     if (connection === 'close') {
-      m.connected = false
-      const code  = lastDisconnect?.error?.output?.statusCode
-      logger.warn(`🔴 [${merchantId}] Disconnected (code ${code})`)
+      m.connected       = false
+      const statusCode  = lastDisconnect?.error?.output?.statusCode
+      logger.warn(`🔴 [${merchantId}] Disconnected — code ${statusCode}`)
+
       await sb.from('profiles').update({
         bot_connection_status: 'disconnected',
         bot_last_seen:         new Date().toISOString()
       }).eq('id', merchantId)
 
-      if (code === DisconnectReason.loggedOut) {
-        logger.warn(`[${merchantId}] Logged out — deleting session, requires re-pair`)
-        await deleteSessionFromSupabase(merchantId)
+      if (statusCode === DisconnectReason.loggedOut) {
+        // User removed bot from WhatsApp — wipe everything, require new pair
+        logger.warn(`[${merchantId}] Logged out — requires new pair`)
+        await nukeSession(merchantId)
         merchants.delete(merchantId)
-      } else {
+      } else if (!isPairing) {
+        // Network drop / timeout — reconnect automatically
         const delay = randomBetween(8000, 20000)
-        logger.info(`⏳ [${merchantId}] Auto-reconnecting in ${Math.round(delay/1000)}s...`)
+        logger.info(`[${merchantId}] Auto-reconnecting in ${Math.round(delay/1000)}s...`)
         setTimeout(async () => {
-          try { await initBot(merchantId, phone) } catch(e) {
-            logger.error(`Reconnect failed [${merchantId}]: ${e.message}`)
-          }
+          try { await initBot(merchantId, phone) }
+          catch(e) { logger.error(`[${merchantId}] Reconnect failed: ${e.message}`) }
         }, delay)
       }
     }
@@ -374,31 +426,33 @@ async function initBot(merchantId, phone) {
     }
   })
 
+  // If no creds exist → request pairing code
   if (!state.creds.registered) {
     await sleep(1500)
     const code = await sock.requestPairingCode(phone)
     return code
   }
 
+  // Creds exist → reconnecting, no code needed
   return 'already_registered'
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // MESSAGE HANDLING
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 
 async function handleMessage(sock, merchantId, msg) {
   const m = merchants.get(merchantId)
-  if (!m?.config)             return
-  if (msg.key.fromMe)         return
+  if (!m?.config)                   return
+  if (msg.key.fromMe)               return
   const jid = msg.key.remoteJid || ''
-  if (jid.includes('@g.us'))  return
-  if (jid.includes('@broadcast')) return
-  if (jid === 'status@broadcast') return
+  if (jid.includes('@g.us'))        return
+  if (jid.includes('@broadcast'))   return
+  if (jid === 'status@broadcast')   return
 
   const text = extractText(msg)
   if (!text || text.trim().length < 2) return
-  if (msgDedup.get(msg.key.id)) return
+  if (msgDedup.get(msg.key.id))     return
   msgDedup.set(msg.key.id, true)
   if (m.config.auto_reply === false) return
 
@@ -410,7 +464,8 @@ async function handleMessage(sock, merchantId, msg) {
 
   if (m.config.quiet_hours !== false && isQuietHours()) {
     const delay      = getQuietHoursDelay()
-    const resumeTime = new Date(Date.now() + delay).toLocaleTimeString('en', { timeZone: 'Africa/Dar_es_Salaam' })
+    const resumeTime = new Date(Date.now() + delay)
+      .toLocaleTimeString('en', { timeZone: 'Africa/Dar_es_Salaam' })
     logger.info(`🌙 [${merchantId}] Quiet hours — queued until ~${resumeTime} EAT`)
     setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), delay)
     return
@@ -424,69 +479,61 @@ async function handleMessage(sock, merchantId, msg) {
   const maxDay = getDailyLimit(botAge)
 
   if (count >= maxDay) {
-    logger.warn(`⛔ [${merchantId}] Daily limit ${count}/${maxDay} — skipping`)
+    logger.warn(`⛔ [${merchantId}] Daily limit ${count}/${maxDay}`)
     return
   }
 
-  const readDelay = humanReadDelay(text)
-  logger.info(`⏱️  [${merchantId}] Read pause ${(readDelay/1000).toFixed(1)}s...`)
-  setTimeout(() => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id), readDelay)
+  setTimeout(
+    () => processReply(sock, merchantId, jid, customerPhone, text, savedId, msg.key.id),
+    humanReadDelay(text)
+  )
 }
 
 async function processReply(sock, merchantId, jid, customerPhone, text, savedId, msgKeyId) {
   const m = merchants.get(merchantId)
-  if (!m?.connected) {
-    logger.warn(`[${merchantId}] Skipping reply — disconnected`)
-    return
-  }
+  if (!m?.connected) return
 
   try {
-    const controller = new AbortController()
-    const timeout    = setTimeout(() => controller.abort(), 25000)
+    const ctrl    = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 25000)
     let aiRes
     try {
       aiRes = await fetch(AI_EDGE_URL, {
         method:  'POST',
-        signal:  controller.signal,
+        signal:  ctrl.signal,
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
         body:    JSON.stringify({ merchant_id: merchantId, customer_message: text, mode: 'auto' })
       })
     } finally { clearTimeout(timeout) }
 
     const rawBody = await aiRes.text()
-    logger.info(`🤖 Edge [${aiRes.status}]: ${rawBody.slice(0, 300)}`)
-    if (!aiRes.ok) throw new Error(`Edge Function HTTP ${aiRes.status}: ${rawBody.slice(0, 200)}`)
+    if (!aiRes.ok) throw new Error(`Edge HTTP ${aiRes.status}: ${rawBody.slice(0,200)}`)
 
-    let parsed
-    try { parsed = JSON.parse(rawBody) } catch(e) {
-      throw new Error(`Edge returned invalid JSON: ${rawBody.slice(0, 100)}`)
-    }
-
-    const reply = parsed?.reply || parsed?.message || parsed?.response || ''
-    if (!reply) throw new Error(`No reply field. Keys: ${Object.keys(parsed).join(', ')}`)
+    const parsed = JSON.parse(rawBody)
+    const reply  = parsed?.reply || parsed?.message || parsed?.response || ''
+    if (!reply) throw new Error(`No reply field in Edge response`)
 
     await sock.readMessages([{ remoteJid: jid, id: msgKeyId || 'latest', fromMe: false }])
     await sleep(randomBetween(200, 600))
     await sock.sendPresenceUpdate('available', jid)
     await sleep(randomBetween(400, 900))
-    const typingMs = replyTypingDuration(reply)
     await sock.sendPresenceUpdate('composing', jid)
-    await sleep(typingMs)
+    await sleep(replyTypingDuration(reply))
     await sock.sendPresenceUpdate('paused', jid)
     await sleep(randomBetween(350, 750))
     await sock.sendMessage(jid, { text: reply })
 
-    const dayKey = `daily:${merchantId}:${today()}`
-    dailyCache.set(dayKey, (dailyCache.get(dayKey) || 0) + 1)
+    dailyCache.set(`daily:${merchantId}:${today()}`,
+      (dailyCache.get(`daily:${merchantId}:${today()}`) || 0) + 1)
 
     if (savedId) {
       await sb.from('inbox_messages').update({
         ai_draft: reply, status: 'replied', replied_at: new Date().toISOString()
       }).eq('id', savedId)
     }
-    logger.info(`✅ [${merchantId}] Sent to ${customerPhone}`)
+    logger.info(`✅ [${merchantId}] Replied to ${customerPhone}`)
 
-  } catch (err) {
+  } catch(err) {
     logger.error(`❌ [${merchantId}] Reply failed: ${err.message}`)
     try {
       const fallback = 'Asante kwa ujumbe wako! 🙏 Tutakujibu hivi karibuni.'
@@ -496,9 +543,7 @@ async function processReply(sock, merchantId, jid, customerPhone, text, savedId,
           ai_draft: fallback, status: 'replied', replied_at: new Date().toISOString()
         }).eq('id', savedId)
       }
-    } catch(e) {
-      logger.error(`❌ [${merchantId}] Fallback also failed: ${e.message}`)
-    }
+    } catch(e) {}
   }
 }
 
@@ -513,16 +558,17 @@ async function saveMessage(merchantId, customerPhone, customerName, text) {
       source:           'whatsapp_bot'
     }).select('id').single()
     return data?.id || null
-  } catch (e) {
+  } catch(e) {
     logger.warn('saveMessage failed:', e.message)
     return null
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // RESTORE SESSIONS ON STARTUP
-// ═══════════════════════════════════════════════════════════════
-
+// Runs once when server starts — reconnects all merchants
+// who were connected before the restart
+// ═════════════════════════════════════════════════════════════
 async function restoreSessions() {
   try {
     const { data, error } = await sb
@@ -534,14 +580,26 @@ async function restoreSessions() {
     if (!data?.length) { logger.info('No sessions to restore'); return }
 
     logger.info(`🔄 Restoring ${data.length} session(s)...`)
+
     for (const row of data) {
       const phone = row.whatsapp_number
-      if (!phone) { logger.warn(`[${row.id}] No phone — skipping`); continue }
+      if (!phone) {
+        logger.warn(`[${row.id}] No phone number — skipping`)
+        continue
+      }
 
-      const sessionData = await loadSessionFromSupabase(row.id)
-      if (!sessionData) {
-        logger.warn(`[${row.id}] No session in Supabase — marking disconnected`)
-        await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', row.id)
+      // Check session data exists in Supabase
+      const { data: sess } = await sb
+        .from('bot_sessions')
+        .select('merchant_id')
+        .eq('merchant_id', row.id)
+        .maybeSingle()
+
+      if (!sess) {
+        logger.warn(`[${row.id}] No saved session — marking disconnected`)
+        await sb.from('profiles')
+          .update({ bot_connection_status: 'disconnected' })
+          .eq('id', row.id)
         continue
       }
 
@@ -557,21 +615,24 @@ async function restoreSessions() {
       })
 
       try {
-        await initBot(row.id, phone)
-        logger.info(`✅ Restored [${row.id}]`)
+        const result = await initBot(row.id, phone)
+        if (result === 'already_registered') {
+          logger.info(`✅ [${row.id}] Reconnecting in background...`)
+        }
       } catch(e) {
         logger.error(`❌ Restore failed [${row.id}]: ${e.message}`)
       }
-      await sleep(randomBetween(3000, 7000))
+
+      await sleep(randomBetween(3000, 6000))
     }
   } catch(e) {
     logger.error('restoreSessions error:', e.message)
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // UTILITIES
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 
 function extractText(msg) {
   return msg.message?.conversation
@@ -582,51 +643,57 @@ function extractText(msg) {
 }
 function humanReadDelay(t) {
   const l = (t||'').length
-  if (l<=30) return randomBetween(8000,16000)
-  if (l<=80) return randomBetween(10000,20000)
-  return randomBetween(12000,23000)
+  if (l <= 30) return randomBetween(8000,  16000)
+  if (l <= 80) return randomBetween(10000, 20000)
+  return              randomBetween(12000, 23000)
 }
 function replyTypingDuration(t) {
-  const l=( t||'').length, j=randomBetween(-800,800)
-  if (l<80)  return Math.max(4000,  randomBetween(4000,8000)+j)
-  if (l<180) return Math.max(7000,  randomBetween(7000,14000)+j)
-  return           Math.max(12000, Math.min(randomBetween(12000,22000)+j,22000))
+  const l = (t||'').length, j = randomBetween(-800, 800)
+  if (l < 80)  return Math.max(4000,  randomBetween(4000,  8000)  + j)
+  if (l < 180) return Math.max(7000,  randomBetween(7000,  14000) + j)
+  return              Math.max(12000, Math.min(randomBetween(12000, 22000) + j, 22000))
 }
 function getDailyLimit(ageDays) {
-  if (ageDays<=3)  return 10
-  if (ageDays<=7)  return 25
-  if (ageDays<=14) return 50
-  return parseInt(process.env.BOT_MAX_REPLIES||'100')
+  if (ageDays <= 3)  return 10
+  if (ageDays <= 7)  return 25
+  if (ageDays <= 14) return 50
+  return parseInt(process.env.BOT_MAX_REPLIES || '100')
 }
 function isQuietHours() {
-  const h = parseInt(new Intl.DateTimeFormat('en',{
-    hour:'numeric',hour12:false,timeZone:'Africa/Dar_es_Salaam'
+  const h = parseInt(new Intl.DateTimeFormat('en', {
+    hour: 'numeric', hour12: false, timeZone: 'Africa/Dar_es_Salaam'
   }).format(new Date()))
-  return h>=23||h<6
+  return h >= 23 || h < 6
 }
 function getQuietHoursDelay() {
-  const now=new Date(), r=new Date(now)
-  r.setHours(6,randomBetween(0,20),randomBetween(0,59))
-  if (r<=now) r.setDate(r.getDate()+1)
-  return (r.getTime()-now.getTime())+randomBetween(0,600000)
+  const now = new Date(), r = new Date(now)
+  r.setHours(6, randomBetween(0, 20), randomBetween(0, 59))
+  if (r <= now) r.setDate(r.getDate() + 1)
+  return (r.getTime() - now.getTime()) + randomBetween(0, 600000)
 }
-function randomBetween(min,max){return Math.floor(Math.random()*(max-min+1))+min}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
-function today(){return new Date().toISOString().split('T')[0]}
+function randomBetween(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
+function sleep(ms)               { return new Promise(r => setTimeout(r, ms)) }
+function today()                 { return new Date().toISOString().split('T')[0] }
 
-// ── Graceful shutdown ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// GRACEFUL SHUTDOWN
+// ─────────────────────────────────────────────────────────────
 process.on('SIGINT', async () => {
   logger.info('Shutting down...')
   for (const [id, m] of merchants) {
     try { m.sock?.end() } catch {}
-    await sb.from('profiles').update({ bot_connection_status: 'disconnected' }).eq('id', id)
+    await sb.from('profiles')
+      .update({ bot_connection_status: 'disconnected' })
+      .eq('id', id)
   }
   process.exit(0)
 })
 
-// ── Start ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────────────────────
 app.listen(PORT, async () => {
-  logger.info(`🤖 LinkaMarket Bot on port ${PORT}`)
+  logger.info(`🤖 LinkaMarket Bot — port ${PORT}`)
   logger.info(`🧠 AI Edge: ${AI_EDGE_URL}`)
   startKeepAlive()
   await restoreSessions()
