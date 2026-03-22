@@ -8072,8 +8072,9 @@ async function botConfirmConnection() {
         });
         if (!res.ok) throw new Error('Seva haijibu — jaribu tena');
         const d = await res.json();
-        const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
-        if (isConnected) {
+        // CRITICAL FIX: Only trust d.connected === true for merchant-specific pairing
+        // d.status === 'running' means server is alive — NOT that WhatsApp is paired
+        if (d.connected === true) {
             await botFinishConnection(user);
         } else {
             showToastMsg('⏳ Bado haijaunganishwa. Hakikisha umeweka code sahihi kwenye WhatsApp kisha jaribu tena.', 'warn');
@@ -8159,8 +8160,10 @@ function startBotPairPoll(merchantId) {
             });
             if (!res.ok) return;
             const d = await res.json();
-            // Auto-detected connection — check real Render response fields
-            const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
+            // CRITICAL FIX: During pairing, ONLY trust d.connected === true.
+            // d.status === 'running' means the SERVER is running, NOT that this
+            // merchant's WhatsApp is paired. Using it caused false-positive connections.
+            const isConnected = d.connected === true;
             if (isConnected && !BOT_CONNECTED) {
                 const { data: { user } } = await sb.auth.getUser();
                 if (user) await botFinishConnection(user);
@@ -8181,8 +8184,9 @@ function startBotStatusPoll() {
             });
             if (res.ok) {
                 const d = await res.json();
-                const isConnected = d.connected === true || d.status === 'running' || (d.merchants && d.merchants > 0);
-                if (isConnected) {
+                // Only trust d.connected for merchant-specific session status
+                // d.status === 'running' only means the server is alive, not that WA is paired
+                if (d.connected === true) {
                     setBotStatus('online', 'Online ✅');
                 } else {
                     setBotStatus('error', 'Imekatika');
