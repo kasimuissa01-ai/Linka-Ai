@@ -8072,9 +8072,9 @@ async function botConfirmConnection() {
         });
         if (!res.ok) throw new Error('Seva haijibu — jaribu tena');
         const d = await res.json();
-        // CRITICAL FIX: Only trust d.connected === true for merchant-specific pairing
-        // d.status === 'running' means server is alive — NOT that WhatsApp is paired
-        if (d.connected === true) {
+        // Only trust d.connected === true
+        const isConnected = d.connected === true;
+        if (isConnected) {
             await botFinishConnection(user);
         } else {
             showToastMsg('⏳ Bado haijaunganishwa. Hakikisha umeweka code sahihi kwenye WhatsApp kisha jaribu tena.', 'warn');
@@ -8160,9 +8160,9 @@ function startBotPairPoll(merchantId) {
             });
             if (!res.ok) return;
             const d = await res.json();
-            // CRITICAL FIX: During pairing, ONLY trust d.connected === true.
-            // d.status === 'running' means the SERVER is running, NOT that this
-            // merchant's WhatsApp is paired. Using it caused false-positive connections.
+            // Auto-detected connection — check real Render response fields
+            // ONLY trust d.connected === true — never d.status or d.merchants
+            // d.status='running' and d.merchants>0 are always true and cause false positives
             const isConnected = d.connected === true;
             if (isConnected && !BOT_CONNECTED) {
                 const { data: { user } } = await sb.auth.getUser();
@@ -8184,9 +8184,9 @@ function startBotStatusPoll() {
             });
             if (res.ok) {
                 const d = await res.json();
-                // Only trust d.connected for merchant-specific session status
-                // d.status === 'running' only means the server is alive, not that WA is paired
-                if (d.connected === true) {
+                // Only trust d.connected === true for actual connection status
+                const isConnected = d.connected === true;
+                if (isConnected) {
                     setBotStatus('online', 'Online ✅');
                 } else {
                     setBotStatus('error', 'Imekatika');
@@ -8813,8 +8813,8 @@ let _ob2CodeTimer = null;
 async function obStep1Next() {
     const name = (document.getElementById('ob-shop-name')?.value || '').trim();
     const code = document.getElementById('ob-country-code')?.value || '+255';
-    const raw  = (document.getElementById('ob-whatsapp')?.value || '').trim().replace(/^0+/, '');
-    const full = code + raw;
+    const raw  = (document.getElementById('ob-whatsapp')?.value || '').trim().replace(/^0+/, ''); // Remove leading 0
+    const full = code.replace('+', '') + raw; // e.g. "255712345678" — no + prefix
 
     if (!name || raw.length < 7) {
         showToastMsg('Weka Jina na Namba ya WhatsApp 📱', 'warn');
@@ -8848,44 +8848,86 @@ async function obStep1Next() {
 
 async function ob2GetCode() {
     const btn = document.getElementById('ob2-get-code-btn');
-    if (btn) { btn.disabled = true; btn.innerHTML = 'Subiri...'; }
+    const statusText = document.getElementById('ob2-timer'); // Using timer area for status updates
+    
+    if (btn) { 
+        btn.disabled = true; 
+        btn.innerHTML = '<span style="width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin360 0.7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></span>Inaandaa...'; 
+    }
+
     try {
-        // Await user fully — user.id is guaranteed not undefined
         const { data: { user } } = await sb.auth.getUser();
         if (!user || !user.id) throw new Error('Tafadhali ingia tena (Session expired)');
 
         const merchantId = user.id;
 
-        // Get phone from DB
+        // 1. Get phone from DB
         const { data: prof } = await sb.from('profiles').select('whatsapp_number').eq('id', merchantId).single();
-        const phone = (prof?.whatsapp_number || '').replace(/[^0-9]/g, '');
-        if (!phone) throw new Error('Namba ya WhatsApp haipo. Rudi hatua ya kwanza.');
+        
+        // Clean phone number: remove +, spaces, and ensure it starts with country code (e.g., 255)
+        let phone = (prof?.whatsapp_number || '').replace(/[^0-9]/g, '');
+        
+        if (!phone || phone.length < 10) {
+            throw new Error('Namba ya WhatsApp haijakamilika. Rudi hatua ya kwanza.');
+        }
 
-        // Call Render server with guaranteed merchant_id
+        // 2. FORCE REFRESH: Tell server to clear any old attempts first
+        // This is the most common reason why pair codes don't show up on new connections
+        try {
+            await fetch(BOT_URL + '/disconnect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchant_id: merchantId }),
+                signal: AbortSignal.timeout(5000)
+            });
+        } catch(e) { console.log("Server was already disconnected or sleeping"); }
+
+        // Give the server a moment to breathe after disconnect
+        await new Promise(r => setTimeout(r, 2000));
+
+        // 3. Request fresh pairing code
+        // Timeout is 45s to allow for Render cold start (free tier can take ~30s to wake)
         const res = await fetch(BOT_URL + '/pair', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, merchant_id: merchantId }),
-            signal: AbortSignal.timeout(30000)
+            body: JSON.stringify({ 
+                phone: phone, 
+                merchant_id: merchantId 
+            }),
+            signal: AbortSignal.timeout(45000) 
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
 
-        if (data.reconnecting === true) {
-            showToastMsg('🔄 Session ilipatikana — inaungana tena...', 'info');
-            startBotPairPoll(merchantId);
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Pata WhatsApp Code'; }
-            return;
+        const data = await res.json();
+        
+        if (!res.ok) {
+            throw new Error(data.error || `Server error ${res.status}`);
         }
 
-        _ob2PairCode = data.code || data.pairingCode || data.pair_code || '';
-        if (!_ob2PairCode) throw new Error('Code haikuja — jaribu tena');
+        // If the server says it's already connecting, it may be retrying the old session
+        if (data.reconnecting === true) {
+            showToastMsg('⏳ Inaungana... Angalia simu yako sasa hivi!', 'info');
+            startBotPairPoll(merchantId);
+            // Even if reconnecting, show the code screen if we have a code
+        }
 
+        const code = data.code || data.pairingCode || data.pair_code;
+        
+        if (!code) {
+            throw new Error('Code haikuja. Bonyeza "Jaribu Tena" baada ya sekunde 10.');
+        }
+
+        // SUCCESS: Show the code in UI
+        _ob2PairCode = code;
         const codeEl = document.getElementById('ob2-pair-code');
-        if (codeEl) codeEl.textContent = botFmtCode(_ob2PairCode);
+        if (codeEl) {
+            codeEl.textContent = botFmtCode(_ob2PairCode);
+            codeEl.style.color = "#a5b4fc"; // Reset color to default
+        }
+        
         document.getElementById('ob2-setup-state').style.display = 'none';
         document.getElementById('ob2-code-state').style.display = 'block';
 
+        // 4. Start the UI countdown timer (3 minutes)
         let secs = 180;
         clearInterval(_ob2CodeTimer);
         _ob2CodeTimer = setInterval(() => {
@@ -8893,17 +8935,29 @@ async function ob2GetCode() {
             const t = document.getElementById('ob2-timer');
             if (t) {
                 const m = Math.floor(secs/60), s = secs%60;
-                t.textContent = secs > 0 ? `⏱ Inaisha kwa ${m>0?m+':'+String(s).padStart(2,'0')+' dakika':'sekunde '+s}...` : '⏰ Code imeisha — omba nyingine';
-                t.style.color = secs <= 30 ? '#f87171' : 'rgba(165,180,252,0.5)';
+                t.textContent = secs > 0
+                    ? `⏱ Inaisha kwa ${m > 0 ? m + ':' + String(s).padStart(2,'0') + ' dakika' : 'sekunde ' + s}...`
+                    : '⏰ Code imeisha — omba nyingine';
+                
+                if (secs <= 30) t.style.color = '#f87171';
             }
             if (secs <= 0) clearInterval(_ob2CodeTimer);
         }, 1000);
 
+        // 5. Start polling for successful connection in background
         startBotPairPoll(merchantId);
 
     } catch(e) {
-        alert('Bot Error: ' + e.message);
-        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">phonelink_ring</span> Pata WhatsApp Code'; }
+        console.error("Pairing error:", e);
+        let errorMsg = e.message;
+        if (e.name === 'TimeoutError') errorMsg = "Seva inachukua muda kuamka. Jaribu tena sasa hivi.";
+        
+        showToastMsg('❌ ' + errorMsg, 'warn');
+        
+        if (btn) { 
+            btn.disabled = false; 
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;margin-right:6px;">phonelink_ring</span> Pata WhatsApp Code'; 
+        }
     }
 }
 
@@ -9787,4 +9841,4 @@ function snippeSuccess() {
 </script>
 
 </body>
-</html>
+</html>  
