@@ -387,6 +387,77 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* ── Trust Info Modal ── */
+    #wa-trust-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.72);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 9999;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    #wa-trust-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+    #wa-trust-sheet {
+        background: #ffffff;
+        border-radius: 28px 28px 0 0;
+        width: 100%;
+        max-width: 520px;
+        padding: 0 0 env(safe-area-inset-bottom,0px);
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.34,1.1,0.64,1);
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+    #wa-trust-overlay.open #wa-trust-sheet {
+        transform: translateY(0);
+    }
+    .wa-trust-item {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 14px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .wa-trust-item:last-child { border-bottom: none; }
+    .wa-trust-icon {
+        width: 40px; height: 40px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .wa-trust-icon .material-symbols-outlined {
+        font-size: 22px;
+        font-variation-settings: 'FILL' 1;
+    }
+    @keyframes waTrustPing {
+        0%   { transform: scale(1);   opacity: 1; }
+        70%  { transform: scale(2.2); opacity: 0; }
+        100% { transform: scale(2.2); opacity: 0; }
+    }
+    .wa-trust-ping {
+        position: relative;
+        display: inline-flex;
+    }
+    .wa-trust-ping::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: currentColor;
+        animation: waTrustPing 2s ease-out infinite;
+        opacity: 0.3;
+    }
+
     /* NEW STYLES FROM REQUEST */
     .product-delete-btn:hover {
         transform: scale(1.1);
@@ -4575,7 +4646,7 @@
                     Tutakupa code ya tarakimu 8 → ingiza kwenye WhatsApp yako → bot inaanza kufanya kazi <strong>papo hapo!</strong>
                 </div>
             </div>
-            <button id="ob2-get-code-btn" onclick="ob2GetCode()" style="
+            <button id="ob2-get-code-btn" onclick="waTrustOpen()" style="
                 width:100%;padding:16px;
                 background:linear-gradient(135deg,#6366f1,#4f46e5);
                 color:white;border:none;border-radius:16px;
@@ -8997,6 +9068,48 @@ async function obStep1Next() {
     showScreen('step-2', true);
 }
 
+// ══════════════════════════════════════════════════════
+// WA TRUST MODAL — open / close / confirm
+// ══════════════════════════════════════════════════════
+function waTrustOpen() {
+    const ov = document.getElementById('wa-trust-overlay');
+    if (!ov) { ob2GetCode(); return; } // fallback if element missing
+    ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function waTrustClose() {
+    const ov = document.getElementById('wa-trust-overlay');
+    if (!ov) return;
+    const sh = document.getElementById('wa-trust-sheet');
+    if (sh) { sh.style.transition = 'transform 0.28s ease'; sh.style.transform = 'translateY(100%)'; }
+    ov.style.transition = 'opacity 0.28s';
+    ov.style.opacity = '0';
+    setTimeout(() => {
+        ov.classList.remove('open');
+        ov.style.opacity = '';
+        ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function waTrustConfirm() {
+    waTrustClose();
+    // Small delay so modal closes smoothly before heavy async work starts
+    setTimeout(() => ob2GetCode(), 340);
+}
+
+// Close modal if user taps the dark overlay background
+document.addEventListener('DOMContentLoaded', () => {
+    const ov = document.getElementById('wa-trust-overlay');
+    if (ov) {
+        ov.addEventListener('click', (e) => {
+            if (e.target === ov) waTrustClose();
+        });
+    }
+});
+
 async function ob2GetCode() {
     const btn = document.getElementById('ob2-get-code-btn');
     const statusText = document.getElementById('ob2-timer'); // Using timer area for status updates
@@ -9819,6 +9932,195 @@ function scrollToProducts() {
   </div><!-- /sheet -->
 </div><!-- /overlay -->
 
+<!-- ══════════════════════════════════════════════════════
+     WA TRUST INFO MODAL
+     Shows BEFORE user clicks "Pata Code" on Step 2
+     Educates user about the WhatsApp "may be a scam" warning
+══════════════════════════════════════════════════════ -->
+<div id="wa-trust-overlay" role="dialog" aria-modal="true" aria-labelledby="wa-trust-title">
+  <div id="wa-trust-sheet">
+
+    <!-- Handle bar -->
+    <div style="display:flex;justify-content:center;padding:14px 0 0;">
+      <div style="width:40px;height:4px;border-radius:99px;background:#e2e8f0;"></div>
+    </div>
+
+    <!-- Header -->
+    <div style="padding:18px 24px 0;">
+      <!-- Animated shield icon -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="
+          width:52px;height:52px;
+          border-radius:16px;
+          background:linear-gradient(135deg,#eef2ff,#e0e7ff);
+          display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;position:relative;
+        ">
+          <span class="material-symbols-outlined" style="font-size:28px;color:#6366f1;font-variation-settings:'FILL' 1;">
+            verified_user
+          </span>
+          <!-- Pulse ring -->
+          <div style="position:absolute;inset:-4px;border-radius:20px;border:2px solid rgba(99,102,241,0.25);animation:waTrustPing 2.5s ease-out infinite;"></div>
+        </div>
+        <div>
+          <div id="wa-trust-title" style="font-size:16px;font-weight:800;color:#0f172a;line-height:1.3;font-family:'Plus Jakarta Sans',sans-serif;">
+            Tafadhali Soma Kabla ya Kuendelea
+          </div>
+          <div style="font-size:12px;color:#64748b;font-weight:600;margin-top:2px;">
+            Maelezo muhimu kuhusu muunganiko wa WhatsApp
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning notice — shows the WhatsApp message preview -->
+      <div style="
+        background:#fefce8;
+        border:1.5px solid #fde047;
+        border-radius:14px;
+        padding:12px 14px;
+        margin-bottom:18px;
+        display:flex;gap:12px;align-items:flex-start;
+      ">
+        <div style="
+          width:36px;height:36px;border-radius:10px;
+          background:#fef08a;
+          display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;
+        ">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#ca8a04;font-variation-settings:'FILL' 1;">warning</span>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#854d0e;margin-bottom:3px;">
+            Utaona ujumbe huu kwenye WhatsApp:
+          </div>
+          <div style="
+            font-size:13px;font-weight:700;color:#1e293b;
+            font-style:italic;
+            background:white;border-radius:8px;
+            padding:6px 10px;border:1px solid #e2e8f0;
+            display:inline-block;
+          ">
+            "This may be a scam"
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 trust items -->
+      <div style="border:1.5px solid #f1f5f9;border-radius:16px;padding:4px 16px;margin-bottom:18px;">
+
+        <!-- Item 1: Why it shows -->
+        <div class="wa-trust-item">
+          <div class="wa-trust-icon" style="background:#eff6ff;">
+            <span class="material-symbols-outlined" style="color:#3b82f6;">help</span>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:3px;">
+              Hii ina maana gani?
+            </div>
+            <div style="font-size:12px;color:#475569;font-weight:600;line-height:1.6;">
+              Huu ni ujumbe wa kawaida wa usalama kutoka WhatsApp unaotokea kila unapounganisha kifaa kipya. Unalenga kuhakikisha ni wewe mwenyewe unayeruhusu muunganiko huo.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 2: Why foreign location -->
+        <div class="wa-trust-item">
+          <div class="wa-trust-icon" style="background:#f0fdf4;">
+            <span class="material-symbols-outlined" style="color:#22c55e;">public</span>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:3px;">
+              Kwa nini inaonyesha location ya nje?
+            </div>
+            <div style="font-size:12px;color:#475569;font-weight:600;line-height:1.6;">
+              Huduma ya LinkaMarket Assistant inatumia cloud servers za kimataifa. WhatsApp inaweza kuonyesha location ya seva hiyo kama sehemu ya muunganiko — hii ni ya kawaida kabisa.
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 3: Your safety -->
+        <div class="wa-trust-item">
+          <div class="wa-trust-icon" style="background:#fdf4ff;">
+            <span class="material-symbols-outlined" style="color:#a855f7;">lock</span>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:3px;">
+              Usalama wa akaunti yako
+            </div>
+            <div style="font-size:12px;color:#475569;font-weight:600;line-height:1.6;">
+              Akaunti yako inabaki chini ya udhibiti wako kamili. Hakuna mtu anayeweza kufikia mazungumzo yako ya kibinafsi. Huduma inasaidia kujibu wateja wa biashara yako peke yake.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- How to proceed -->
+      <div style="
+        background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+        border:1.5px solid #bbf7d0;
+        border-radius:14px;
+        padding:12px 14px;
+        margin-bottom:20px;
+        display:flex;gap:12px;align-items:flex-start;
+      ">
+        <div style="
+          width:36px;height:36px;border-radius:10px;
+          background:#bbf7d0;
+          display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;
+        ">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#16a34a;font-variation-settings:'FILL' 1;">check_circle</span>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#14532d;margin-bottom:3px;">
+            Jinsi ya kuendelea
+          </div>
+          <div style="font-size:12px;color:#166534;font-weight:600;line-height:1.6;">
+            Ukiridhika na maelezo haya, bonyeza <strong>"Link device"</strong> kwenye WhatsApp ili kuendelea na muunganiko wa salama.
+          </div>
+        </div>
+      </div>
+
+      <!-- Support line -->
+      <div style="
+        text-align:center;
+        font-size:11px;color:#94a3b8;font-weight:600;
+        margin-bottom:16px;
+        line-height:1.6;
+      ">
+        <span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle;margin-right:3px;">support_agent</span>
+        Unahitaji msaada? Timu ya LinkaMarket ipo tayari kukusaidia wakati wowote.
+      </div>
+    </div>
+
+    <!-- CTA button -->
+    <div style="padding:0 24px 28px;">
+      <button
+        onclick="waTrustConfirm()"
+        style="
+          width:100%;padding:16px;
+          background:linear-gradient(135deg,#6366f1,#4f46e5);
+          color:white;border:none;border-radius:16px;
+          font-size:15px;font-weight:900;
+          cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+          display:flex;align-items:center;justify-content:center;gap:10px;
+          box-shadow:0 8px 24px rgba(99,102,241,0.35);
+          transition:transform 0.15s;
+        "
+        onmousedown="this.style.transform='scale(0.98)'"
+        onmouseup="this.style.transform='scale(1)'"
+        ontouchstart="this.style.transform='scale(0.98)'"
+        ontouchend="this.style.transform='scale(1)'"
+      >
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">thumb_up</span>
+        Nimeelewa — Endelea Kupata Code
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════
 // SNIPPE PAYMENT LOGIC
@@ -10014,4 +10316,4 @@ function snippeSuccess() {
 </script>
 
 </body>
-</html>  
+</html> 
