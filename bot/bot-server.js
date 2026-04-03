@@ -13,6 +13,7 @@ import NodeCache from 'node-cache'
 import { createClient } from '@supabase/supabase-js'
 import { mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
+import marketingRoutes from './marketing.js'
 
 // ─────────────────────────────────────────────────────────────
 // EXPRESS
@@ -21,6 +22,7 @@ const app  = express()
 const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
+app.use('/api/marketing', marketingRoutes)
 
 // ─────────────────────────────────────────────────────────────
 // LOGGER
@@ -235,235 +237,166 @@ app.post('/pair', async (req, res) => {
     return res.status(400).json({ error: 'phone and merchant_id required' })
   }
 
-  logger.info(`[${merchant_id}] 📱 Pair request for phone: ${phone}`)
-
-  // Step 1: Kill existing socket
-  if (merchants.has(merchant_id)) {
-    try {
-      merchants.get(merchant_id).sock?.end()
-      logger.info(`[${merchant_id}] Old socket closed`)
-    } catch(e) {}
-    merchants.delete(merchant_id)
-  }
-
-  // Step 2: Wipe all session data — /tmp AND Supabase
-  await nukeSession(merchant_id)
-
-  // Step 3: Wait for socket to fully close
-  await sleep(2000)
-
-  // Step 4: Start fresh
-  merchants.set(merchant_id, {
-    connected:   false,
-    connectedAt: null,
-    config:      { wa_number: phone, auto_reply: true, quiet_hours: true }
-  })
-
   try {
-    // Step 5–6: initBot will see no creds and generate a real code
-    const code = await initBot(merchant_id, phone, true)
-
-    if (!code || code === 'already_registered') {
-      // This should NEVER happen now — but if it does, log it loudly
-      logger.error(`[${merchant_id}] ❌ UNEXPECTED: got no code after full session wipe!`)
-      return res.status(500).json({ error: 'Code haikutolewa. Jaribu tena baada ya sekunde 10.' })
+    // Kill existing socket if any
+    const existing = merchants.get(merchant_id)
+    if (existing?.sock) {
+      try { existing.sock.end() } catch {}
+      merchants.delete(merchant_id)
+      await sleep(2000)
     }
 
-    logger.info(`[${merchant_id}] ✅ Pair code generated: ${code}`)
-    res.json({ code })
+    // Wipe ALL session data — /tmp + Supabase
+    await nukeSession(merchant_id)
+    await sleep(1000)
 
-  } catch(err) {
-    logger.error(`[${merchant_id}] ❌ Pair failed: ${err.message}`)
-    merchants.delete(merchant_id)
-    res.status(500).json({ error: err.message })
+    // Start fresh bot
+    const code = await initBot(merchant_id, phone)
+    return res.json({ code })
+
+  } catch(e) {
+    logger.error(`[${merchant_id}] /pair error: ${e.message}`)
+    return res.status(500).json({ error: e.message })
   }
 })
 
-// Disconnect a merchant
 app.post('/disconnect', async (req, res) => {
   const { merchant_id } = req.body
   if (!merchant_id) return res.status(400).json({ error: 'merchant_id required' })
 
-  try { merchants.get(merchant_id)?.sock?.end() } catch {}
+  const m = merchants.get(merchant_id)
+  if (m?.sock) {
+    try { m.sock.end() } catch {}
+  }
   merchants.delete(merchant_id)
   await nukeSession(merchant_id)
   await sb.from('profiles')
     .update({ bot_connection_status: 'disconnected' })
     .eq('id', merchant_id)
 
-  res.json({ ok: true })
-})
-
-// Update bot settings
-app.post('/settings', async (req, res) => {
-  const mid = req.body.merchant_id || req.headers['x-merchant-id']
-  if (!mid) return res.status(401).json({ error: 'merchant_id required' })
-  const { setting, value } = req.body
-  const m = merchants.get(mid)
-  if (m?.config) m.config[setting] = value
-  res.json({ ok: true })
-})
-
-// Test AI edge function
-app.post('/test-edge', async (req, res) => {
-  const { merchant_id, message } = req.body
-  if (!merchant_id || !message) return res.status(400).json({ error: 'merchant_id and message required' })
-  try {
-    const ctrl    = new AbortController()
-    const timeout = setTimeout(() => ctrl.abort(), 20000)
-    let r
-    try {
-      r = await fetch(AI_EDGE_URL, {
-        method:  'POST',
-        signal:  ctrl.signal,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
-        body:    JSON.stringify({ merchant_id, customer_message: message, mode: 'auto' })
-      })
-    } finally { clearTimeout(timeout) }
-    const body = await r.text()
-    res.json({ status: r.status, ok: r.ok, body: JSON.parse(body) })
-  } catch(e) {
-    res.status(500).json({ error: e.message })
-  }
+  return res.json({ success: true })
 })
 
 // ═════════════════════════════════════════════════════════════
-// WHATSAPP BOT CORE
+// BOT INIT
 // ═════════════════════════════════════════════════════════════
-
-async function initBot(merchantId, phone, isPairing = false) {
-  // Load session from Supabase into /tmp (if exists)
-  // For pairing: session was already wiped so this returns false
-  // For reconnect: loads saved creds so no code needed
+async function initBot(merchantId, phone) {
+  // Load session from Supabase → write to /tmp
   await loadSession(merchantId)
 
-  const p = tmpPath(merchantId)
+  const { version } = await fetchLatestBaileysVersion()
+  const p           = tmpPath(merchantId)
   mkdirSync(p, { recursive: true })
 
-  const { state, saveCreds: _saveCreds } = await useMultiFileAuthState(p)
-  const { version } = await fetchLatestBaileysVersion()
-
-  // saveCreds: save to /tmp (Baileys does this) then sync to Supabase
-  const saveCreds = async () => {
-    await _saveCreds()
-    await saveSession(merchantId)
-  }
+  const { state, saveCreds } = await useMultiFileAuthState(p)
 
   const sock = makeWASocket({
     version,
-    logger:                         pino({ level: 'silent' }),
+    logger:        pino({ level: 'silent' }),
+    printQRInTerminal: false,
     auth: {
-      creds: state.creds,
-      keys:  makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' }))
+      creds:  state.creds,
+      keys:   makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
     },
-    printQRInTerminal:              false,
     generateHighQualityLinkPreview: false,
-    syncFullHistory:                false,
-    markOnlineOnConnect:            false,
-    getMessage:                     async () => undefined,
   })
 
-  // Attach sock to merchant entry
-  if (!merchants.has(merchantId)) {
-    merchants.set(merchantId, {
-      connected:   false,
-      connectedAt: null,
-      config:      { wa_number: phone, auto_reply: true, quiet_hours: true }
-    })
-  }
-  merchants.get(merchantId).sock = sock
+  // Store socket reference
+  const existing = merchants.get(merchantId) || {}
+  merchants.set(merchantId, { ...existing, sock, connected: false })
 
-  // Connection events
+  // Request pairing code
+  let pairingCode = null
+  if (!state.creds.registered) {
+    const cleaned = phone.replace(/\D/g, '')
+    await sleep(2000)
+    pairingCode = await sock.requestPairingCode(cleaned)
+    logger.info(`[${merchantId}] 🔑 Pairing code: ${pairingCode}`)
+  }
+
+  sock.ev.on('creds.update', async () => {
+    await saveCreds()
+    await saveSession(merchantId)
+  })
+
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update
-    const m = merchants.get(merchantId)
-    if (!m) return
 
     if (connection === 'open') {
-      m.connected   = true
-      m.connectedAt = m.connectedAt || new Date().toISOString()
-      logger.info(`✅ [${merchantId}] Bot connected — ${phone}`)
-      await sb.from('profiles').update({
-        bot_connection_status: 'connected',
-        bot_connected_at:      m.connectedAt,
-        bot_last_seen:         new Date().toISOString()
-      }).eq('id', merchantId)
+      const m = merchants.get(merchantId) || {}
+      merchants.set(merchantId, {
+        ...m,
+        sock,
+        connected:   true,
+        connectedAt: m.connectedAt || new Date().toISOString(),
+        config:      m.config || { wa_number: phone, auto_reply: true, quiet_hours: true },
+      })
+      await saveSession(merchantId)
+      await sb.from('profiles')
+        .update({ bot_connection_status: 'connected' })
+        .eq('id', merchantId)
+      logger.info(`[${merchantId}] ✅ Connected`)
     }
 
     if (connection === 'close') {
-      m.connected       = false
-      const statusCode  = lastDisconnect?.error?.output?.statusCode
-      logger.warn(`🔴 [${merchantId}] Disconnected — code ${statusCode}`)
+      const code   = lastDisconnect?.error?.output?.statusCode
+      const reason = DisconnectReason
+      logger.warn(`[${merchantId}] ⚠️ Disconnected — code ${code}`)
 
-      await sb.from('profiles').update({
-        bot_connection_status: 'disconnected',
-        bot_last_seen:         new Date().toISOString()
-      }).eq('id', merchantId)
-
-      if (statusCode === DisconnectReason.loggedOut) {
-        // User removed bot from WhatsApp — wipe everything, require new pair
-        logger.warn(`[${merchantId}] Logged out — requires new pair`)
+      const shouldReconnect = code !== reason.loggedOut && code !== 401 && code !== 403
+      if (shouldReconnect) {
+        logger.info(`[${merchantId}] 🔄 Reconnecting...`)
+        await sleep(randomBetween(3000, 8000))
+        try { await initBot(merchantId, phone) } catch(e) {
+          logger.error(`[${merchantId}] Reconnect failed: ${e.message}`)
+        }
+      } else {
+        logger.warn(`[${merchantId}] ❌ Logged out — clearing session`)
         await nukeSession(merchantId)
         merchants.delete(merchantId)
-      } else if (!isPairing) {
-        // Network drop / timeout — reconnect automatically
-        const delay = randomBetween(8000, 20000)
-        logger.info(`[${merchantId}] Auto-reconnecting in ${Math.round(delay/1000)}s...`)
-        setTimeout(async () => {
-          try { await initBot(merchantId, phone) }
-          catch(e) { logger.error(`[${merchantId}] Reconnect failed: ${e.message}`) }
-        }, delay)
+        await sb.from('profiles')
+          .update({ bot_connection_status: 'disconnected' })
+          .eq('id', merchantId)
       }
     }
   })
 
-  sock.ev.on('creds.update', saveCreds)
-
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return
     for (const msg of messages) {
-      await handleMessage(sock, merchantId, msg)
+      if (msg.key.fromMe) continue
+      if (!msg.key.remoteJid?.endsWith('@s.whatsapp.net')) continue
+      const text = extractText(msg)
+      if (!text) continue
+      const dedupKey = `${merchantId}:${msg.key.id}`
+      if (msgDedup.get(dedupKey)) continue
+      msgDedup.set(dedupKey, true)
+      await handleIncoming(sock, merchantId, msg, text)
     }
   })
 
-  // If no creds exist → request pairing code
-  if (!state.creds.registered) {
-    await sleep(1500)
-    const code = await sock.requestPairingCode(phone)
-    return code
-  }
-
-  // Creds exist → reconnecting, no code needed
-  return 'already_registered'
+  return pairingCode || 'already_registered'
 }
 
-// ═════════════════════════════════════════════════════════════
-// MESSAGE HANDLING
-// ═════════════════════════════════════════════════════════════
-
-async function handleMessage(sock, merchantId, msg) {
+// ─────────────────────────────────────────────────────────────
+// INCOMING MESSAGE HANDLER
+// ─────────────────────────────────────────────────────────────
+async function handleIncoming(sock, merchantId, msg, text) {
   const m = merchants.get(merchantId)
-  if (!m?.config)                   return
-  if (msg.key.fromMe)               return
-  const jid = msg.key.remoteJid || ''
-  if (jid.includes('@g.us'))        return
-  if (jid.includes('@broadcast'))   return
-  if (jid === 'status@broadcast')   return
+  if (!m?.connected) return
 
-  const text = extractText(msg)
-  if (!text || text.trim().length < 2) return
-  if (msgDedup.get(msg.key.id))     return
-  msgDedup.set(msg.key.id, true)
-  if (m.config.auto_reply === false) return
+  const jid           = msg.key.remoteJid
+  const customerPhone = jid.replace('@s.whatsapp.net', '')
+  const customerName  = msg.pushName || customerPhone
 
-  const customerPhone = jid.replace('@s.whatsapp.net', '').replace('@c.us', '')
-  const customerName  = msg.pushName || null
-  logger.info(`📨 [${merchantId}] "${text.slice(0,50)}" from ${customerPhone}`)
+  logger.info(`[${merchantId}] 📩 From ${customerPhone}: ${text.slice(0, 60)}`)
 
   const savedId = await saveMessage(merchantId, customerPhone, customerName, text)
 
-  if (m.config.quiet_hours !== false && isQuietHours()) {
-    const delay      = getQuietHoursDelay()
+  if (!m.config?.auto_reply) return
+
+  if (isQuietHours() && m.config?.quiet_hours) {
+    const delay = getQuietHoursDelay()
     const resumeTime = new Date(Date.now() + delay)
       .toLocaleTimeString('en', { timeZone: 'Africa/Dar_es_Salaam' })
     logger.info(`🌙 [${merchantId}] Quiet hours — queued until ~${resumeTime} EAT`)
