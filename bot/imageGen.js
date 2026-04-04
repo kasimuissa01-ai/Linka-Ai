@@ -26,7 +26,16 @@ export async function generateMarketingImage(prompt) {
     throw new Error(`Cloudflare error ${response.status}: ${err}`)
   }
 
-  const imageBuffer = await response.arrayBuffer()
-  const base64Image = Buffer.from(imageBuffer).toString('base64')
-  return base64Image
+  // ✅ CORRECT: Cloudflare FLUX returns JSON with base64 image inside
+  // response.result.image is already a base64 string — do NOT convert again
+  const json = await response.json()
+
+  // Extract the base64 image string
+  const base64Image = json?.result?.image
+
+  if (!base64Image) {
+    throw new Error(`Cloudflare returned no image. Response: ${JSON.stringify(json)}`)
+  }
+
+  return base64Image // already clean base64, ready to upload
 }
