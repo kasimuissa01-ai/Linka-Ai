@@ -1,11 +1,10 @@
-import { Router }               from 'express'
-import { createClient }         from '@supabase/supabase-js'
-import { buildMarketingPrompt } from '../agents/marketingAgent.js'
-import { generateMarketingImage } from '../services/imageGen.js'
+import { Router }                 from 'express'
+import { createClient }           from '@supabase/supabase-js'
+import { buildMarketingPrompt }   from './marketingAgent.js'
+import { generateMarketingImage } from './imageGen.js'
 
 const router = Router()
 
-// Reuse same Supabase pattern as bot-server.js
 const sb = createClient(
   process.env.SUPABASE_URL || '',
   process.env.SUPABASE_KEY || '',
@@ -14,9 +13,9 @@ const sb = createClient(
 
 const FREE_DAILY_LIMIT = 20
 
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // HELPERS
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 function todayDate() {
   return new Date().toISOString().split('T')[0]
 }
@@ -46,10 +45,9 @@ async function incrementDailyUsage(merchantId) {
   )
 }
 
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // POST /api/marketing/generate-image
-// Called from LinkaMarket dashboard to generate a poster
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 router.post('/generate-image', async (req, res) => {
   try {
     const { merchantId, businessName, businessType, product, tone, targetAudience } = req.body
@@ -57,36 +55,34 @@ router.post('/generate-image', async (req, res) => {
     if (!merchantId || !businessName || !businessType || !product) {
       return res.status(400).json({
         success: false,
-        error:   'Required fields: merchantId, businessName, businessType, product',
+        error:   'Required: merchantId, businessName, businessType, product',
       })
     }
 
-    // Check daily limit
     const usageToday = await getDailyUsage(merchantId)
     if (usageToday >= FREE_DAILY_LIMIT) {
       return res.status(429).json({
         success: false,
-        error:   `Daily limit reached (${FREE_DAILY_LIMIT} images/day). Resets at midnight.`,
+        error:   `Daily limit reached (${FREE_DAILY_LIMIT}/day). Resets at midnight.`,
         usage:   { used: usageToday, limit: FREE_DAILY_LIMIT, remaining: 0 },
       })
     }
 
     console.log(`[Marketing] Generating for: ${businessName} | ${merchantId}`)
 
-    // STEP 1 — Groq writes the prompt
+    // Step 1 — Groq writes the prompt
     console.log('[Marketing] Step 1: Groq building prompt...')
     const imagePrompt = await buildMarketingPrompt({
       businessName, businessType, product, tone, targetAudience,
     })
     console.log('[Marketing] Prompt:', imagePrompt)
 
-    // STEP 2 — Cloudflare FLUX generates the image
-    console.log('[Marketing] Step 2: Cloudflare FLUX generating poster...')
+    // Step 2 — Cloudflare FLUX generates image
+    console.log('[Marketing] Step 2: Cloudflare FLUX generating...')
     const base64Image = await generateMarketingImage(imagePrompt)
-    console.log('[Marketing] Image generated!')
+    console.log('[Marketing] Image ready!')
 
-    // STEP 3 — Upload to Supabase Storage
-    console.log('[Marketing] Step 3: Uploading to Supabase Storage...')
+    // Step 3 — Upload to Supabase Storage
     const fileName   = `marketing/${merchantId}/${Date.now()}.png`
     const imageBytes = Buffer.from(base64Image, 'base64')
 
@@ -102,11 +98,10 @@ router.post('/generate-image', async (req, res) => {
       console.warn('[Marketing] Storage upload failed:', uploadError.message)
     }
 
-    // STEP 4 — Track usage
+    // Step 4 — Track usage + history
     await incrementDailyUsage(merchantId)
     const newUsage = usageToday + 1
 
-    // STEP 5 — Save to history
     await sb.from('image_history').insert({
       merchant_id:   merchantId,
       prompt:        imagePrompt,
@@ -121,9 +116,9 @@ router.post('/generate-image', async (req, res) => {
     return res.status(200).json({
       success: true,
       data: {
-        imageUrl:     publicUrl,
-        imageBase64:  `data:image/png;base64,${base64Image}`,
-        prompt:       imagePrompt,
+        imageUrl:    publicUrl,
+        imageBase64: `data:image/png;base64,${base64Image}`,
+        prompt:      imagePrompt,
         usage: {
           used:      newUsage,
           limit:     FREE_DAILY_LIMIT,
@@ -141,10 +136,9 @@ router.post('/generate-image', async (req, res) => {
   }
 })
 
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // GET /api/marketing/usage/:merchantId
-// How many images remain today
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 router.get('/usage/:merchantId', async (req, res) => {
   try {
     const used = await getDailyUsage(req.params.merchantId)
@@ -162,10 +156,9 @@ router.get('/usage/:merchantId', async (req, res) => {
   }
 })
 
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // GET /api/marketing/history/:merchantId
-// Past generated posters for this merchant
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 router.get('/history/:merchantId', async (req, res) => {
   try {
     const { data, error } = await sb
