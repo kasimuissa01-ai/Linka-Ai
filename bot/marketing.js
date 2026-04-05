@@ -1,7 +1,7 @@
 import { Router }                from 'express'
 import { createClient }          from '@supabase/supabase-js'
-import { buildMarketingContent } from './marketingAgent.js'   // ← FIXED NAME
-import { removeBackground, generateScene } from './imageGen.js'
+import { buildMarketingContent } from './marketingAgent.js'
+import { generateScene }         from './imageGen.js'
 
 const router = Router()
 
@@ -50,7 +50,7 @@ async function uploadToStorage(base64, merchantId, suffix) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// POST /api/marketing/generate-poster  ← NEW endpoint
+// POST /api/marketing/generate-poster  (PRIMARY endpoint)
 // ─────────────────────────────────────────────────────────────
 router.post('/generate-poster', async (req, res) => {
   try {
@@ -59,10 +59,15 @@ router.post('/generate-poster', async (req, res) => {
       tone, targetAudience, cta, productImageBase64,
     } = req.body
 
+    // ── Validate required fields ──────────────────────────────
     if (!merchantId || !businessName || !businessType || !product) {
-      return res.status(400).json({ success: false, error: 'Required: merchantId, businessName, businessType, product' })
+      return res.status(400).json({
+        success: false,
+        error: 'Required: merchantId, businessName, businessType, product',
+      })
     }
 
+    // ── Check daily limit ─────────────────────────────────────
     const usageToday = await getDailyUsage(merchantId)
     if (usageToday >= FREE_DAILY_LIMIT) {
       return res.status(429).json({
@@ -74,81 +79,98 @@ router.post('/generate-poster', async (req, res) => {
 
     console.log(`[Marketing] Poster pipeline: ${businessName} | ${merchantId}`)
 
-    // Step 1 — Groq generates structured content
+    // ── FIX #1: Validate + clean product image base64 ─────────
+    let cleanProductBase64 = null
+    if (productImageBase64) {
+      // Strip data URL prefix e.g. "data:image/png;base64,"
+      cleanProductBase64 = productImageBase64.replace(/^data:image\/\w+;base64,/, '')
+
+      // Validate it's a real image (min 1KB)
+      if (cleanProductBase64.length < 1000) {
+        console.warn('[Marketing] Product image too small — ignoring')
+        cleanProductBase64 = null
+      }
+
+      // Validate base64 characters
+      if (cleanProductBase64 && !/^[A-Za-z0-9+/=]+$/.test(cleanProductBase64.slice(0, 100))) {
+        console.warn('[Marketing] Invalid base64 — ignoring product image')
+        cleanProductBase64 = null
+      }
+    }
+
+    // ── Step 1: Groq generates content ───────────────────────
     console.log('[Marketing] Step 1: Groq...')
-    const content = await buildMarketingContent({   // ← FIXED: was buildMarketingPrompt
+    const content = await buildMarketingContent({
       businessName, businessType, product, tone, targetAudience, cta,
     })
     console.log('[Marketing] Content:', JSON.stringify(content))
 
-    // Step 2 — Background removal (if product image provided)
-    let transparentProductBase64 = null
-    if (productImageBase64) {
-      console.log('[Marketing] Step 2: Removing background...')
-      try {
-        const cleanBase64 = productImageBase64.replace(/^data:image\/\w+;base64,/, '')
-        transparentProductBase64 = await removeBackground(cleanBase64)
-        console.log('[Marketing] Background removed!')
-      } catch (e) {
-        console.warn('[Marketing] BG removal failed (continuing):', e.message)
-        // Use original image if removal fails
-        transparentProductBase64 = productImageBase64.replace(/^data:image\/\w+;base64,/, '')
-      }
-    }
-
-    // Step 3 — Generate background scene
-    console.log('[Marketing] Step 3: Generating scene...')
+    // ── Step 2: Generate background scene ────────────────────
+    console.log('[Marketing] Step 2: Generating scene...')
     const sceneBase64 = await generateScene(content.scenePrompt)
-    console.log('[Marketing] Scene generated!')
+    console.log('[Marketing] Scene ready!')
 
-    // Step 4 — Upload to Supabase Storage
-    const [sceneUrl, productUrl] = await Promise.all([
-      uploadToStorage(sceneBase64, merchantId, 'scene'),
-      transparentProductBase64
-        ? uploadToStorage(transparentProductBase64, merchantId, 'product')
-        : Promise.resolve(null),
-    ])
+    // ── Step 3: Upload scene to Supabase ─────────────────────
+    const sceneUrl = await uploadToStorage(sceneBase64, merchantId, 'scene')
 
-    // Step 5 — Track usage
+    // ── Step 4: Track usage ───────────────────────────────────
     await incrementDailyUsage(merchantId)
     const newUsage = usageToday + 1
 
     await sb.from('image_history').insert({
-      merchant_id: merchantId, prompt: content.scenePrompt,
-      image_url: sceneUrl, business_name: businessName,
-      product, created_at: new Date().toISOString(),
-    })
+      merchant_id: merchantId,
+      prompt:      content.scenePrompt,
+      image_url:   sceneUrl,
+      business_name: businessName,
+      product,
+      created_at: new Date().toISOString(),
+    }).catch(e => console.warn('[Marketing] History insert failed:', e.message))
 
     console.log(`[Marketing] Done! ${newUsage}/${FREE_DAILY_LIMIT} today`)
 
+    // ── Return all assets to frontend Canvas ─────────────────
     return res.status(200).json({
       success: true,
       data: {
-        sceneBase64:   `data:image/png;base64,${sceneBase64}`,
+        // Scene background (always present)
+        sceneBase64: `data:image/png;base64,${sceneBase64}`,
         sceneUrl,
-        productBase64: transparentProductBase64
-          ? `data:image/png;base64,${transparentProductBase64}`
+
+        // Product image — returned as-is (Canvas will frame it)
+        // null if no product image was provided or validation failed
+        productBase64: cleanProductBase64
+          ? `data:image/png;base64,${cleanProductBase64}`
           : null,
-        productUrl,
+
+        // Copy text for Canvas
         copy: {
           headline:     content.headline,
           subtext:      content.subtext,
           cta:          content.cta,
           businessName: businessName,
         },
+
         scenePrompt: content.scenePrompt,
-        usage: { used: newUsage, limit: FREE_DAILY_LIMIT, remaining: FREE_DAILY_LIMIT - newUsage },
+
+        usage: {
+          used:      newUsage,
+          limit:     FREE_DAILY_LIMIT,
+          remaining: FREE_DAILY_LIMIT - newUsage,
+        },
       },
     })
 
   } catch (error) {
     console.error('[Marketing] Pipeline error:', error.message)
-    return res.status(500).json({ success: false, error: error.message || 'Poster generation failed.' })
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Poster generation failed. Please try again.',
+    })
   }
 })
 
 // ─────────────────────────────────────────────────────────────
-// POST /api/marketing/generate-image  ← legacy endpoint kept
+// POST /api/marketing/generate-image  (legacy — kept working)
 // ─────────────────────────────────────────────────────────────
 router.post('/generate-image', async (req, res) => {
   try {
@@ -160,12 +182,12 @@ router.post('/generate-image', async (req, res) => {
     if (usageToday >= FREE_DAILY_LIMIT) {
       return res.status(429).json({ success: false, error: 'Daily limit reached', usage: { used: usageToday, limit: FREE_DAILY_LIMIT, remaining: 0 } })
     }
-    const content   = await buildMarketingContent({ businessName, businessType, product, tone, targetAudience })  // ← FIXED
+    const content   = await buildMarketingContent({ businessName, businessType, product, tone, targetAudience })
     const base64    = await generateScene(content.scenePrompt)
     const publicUrl = await uploadToStorage(base64, merchantId, 'scene')
     await incrementDailyUsage(merchantId)
     const newUsage = usageToday + 1
-    await sb.from('image_history').insert({ merchant_id: merchantId, prompt: content.scenePrompt, image_url: publicUrl, business_name: businessName, product, created_at: new Date().toISOString() })
+    await sb.from('image_history').insert({ merchant_id: merchantId, prompt: content.scenePrompt, image_url: publicUrl, business_name: businessName, product, created_at: new Date().toISOString() }).catch(() => {})
     return res.status(200).json({
       success: true,
       data: { imageUrl: publicUrl, imageBase64: `data:image/png;base64,${base64}`, prompt: content.scenePrompt, copy: content, usage: { used: newUsage, limit: FREE_DAILY_LIMIT, remaining: FREE_DAILY_LIMIT - newUsage } },
