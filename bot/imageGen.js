@@ -21,17 +21,28 @@ function checkEnv() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// FIX: BRIA returns raw PNG bytes — NOT JSON
-// We read arrayBuffer then convert to base64
+// removeBackground
+//
+// FIX #2: Cloudflare BRIA rmbg-1.4 expects:
+//   { image: number[] }  ← array of raw uint8 pixel values
+// NOT:
+//   { image: "base64string" }  ← this was the bug
+//
+// We convert: base64 string → Buffer → Array of numbers
+// BRIA returns raw PNG bytes (arrayBuffer) → we convert to base64
 // ─────────────────────────────────────────────────────────────
 export async function removeBackground(imageBase64) {
   checkEnv()
   console.log('[ImageGen] Removing background with Cloudflare BRIA...')
 
+  // ✅ Convert base64 → Buffer → plain number array (what BRIA expects)
+  const imageBuffer = Buffer.from(imageBase64, 'base64')
+  const imageArray  = Array.from(imageBuffer)   // [ 137, 80, 78, 71, ... ]
+
   const response = await fetch(cfUrl(RMBG_MODEL), {
     method:  'POST',
     headers: cfHeaders(),
-    body:    JSON.stringify({ image: imageBase64 }),
+    body:    JSON.stringify({ image: imageArray }),  // ✅ array of uint8, not base64 string
   })
 
   if (!response.ok) {
@@ -39,20 +50,23 @@ export async function removeBackground(imageBase64) {
     throw new Error(`Background removal error ${response.status}: ${err}`)
   }
 
-  // ✅ BRIA returns raw image bytes — read as arrayBuffer
+  // ✅ BRIA returns raw PNG bytes — read as arrayBuffer then convert to base64
   const buffer      = await response.arrayBuffer()
   const base64Image = Buffer.from(buffer).toString('base64')
 
-  if (!base64Image) {
-    throw new Error('Background removal returned empty response')
+  if (!base64Image || base64Image.length < 100) {
+    throw new Error('Background removal returned empty or invalid response')
   }
 
   console.log('[ImageGen] Background removed successfully')
-  return base64Image // base64 PNG with transparent background
+  return base64Image  // raw base64 PNG with transparent background
 }
 
 // ─────────────────────────────────────────────────────────────
-// FLUX: Returns JSON with base64 inside result.image
+// generateScene
+//
+// FLUX returns JSON: { result: { image: "base64string" } }
+// This was already correct — no changes needed here.
 // ─────────────────────────────────────────────────────────────
 export async function generateScene(scenePrompt) {
   checkEnv()
@@ -78,7 +92,7 @@ export async function generateScene(scenePrompt) {
   }
 
   console.log('[ImageGen] Scene generated successfully')
-  return base64Scene
+  return base64Scene  // raw base64 string (no data URL prefix)
 }
 
 // Legacy export kept for backward compatibility
