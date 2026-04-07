@@ -4419,7 +4419,11 @@
     display:flex;flex-direction:column;overflow:hidden;
 ">
     <!-- LinkaMarket logo top -->
-    <div style="text-align:center;padding:28px 20px 0;flex-shrink:0;">
+    <div style="text-align:center;padding:28px 20px 0;flex-shrink:0;position:relative;">
+        <!-- Back button shown when user accesses onboarding from Chats nav (already logged in) -->
+        <button id="ob1-back-btn" onclick="this.style.display='none';showScreen('step-5',true);loadDashboard();" style="display:none;position:absolute;left:20px;top:28px;background:rgba(99,102,241,0.1);border:none;border-radius:50%;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#6366f1;">arrow_back</span>
+        </button>
         <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1e1b4b;letter-spacing:-0.5px;">LinkaMarket</div>
     </div>
 
@@ -5054,6 +5058,10 @@
                 <div class="nav-dot" id="chats-dot"></div>
                 <span class="material-symbols-outlined nav-icon">forum</span>
                 <span class="nav-label">Chats</span>
+            </div>
+            <div class="nav-item" id="nb-poster" onclick="nbGo('poster')">
+                <span class="material-symbols-outlined nav-icon">auto_awesome</span>
+                <span class="nav-label">Poster AI</span>
             </div>
             <div class="nav-item" id="nb-settings" onclick="nbGo('settings')">
                 <span class="material-symbols-outlined nav-icon">manage_accounts</span>
@@ -6185,20 +6193,10 @@
                 // Remove loader immediately
                 const loader = document.getElementById('global-loader');
                 if (loader) { loader.style.opacity='0'; setTimeout(()=>loader.remove(),300); }
-                // Navigate based on profile
-                try {
-                    const { data: prof } = await sb.from('profiles')
-                        .select('business_name').eq('id', session.user.id).single();
-                    if (!prof?.business_name) {
-                        showScreen('step-1', true);
-                    } else {
-                        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                        loadDashboard();
-                    }
-                } catch(e) {
-                    history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                    loadDashboard();
-                }
+                // Always go straight to dashboard — onboarding is via Chats nav
+                history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                showScreen('step-5', false);
+                loadDashboard();
             }
         });
 
@@ -6240,21 +6238,11 @@
                         else showScreen('step-' + step, false);
                         if(step == 5) loadDashboard();
                     } else {
-                        try {
-                            const { data: prof } = await sb.from('profiles')
-                                .select('business_name').eq('id', session.user.id).single();
-                            if (!prof?.business_name) {
-                                showScreen('step-1', true);
-                            } else {
-                                history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                                showScreen('step-5', false);
-                                loadDashboard();
-                            }
-                        } catch(e) {
-                            history.pushState({ step: 5 }, 'Dashboard', '?step=5');
-                            showScreen('step-5', false);
-                            loadDashboard();
-                        }
+                        // Always go straight to dashboard for logged-in users.
+                        // Onboarding (WhatsApp bot setup) is accessible via the Chats nav button.
+                        history.pushState({ step: 5 }, 'Dashboard', '?step=5');
+                        showScreen('step-5', false);
+                        loadDashboard();
                     }
                 } else {
                     showScreen('step-auth', true);
@@ -6525,23 +6513,11 @@
             return;
         }
 
-        // 2. STATUS IDENTIFICATION PATTERN
-        // Priority 1: New User (No business name)
-        if (!profile || !profile.business_name) {
-            showScreen('step-1', true);
-            return;
-        }
+        // Always show the dashboard — onboarding is accessible via the Chats nav button.
+        // If this is a brand-new user with no business_name, we still show dashboard
+        // and they can set up the bot via the Chats tab whenever they're ready.
 
-        // Priority 2: Incomplete Setup (No connected WhatsApp Bot)
-        if (profile.bot_connection_status !== 'connected') {
-            // Prepare Step 2 (Inject the shop name if we have it)
-            const nameDisplay = document.getElementById('ob-shop-name');
-            if (nameDisplay) nameDisplay.value = profile.business_name;
-            showScreen('step-2', true);
-            return;
-        }
-
-        // Priority 3: Fully Setup -> Show Dashboard
+        // Priority: Show Dashboard
         // Ensure all onboarding screens are hidden to prevent overlap
         ['step-1', 'step-2', 'step-3'].forEach(id => {
             const el = document.getElementById(id);
@@ -6549,7 +6525,7 @@
         });
 
         localStorage.setItem(_OB_KEY, '1');
-        document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase();
+        if (profile?.business_name) document.getElementById('dash-business-name').innerText = profile.business_name.toUpperCase();
         history.pushState({ step: 5 }, 'Dashboard', '?step=5');
         showScreen('step-5', true);
 
@@ -8542,14 +8518,36 @@ function showToastMsg(msg, type) {
 // NAV
 // ═══════════════════════════════════════════════════
 function nbGo(page) {
-    ['nb-home','nb-chats','nb-settings'].forEach(id => {
+    ['nb-home','nb-chats','nb-poster','nb-settings'].forEach(id => {
         document.getElementById(id)?.classList.remove('active');
     });
     if (page === 'home') {
         document.getElementById('nb-home')?.classList.add('active');
         loadDashboard();
     } else if (page === 'chats') {
-        chOpen();
+        // Before opening chats, check if AI WhatsApp responder is connected.
+        // If not, show the onboarding flow so the user can connect it first.
+        document.getElementById('nb-chats')?.classList.add('active');
+        (async () => {
+            try {
+                const { data: { user } } = await sb.auth.getUser();
+                if (user) {
+                    const { data: prof } = await sb.from('profiles')
+                        .select('bot_connection_status')
+                        .eq('id', user.id).single();
+                    if (prof?.bot_connection_status !== 'connected') {
+                        // Bot not connected yet — show WhatsApp onboarding
+                        showScreen('step-1', true);
+                        var bb=document.getElementById('ob1-back-btn');if(bb)bb.style.display='flex';
+                        return;
+                    }
+                }
+            } catch(e) {}
+            chOpen();
+        })();
+    } else if (page === 'poster') {
+        document.getElementById('nb-poster')?.classList.add('active');
+        posterOpen();
     } else if (page === 'settings') {
         document.getElementById('nb-settings')?.classList.add('active');
         openProfileSettings();
@@ -9147,13 +9145,12 @@ async function ob2GetCode() {
                 business_name:   _lsName   || undefined,
                 whatsapp_number: phone     || undefined,
                 phone_number:    phone     || undefined,
-            }).eq('id', merchantId).then(() => {
-                // Clear localStorage after saving
-                localStorage.removeItem('ob_business_name');
-                localStorage.removeItem('ob_whatsapp_full');
-                localStorage.removeItem('ob_whatsapp_raw');
-                localStorage.removeItem('ob_country_code');
-            }).catch(e => console.error('Profile save error:', e.message));
+            }).eq('id', merchantId);
+            // Clear localStorage after saving
+            localStorage.removeItem('ob_business_name');
+            localStorage.removeItem('ob_whatsapp_full');
+            localStorage.removeItem('ob_whatsapp_raw');
+            localStorage.removeItem('ob_country_code');
         }
 
         // 2. FORCE REFRESH: Tell server to clear any old attempts first
@@ -10315,5 +10312,1302 @@ function snippeSuccess() {
 }
 </script>
 
+<!-- ═══════════════════════════════════════════════════════
+     POSTER AI PANEL  —  New Canvas-based Pipeline
+     Flow: Upload → BG Removal → Groq Copy → FLUX Scene → Canvas Composite
+════════════════════════════════════════════════════════ -->
+<div id="poster-overlay" onclick="if(event.target===this)posterClose()" style="
+    display:none;position:fixed;inset:0;z-index:1200;
+    background:rgba(4,18,8,0.78);backdrop-filter:blur(10px);
+    align-items:flex-end;justify-content:center;
+">
+  <div id="poster-sheet" style="
+      width:100%;max-width:500px;height:94vh;
+      background:#f8fafc;border-radius:28px 28px 0 0;
+      display:flex;flex-direction:column;overflow:hidden;
+      animation:pvSheetUp 0.42s cubic-bezier(0.34,1.15,0.64,1);
+      box-shadow:0 -16px 60px rgba(0,0,0,0.3);position:relative;
+  ">
+
+    <!-- ── DARK HEADER ── -->
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#064e44 100%);padding:18px 18px 14px;flex-shrink:0;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:rgba(37,208,120,0.07);border-radius:50%;pointer-events:none;"></div>
+      <!-- Drag handle -->
+      <div style="width:36px;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;margin:0 auto 14px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;background:rgba(37,208,120,0.18);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#25d078;">auto_awesome</span>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:900;color:#fff;">Poster AI ✨</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:1px;">Canvas 1080×1080 · Bidhaa halisi</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="poster-credits-badge" style="background:rgba(37,208,120,0.15);border:1px solid rgba(37,208,120,0.3);border-radius:50px;padding:5px 12px;display:flex;align-items:center;gap:5px;">
+            <span style="font-size:11px;color:#25d078;font-weight:700;" id="poster-credits-text">20 leo</span>
+          </div>
+          <button onclick="posterClose()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:white;">close</span>
+          </button>
+        </div>
+      </div>
+      <!-- Pipeline step dots -->
+      <div style="display:flex;gap:5px;margin-top:12px;" id="poster-pipe-dots">
+        <div class="pp-dot pp-dot-active" id="ppd0" title="Picha"></div>
+        <div class="pp-dot" id="ppd1" title="Maelezo"></div>
+        <div class="pp-dot" id="ppd2" title="Muundo"></div>
+        <div class="pp-dot" id="ppd3" title="CTA"></div>
+        <div class="pp-dot" id="ppd4" title="Unda"></div>
+      </div>
+    </div>
+
+    <!-- ── SCROLLABLE BODY ── -->
+    <div id="poster-scroll" style="flex:1;overflow-y:auto;padding:18px 16px 110px;scrollbar-width:none;">
+
+      <!-- ══════ FORM SECTION ══════ -->
+      <div id="poster-form">
+
+        <!-- STEP 1: Upload photo -->
+        <div class="pc" id="pcard0">
+          <div class="pc-label">Hatua 1 ya 4</div>
+          <div class="pc-title">📸 Piga/pakia picha ya bidhaa</div>
+          <div class="pc-hint">AI itaondoa mandhari na kuweka bidhaa yako kwenye poster</div>
+
+          <div id="p-upload-zone" class="p-upload-zone" onclick="document.getElementById('p-file-input').click()">
+            <input type="file" id="p-file-input" accept="image/*" style="display:none" onchange="pHandleFile(this)">
+            <div id="p-upload-ph">
+              <div style="font-size:2.2rem;margin-bottom:8px;">📷</div>
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:3px;">Gusa kupakia picha</div>
+              <div style="font-size:12px;color:#9ca3af;">JPG · PNG · hadi 10MB</div>
+            </div>
+            <img id="p-photo-prev" src="" alt="" style="display:none;width:100%;border-radius:10px;max-height:200px;object-fit:contain;">
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+            <span id="p-replace-btn" onclick="pResetPhoto()" style="display:none;font-size:12px;color:#25d078;cursor:pointer;font-weight:700;">↺ Badilisha picha</span>
+            <div style="flex:1;text-align:center;" id="p-skip-wrap">
+              <div style="font-size:11px;color:#9ca3af;margin-bottom:5px;">— au —</div>
+              <span onclick="pSkipPhoto()" style="font-size:13px;color:#25d078;cursor:pointer;font-weight:700;">AI iunde picha yenyewe →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Business info -->
+        <div class="pc" id="pcard1">
+          <div class="pc-label">Hatua 2 ya 4</div>
+          <div class="pc-title">🏪 Maelezo ya biashara yako</div>
+          <div class="pc-hint">Tutaandika nakala ya poster kwa Groq AI</div>
+
+          <div style="margin-bottom:10px;">
+            <div class="p-field-label">Jina la Biashara</div>
+            <input id="p-biz-name" type="text" maxlength="50" placeholder="Mfano: Duka la Asha Fashion" class="p-input" oninput="pState.businessName=this.value.trim();pDots()">
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <div class="p-field-label">Aina ya Biashara</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;" id="p-biz-chips">
+              <div class="pchip" data-v="clothing" onclick="pChip(this,'biz')">👗 Nguo</div>
+              <div class="pchip" data-v="food" onclick="pChip(this,'biz')">🍽️ Chakula</div>
+              <div class="pchip" data-v="electronics" onclick="pChip(this,'biz')">📱 Simu/Elektroniki</div>
+              <div class="pchip" data-v="beauty" onclick="pChip(this,'biz')">💄 Urembo</div>
+              <div class="pchip" data-v="shoes" onclick="pChip(this,'biz')">👟 Viatu</div>
+              <div class="pchip" data-v="furniture" onclick="pChip(this,'biz')">🛋️ Samani</div>
+              <div class="pchip" data-v="groceries" onclick="pChip(this,'biz')">🛒 Nyumbani</div>
+              <div class="pchip" data-v="other" onclick="pChip(this,'biz')">✏️ Nyingine</div>
+            </div>
+            <input id="p-custom-biz" type="text" placeholder="Andika aina yako..." class="p-input" style="display:none;margin-top:8px;">
+          </div>
+
+          <div>
+            <div class="p-field-label">Jina la Bidhaa</div>
+            <input id="p-product" type="text" maxlength="100" placeholder="Mfano: Vitenge dress, Pilau, iPhone 13..." class="p-input" oninput="pState.product=this.value.trim();pDots()">
+          </div>
+          <div style="margin-top:8px;">
+            <div class="p-field-label">Bei (si lazima)</div>
+            <input id="p-price" type="text" maxlength="30" placeholder="Mfano: TZS 45,000" class="p-input" oninput="pState.price=this.value.trim()">
+          </div>
+        </div>
+
+        <!-- STEP 3: Style -->
+        <div class="pc" id="pcard2">
+          <div class="pc-label">Hatua 3 ya 4</div>
+          <div class="pc-title">🎨 Chagua mwonekano wa poster</div>
+          <div class="pc-hint">Kila mwonekano una rangi na muundo wake</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="p-style-opts">
+            <div class="p-style-opt" data-v="vibrant" onclick="pStyleOpt(this)">
+              <div class="p-style-swatch" style="background:linear-gradient(135deg,#ff6b35,#f7c59f,#25d078);"></div>
+              <div class="p-style-name">🌈 Rangi Nyingi</div>
+              <div class="p-style-sub">Maisha, nguvu, Afrika</div>
+            </div>
+            <div class="p-style-opt" data-v="luxury" onclick="pStyleOpt(this)">
+              <div class="p-style-swatch" style="background:linear-gradient(135deg,#0a0802,#c9a84c,#3d2b00);"></div>
+              <div class="p-style-name">✨ Kifahari</div>
+              <div class="p-style-sub">Dhahabu, daraja la juu</div>
+            </div>
+            <div class="p-style-opt" data-v="clean" onclick="pStyleOpt(this)">
+              <div class="p-style-swatch" style="background:linear-gradient(135deg,#ffffff,#e2e8f0,#0f172a);"></div>
+              <div class="p-style-name">⬜ Safi & Modern</div>
+              <div class="p-style-sub">Minimalist, professional</div>
+            </div>
+            <div class="p-style-opt" data-v="bold" onclick="pStyleOpt(this)">
+              <div class="p-style-swatch" style="background:linear-gradient(135deg,#050014,#ef4444,#7c3aed);"></div>
+              <div class="p-style-name">🔥 Nguvu & Bold</div>
+              <div class="p-style-sub">High impact, attention</div>
+            </div>
+            <div class="p-style-opt" data-v="natural" onclick="pStyleOpt(this)">
+              <div class="p-style-swatch" style="background:linear-gradient(135deg,#14200a,#65a30d,#86efac);"></div>
+              <div class="p-style-name">🌿 Asili</div>
+              <div class="p-style-sub">Organic, earthy tones</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: CTA -->
+        <div class="pc" id="pcard3">
+          <div class="pc-label">Hatua 4 ya 4</div>
+          <div class="pc-title">📣 Poster iseme nini?</div>
+          <div class="pc-hint">Ujumbe wa kuvutia wateja wako</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="p-cta-opts">
+            <div class="pcta" data-v="Order via WhatsApp" onclick="pCTA(this)"><span>💬</span><div>Agiza WhatsApp</div></div>
+            <div class="pcta" data-v="Limited Stock!" onclick="pCTA(this)"><span>⚡</span><div>Stock Kidogo!</div></div>
+            <div class="pcta" data-v="New Arrival" onclick="pCTA(this)"><span>🆕</span><div>Imefika Mpya</div></div>
+            <div class="pcta" data-v="Sale Today Only!" onclick="pCTA(this)"><span>🏷️</span><div>Sale Leo Tu!</div></div>
+            <div class="pcta" data-v="Free Delivery" onclick="pCTA(this)"><span>🚚</span><div>Delivery Bure</div></div>
+            <div class="pcta" data-v="Best Quality" onclick="pCTA(this)"><span>⭐</span><div>Ubora wa Juu</div></div>
+          </div>
+        </div>
+
+      </div><!-- /poster-form -->
+
+      <!-- ══════ RESULT SECTION ══════ -->
+      <div id="poster-result" style="display:none;">
+
+        <!-- Canvas preview -->
+        <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:0 16px 48px rgba(0,0,0,0.18);">
+          <canvas id="poster-canvas" width="1080" height="1080" style="width:100%;display:block;border-radius:16px;"></canvas>
+          <div style="position:absolute;top:10px;right:10px;background:rgba(37,208,120,0.92);color:#0a0f0d;font-size:10px;font-weight:800;padding:4px 10px;border-radius:50px;letter-spacing:0.5px;">Canvas ✦ 1080px</div>
+        </div>
+
+        <!-- Generated copy preview -->
+        <div id="poster-copy-card" style="background:white;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:12px;display:none;">
+          <div style="font-size:10px;color:#25d078;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Nakala iliyoundwa na AI</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div><div style="font-size:10px;color:#9ca3af;margin-bottom:2px;">KICHWA</div><div id="rc-headline" style="font-size:13px;font-weight:800;color:#0f172a;"></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;margin-bottom:2px;">MANENO</div><div id="rc-subtext" style="font-size:13px;font-weight:600;color:#374151;"></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;margin-bottom:2px;">CTA</div><div id="rc-cta" style="font-size:13px;font-weight:800;color:#25d078;"></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;margin-bottom:2px;">SCENE PROMPT</div><div id="rc-prompt" style="font-size:11px;color:#64748b;line-height:1.4;"></div></div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <button onclick="pDownload()" style="background:rgba(37,208,120,0.1);border:1.5px solid #25d078;border-radius:12px;padding:14px;color:#16a34a;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;" ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform=''">
+            <span class="material-symbols-outlined" style="font-size:18px;">download</span>Pakua PNG
+          </button>
+          <button onclick="pShareWhatsApp()" style="background:rgba(37,211,102,0.1);border:1.5px solid #25D366;border-radius:12px;padding:14px;color:#16a34a;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;" ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform=''">
+            <span style="font-size:16px;">💬</span>WhatsApp
+          </button>
+        </div>
+        <button onclick="pSaveToGallery()" style="width:100%;background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:#374151;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;" ontouchstart="this.style.background='#f8fafc'" ontouchend="this.style.background='white'">
+          <span class="material-symbols-outlined" style="font-size:17px;color:#25d078;">save</span>Hifadhi kwenye Gallery
+        </button>
+        <button onclick="pShowHistory()" style="width:100%;background:white;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span class="material-symbols-outlined" style="font-size:17px;">photo_library</span>Angalia Posters Zangu
+        </button>
+        <button onclick="pReset()" style="width:100%;background:transparent;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;font-size:13px;font-weight:600;color:#9ca3af;cursor:pointer;margin-bottom:16px;">
+          ↺ Unda poster nyingine
+        </button>
+      </div>
+
+      <!-- ══════ HISTORY SECTION ══════ -->
+      <div id="poster-history" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <button onclick="pHideHistory()" style="background:#f1f5f9;border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#64748b;">arrow_back</span>
+          </button>
+          <div><div style="font-size:16px;font-weight:900;color:#0f172a;">Posters Zangu 🖼️</div><div style="font-size:12px;color:#9ca3af;">Zilizohifadhiwa kwenye Cloud</div></div>
+        </div>
+        <div id="poster-hist-list"></div>
+      </div>
+
+    </div><!-- /poster-scroll -->
+
+    <!-- ── FIXED GENERATE BUTTON ── -->
+    <div id="p-btn-wrap" style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,#f8fafc 65%,transparent);padding:14px 16px 24px;">
+      <button id="p-gen-btn" onclick="pGenerate()" style="width:100%;padding:16px;background:linear-gradient(135deg,#25d078,#16a34a);color:white;border:none;border-radius:16px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(37,208,120,0.35);display:flex;align-items:center;justify-content:center;gap:10px;transition:transform 0.15s;"
+        ontouchstart="this.style.transform='scale(0.98)'" ontouchend="this.style.transform='scale(1)'">
+        <span class="material-symbols-outlined" style="font-size:20px;">auto_awesome</span>
+        Unda Poster Yangu
+      </button>
+    </div>
+
+    <!-- ── PIPELINE LOADING OVERLAY (inside sheet) ── -->
+    <div id="p-loading" style="display:none;position:absolute;inset:0;background:rgba(248,250,252,0.97);backdrop-filter:blur(6px);z-index:50;flex-direction:column;align-items:center;justify-content:center;gap:0;border-radius:28px 28px 0 0;">
+      <div style="width:60px;height:60px;border:3px solid #e2e8f0;border-top-color:#25d078;border-radius:50%;animation:spin360 1s linear infinite;margin-bottom:20px;"></div>
+      <div style="font-size:17px;font-weight:900;color:#0f172a;margin-bottom:6px;text-align:center;" id="p-load-title">AI inafanya kazi...</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:12px;text-align:center;" id="p-load-sub">Subiri sekunde 20-40</div>
+
+      <!-- Pipeline steps progress -->
+      <div style="background:white;border-radius:16px;padding:16px 20px;width:calc(100% - 40px);border:1.5px solid #f1f5f9;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+        <div class="p-pipe-step" id="pps-bg">
+          <div class="p-pipe-icon" id="pps-bg-icon">🗑️</div>
+          <div><div class="p-pipe-name">Kuondoa mandhari</div><div class="p-pipe-detail" id="pps-bg-detail">U²-Net · seva yako</div></div>
+          <div class="p-pipe-status" id="pps-bg-status">⏳</div>
+        </div>
+        <div class="p-pipe-step" id="pps-copy">
+          <div class="p-pipe-icon" id="pps-copy-icon">✍️</div>
+          <div><div class="p-pipe-name">Kuandika nakala</div><div class="p-pipe-detail" id="pps-copy-detail">Groq llama-3.1</div></div>
+          <div class="p-pipe-status" id="pps-copy-status">⏳</div>
+        </div>
+        <div class="p-pipe-step" id="pps-scene">
+          <div class="p-pipe-icon" id="pps-scene-icon">🎨</div>
+          <div><div class="p-pipe-name">Kuunda mandhari</div><div class="p-pipe-detail" id="pps-scene-detail">Cloudflare FLUX</div></div>
+          <div class="p-pipe-status" id="pps-scene-status">⏳</div>
+        </div>
+        <div class="p-pipe-step" id="pps-canvas">
+          <div class="p-pipe-icon" id="pps-canvas-icon">🖼️</div>
+          <div><div class="p-pipe-name">Canvas compositor</div><div class="p-pipe-detail" id="pps-canvas-detail">Muundo wa mwisho</div></div>
+          <div class="p-pipe-status" id="pps-canvas-status">⏳</div>
+        </div>
+      </div>
+
+      <div id="p-load-step-msg" style="font-size:12px;color:#25d078;font-weight:700;margin-top:14px;min-height:18px;text-align:center;transition:opacity 0.3s;"></div>
+    </div>
+
+  </div><!-- /poster-sheet -->
+</div><!-- /poster-overlay -->
+
+<style>
+/* ═══ POSTER AI STYLES ═══ */
+.pc { background:white;border-radius:16px;padding:18px;margin-bottom:14px;border:1.5px solid #f1f5f9;box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.pc-label { font-size:10px;font-weight:700;color:#25d078;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px; }
+.pc-title { font-size:15px;font-weight:900;color:#0f172a;margin-bottom:4px; }
+.pc-hint  { font-size:12px;color:#9ca3af;margin-bottom:14px;line-height:1.5; }
+.p-field-label { font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px; }
+.p-input { width:100%;padding:12px 14px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;font-size:14px;font-family:inherit;outline:none;color:#0f172a;box-sizing:border-box;transition:border-color 0.2s; }
+.p-input:focus { border-color:#25d078; }
+.pchip { background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:50px;padding:7px 13px;font-size:12px;font-weight:700;color:#374151;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;user-select:none; }
+.pchip:active { transform:scale(0.95); }
+.pchip.on { background:rgba(37,208,120,0.1);border-color:#25d078;color:#16a34a; }
+.pcta { background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 8px;cursor:pointer;text-align:center;color:#374151;transition:all 0.15s;user-select:none; }
+.pcta span { font-size:1.3rem;display:block;margin-bottom:4px; }
+.pcta div { font-size:12px;font-weight:700; }
+.pcta:active { transform:scale(0.97); }
+.pcta.on { border-color:#f59e0b;background:rgba(245,158,11,0.08);color:#92400e; }
+.p-upload-zone { border:2px dashed #e2e8f0;border-radius:14px;padding:28px 16px;text-align:center;cursor:pointer;transition:all 0.2s;background:#f8fafc; }
+.p-upload-zone:active { border-color:#25d078;background:rgba(37,208,120,0.04); }
+.p-style-opt { background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:12px;cursor:pointer;transition:all 0.15s;user-select:none; }
+.p-style-opt:active { transform:scale(0.97); }
+.p-style-opt.on { border-color:#25d078;background:rgba(37,208,120,0.06); }
+.p-style-swatch { width:100%;height:36px;border-radius:8px;margin-bottom:8px; }
+.p-style-name { font-size:12px;font-weight:800;color:#0f172a;margin-bottom:2px; }
+.p-style-sub { font-size:10px;color:#9ca3af; }
+.pp-dot { height:4px;border-radius:4px;flex:1;background:#e2e8f0;transition:all 0.3s; }
+.pp-dot-active { background:#25d078; }
+.pp-dot-done   { background:#16a34a; }
+.p-pipe-step { display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f1f5f9; }
+.p-pipe-step:last-child { border-bottom:none; }
+.p-pipe-icon { font-size:1.2rem;width:28px;text-align:center;flex-shrink:0; }
+.p-pipe-name { font-size:13px;font-weight:700;color:#0f172a; }
+.p-pipe-detail { font-size:10px;color:#9ca3af;font-weight:500;margin-top:1px; }
+.p-pipe-status { margin-left:auto;font-size:14px;flex-shrink:0; }
+</style>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// POSTER AI — Canvas Pipeline
+// Flow: Upload → BG Remove → Groq → FLUX Scene → Canvas
+// Endpoint: POST /api/marketing/generate-poster
+// ═══════════════════════════════════════════════════════════
+
+const POSTER_API = 'https://linka-ai-1.onrender.com';
+
+const pState = {
+    merchantId:   null,
+    photo:        null,       // File object
+    photoB64:     null,       // base64 string for API
+    photoSkipped: false,
+    biz:          null,
+    product:      '',
+    price:        '',
+    businessName: '',
+    style:        'vibrant',
+    cta:          null,
+    usage:        { used: 0, limit: 20, remaining: 20 },
+    lastResult:   null,       // stored for download/save
+};
+
+// ═══════════════════════════════════════════════════════════
+// POSTER AI — Open / Close
+// ═══════════════════════════════════════════════════════════
+async function posterOpen() {
+    const ov = document.getElementById('poster-overlay');
+    if (!ov) return;
+    ov.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Get merchant ID from auth
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) pState.merchantId = user.id;
+    } catch(e) {}
+
+    // Auto-fill business name from dashboard
+    try {
+        const bnInput  = document.getElementById('p-biz-name');
+        const dashName = document.getElementById('dash-business-name');
+        if (bnInput && dashName && !bnInput.value) {
+            const n = (dashName.textContent || '').trim();
+            if (n) { bnInput.value = n; pState.businessName = n; }
+        }
+    } catch(e) {}
+
+    pFetchUsage();
+    pLoadHistory();
+}
+
+function posterClose() {
+    const ov = document.getElementById('poster-overlay');
+    const sh = document.getElementById('poster-sheet');
+    if (!ov) return;
+    if (sh) { sh.style.transition = 'transform 0.3s ease'; sh.style.transform = 'translateY(100%)'; }
+    ov.style.opacity = '0'; ov.style.transition = 'opacity 0.28s';
+    setTimeout(() => {
+        ov.style.display = 'none';
+        ov.style.opacity = ''; ov.style.transition = '';
+        if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
+        document.body.style.overflow = '';
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nb-home')?.classList.add('active');
+    }, 300);
+}
+
+// ── Usage ──────────────────────────────────────────────────
+async function pFetchUsage() {
+    if (!pState.merchantId) return;
+    try {
+        const r = await fetch(`${POSTER_API}/api/marketing/usage/${pState.merchantId}`);
+        const d = await r.json();
+        if (d.success) pSetUsage(d.data);
+    } catch(e) {}
+}
+function pSetUsage(u) {
+    pState.usage = u;
+    const el = document.getElementById('poster-credits-text');
+    if (el) el.textContent = u.remaining + ' leo';
+}
+
+// ── Step progress dots ─────────────────────────────────────
+function pDots() {
+    let done = 0;
+    if (pState.biz)                              done = 1;
+    if (pState.product || pState.photoSkipped)   done = Math.max(done, 2);
+    if (pState.style)                            done = Math.max(done, 3);
+    if (pState.cta)                              done = 4;
+    for (let i = 0; i < 5; i++) {
+        const d = document.getElementById('ppd' + i);
+        if (!d) continue;
+        d.className = 'pp-dot';
+        if (i < done)        d.classList.add('pp-dot-done');
+        else if (i === done) d.classList.add('pp-dot-active');
+    }
+}
+
+// ── Photo handling ─────────────────────────────────────────
+function pHandleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+        showToastMsg('Picha ni kubwa sana. Upeo ni 10MB.', 'warn'); return;
+    }
+    pState.photo = file;
+    pState.photoSkipped = false;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        pState.photoB64 = ev.target.result;
+        const prev = document.getElementById('p-photo-prev');
+        const ph   = document.getElementById('p-upload-ph');
+        if (prev) { prev.src = ev.target.result; prev.style.display = 'block'; }
+        if (ph)   ph.style.display = 'none';
+        const repBtn = document.getElementById('p-replace-btn');
+        const sw     = document.getElementById('p-skip-wrap');
+        if (repBtn) repBtn.style.display = 'inline';
+        if (sw)     sw.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    pDots();
+}
+
+function pResetPhoto() {
+    pState.photo = null; pState.photoB64 = null; pState.photoSkipped = false;
+    const prev = document.getElementById('p-photo-prev');
+    const ph   = document.getElementById('p-upload-ph');
+    const rep  = document.getElementById('p-replace-btn');
+    const sw   = document.getElementById('p-skip-wrap');
+    const zone = document.getElementById('p-upload-zone');
+    if (prev) { prev.style.display = 'none'; prev.src = ''; }
+    if (ph)   ph.style.display = 'block';
+    if (rep)  rep.style.display = 'none';
+    if (sw)   sw.style.display = 'block';
+    if (zone) { zone.style.borderColor = ''; zone.style.background = ''; }
+    const fi = document.getElementById('p-file-input');
+    if (fi) fi.value = '';
+}
+
+function pSkipPhoto() {
+    pState.photoSkipped = true; pState.photo = null; pState.photoB64 = null;
+    const zone = document.getElementById('p-upload-zone');
+    const sw   = document.getElementById('p-skip-wrap');
+    if (zone) {
+        zone.style.borderColor = '#25d078';
+        zone.style.background  = 'rgba(37,208,120,0.04)';
+        const ph = document.getElementById('p-upload-ph');
+        if (ph) ph.innerHTML = '<div style="font-size:1.8rem;margin-bottom:6px;">✅</div><div style="font-size:13px;font-weight:800;color:#16a34a;">AI itaunda picha</div><div style="font-size:11px;color:#9ca3af;margin-top:2px;">FLUX generative AI</div>';
+    }
+    if (sw) sw.style.display = 'none';
+    pDots();
+}
+
+// ── Chip / style / CTA selectors ──────────────────────────
+function pChip(el, group) {
+    const par = el.closest('[id]');
+    par.querySelectorAll('.pchip').forEach(c => c.classList.remove('on'));
+    el.classList.add('on');
+    if (group === 'biz') {
+        pState.biz = el.dataset.v;
+        const ci = document.getElementById('p-custom-biz');
+        if (ci) { ci.style.display = pState.biz === 'other' ? 'block' : 'none'; if (pState.biz === 'other') ci.focus(); }
+    }
+    pDots();
+}
+
+function pStyleOpt(el) {
+    document.querySelectorAll('.p-style-opt').forEach(c => c.classList.remove('on'));
+    el.classList.add('on');
+    pState.style = el.dataset.v;
+    pDots();
+}
+
+function pCTA(el) {
+    document.querySelectorAll('.pcta').forEach(c => c.classList.remove('on'));
+    el.classList.add('on');
+    pState.cta = el.dataset.v;
+    pDots();
+}
+
+// ── Validate ───────────────────────────────────────────────
+function pValidate() {
+    const bizNameVal = document.getElementById('p-biz-name')?.value.trim() || pState.businessName;
+    if (!bizNameVal) { showToastMsg('Andika jina la biashara yako 👆', 'warn'); return false; }
+    if (!pState.biz) { showToastMsg('Chagua aina ya biashara 👆', 'warn'); return false; }
+    if (!pState.product && !pState.photo && !pState.photoSkipped) {
+        showToastMsg('Andika jina la bidhaa au pakia picha 👆', 'warn'); return false;
+    }
+    if (!pState.style) { showToastMsg('Chagua mwonekano wa poster 👆', 'warn'); return false; }
+    if (!pState.cta)   { showToastMsg('Chagua ujumbe wa poster 👆', 'warn'); return false; }
+    if (pState.usage.remaining <= 0) { showToastMsg('Umefika kikomo cha leo 📅', 'warn'); return false; }
+    return true;
+}
+
+// ── Pipeline status helpers ────────────────────────────────
+function pPipeStep(id, status) {
+    const icons = { active: '⏳', done: '✅', error: '❌', waiting: '⏳' };
+    const el  = document.getElementById('pps-' + id + '-status');
+    const row = document.getElementById('pps-' + id);
+    if (el)  el.textContent = icons[status] || '⏳';
+    if (row) {
+        row.style.opacity    = status === 'waiting' ? '0.4' : '1';
+        row.style.background = status === 'active'  ? 'rgba(37,208,120,0.05)' : '';
+    }
+}
+function pLoadMsg(title, sub) {
+    const t = document.getElementById('p-load-title');
+    const s = document.getElementById('p-load-sub');
+    if (t) t.textContent = title;
+    if (s) s.textContent = sub || '';
+}
+function pPipeMsg(msg) {
+    const el = document.getElementById('p-load-step-msg');
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = msg; el.style.opacity = '1'; }, 200);
+}
+
+// ── MAIN GENERATE ──────────────────────────────────────────
+async function pGenerate() {
+    if (!pValidate()) return;
+
+    // Sync business name from input
+    pState.businessName = document.getElementById('p-biz-name')?.value.trim()
+        || pState.businessName || 'Biashara Yangu';
+
+    const bizVal = pState.biz === 'other'
+        ? (document.getElementById('p-custom-biz')?.value.trim() || 'biashara')
+        : pState.biz;
+
+    // Show loading
+    const loadEl  = document.getElementById('p-loading');
+    const btnWrap = document.getElementById('p-btn-wrap');
+    const genBtn  = document.getElementById('p-gen-btn');
+    if (loadEl)  loadEl.style.display = 'flex';
+    if (btnWrap) btnWrap.style.display = 'none';
+    if (genBtn)  genBtn.disabled = true;
+
+    // Reset pipeline indicators
+    ['bg', 'copy', 'scene', 'canvas'].forEach(s => pPipeStep(s, 'waiting'));
+
+    const toneMap = {
+        vibrant: 'vibrant, colorful, energetic with rich African colors',
+        luxury:  'luxury, elegant, premium feel with gold accents',
+        clean:   'clean, modern, minimalist with white space',
+        bold:    'bold, powerful, high contrast, attention-grabbing',
+        natural: 'natural, earthy, organic with warm tones',
+    };
+
+    const productStr = pState.price
+        ? `${pState.product || 'bidhaa'} — Bei: ${pState.price}`
+        : (pState.product || (pState.photoSkipped ? 'bidhaa ya biashara' : 'bidhaa kutoka picha'));
+
+    try {
+        const body = {
+            merchantId:     pState.merchantId || 'demo',
+            businessName:   pState.businessName,
+            businessType:   bizVal,
+            product:        productStr,
+            tone:           toneMap[pState.style] || 'professional and modern',
+            targetAudience: 'Tanzanian customers',
+            cta:            pState.cta,
+        };
+        if (pState.photoB64) body.productImageBase64 = pState.photoB64;
+
+        // Show BG step (or skip if no photo)
+        pPipeStep('bg', pState.photoB64 ? 'active' : 'done');
+        pLoadMsg('Inaandaa...', pState.photoB64 ? 'Inaondoa mandhari...' : 'Inaanza pipeline...');
+        pPipeMsg(pState.photoB64 ? 'Inaondoa mandhari ya picha yako... 🗑️' : 'Hakuna picha — AI itaunda yote...');
+
+        // Cold start warning — Render free tier sleeps after 15 min inactivity
+        // Show warning after 8s so user knows to wait, not think it's broken
+        const coldStartTimer = setTimeout(() => {
+            pLoadMsg('Inaamka seva... ☕', 'Subiri sekunde 30-40 (cold start)');
+            pPipeMsg('Seva ilikuwa imelala — inaamka sasa, subiri kidogo... 🔄');
+        }, 8000);
+
+        const r = await fetch(`${POSTER_API}/api/marketing/generate-poster`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body),
+        });
+
+        clearTimeout(coldStartTimer);
+        pPipeStep('bg', 'done');
+        pPipeStep('copy', 'active');
+        pLoadMsg('Inaandika nakala...', 'Groq llama-3.1-8b');
+        pPipeMsg('Groq inaandika kichwa, maneno na CTA... ✍️');
+
+        if (!r.ok) {
+            const errData = await r.json().catch(() => ({}));
+            throw new Error(errData.error || `Hitilafu ya seva: ${r.status}`);
+        }
+
+        const data = await r.json();
+        if (!data.success) throw new Error(data.error || 'Imeshindwa kufanya kazi');
+
+        pPipeStep('copy', 'done');
+        pPipeStep('scene', 'active');
+        pLoadMsg('Inaunda mandhari...', 'Cloudflare FLUX');
+        pPipeMsg('FLUX inachora mazingira ya poster... 🎨');
+
+        await new Promise(res => setTimeout(res, 500));
+
+        pPipeStep('scene', 'done');
+        pPipeStep('canvas', 'active');
+        pLoadMsg('Canvas compositor...', 'Muundo wa mwisho');
+        pPipeMsg('Canvas inachanganya vipande vyote... 🖼️');
+
+        // Compose poster on canvas
+        const posterDataUrl = await pComposePoster(data.data);
+
+        pPipeStep('canvas', 'done');
+        pLoadMsg('Imekamilika! 🎉', '');
+        await new Promise(res => setTimeout(res, 500));
+
+        pState.lastResult = { dataUrl: posterDataUrl, apiData: data.data };
+        pShowResult(data.data, posterDataUrl);
+        if (data.data.usage) pSetUsage(data.data.usage);
+
+        // Save to Supabase in background
+        pSaveToCloud(posterDataUrl, data.data).catch(e => console.warn('Cloud save:', e.message));
+
+    } catch(err) {
+        console.error('pGenerate error:', err.message);
+        showToastMsg('Hitilafu: ' + (err.message || 'Jaribu tena baadaye'), 'warn');
+        ['bg', 'copy', 'scene', 'canvas'].forEach(s => pPipeStep(s, 'waiting'));
+        if (btnWrap) btnWrap.style.display = 'block';
+    } finally {
+        if (loadEl) loadEl.style.display = 'none';
+        if (genBtn) genBtn.disabled = false;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// POSTER THEMES — 5 styles, each with full color config
+// ═══════════════════════════════════════════════════════════
+const POSTER_THEMES = {
+    vibrant: {
+        gradStart:   'rgba(12,8,2,0.86)',
+        gradMid:     'rgba(12,8,2,0.42)',
+        headColor:   '#FFFFFF',
+        subColor:    'rgba(255,255,255,0.82)',
+        ctaBg:       '#25d078',
+        ctaText:     '#ffffff',
+        accent:      '#25d078',
+        fallbackBg1: '#1a2a1a',
+        fallbackBg2: '#0d1a0d',
+    },
+    luxury: {
+        gradStart:   'rgba(8,6,1,0.91)',
+        gradMid:     'rgba(8,6,1,0.5)',
+        headColor:   '#F5E6C8',
+        subColor:    'rgba(245,230,200,0.78)',
+        ctaBg:       '#C9A84C',
+        ctaText:     '#0a0802',
+        accent:      '#C9A84C',
+        fallbackBg1: '#1a1408',
+        fallbackBg2: '#0a0a04',
+    },
+    clean: {
+        gradStart:   'rgba(248,250,252,0.95)',
+        gradMid:     'rgba(248,250,252,0.56)',
+        headColor:   '#0F172A',
+        subColor:    'rgba(15,23,42,0.68)',
+        ctaBg:       '#0F172A',
+        ctaText:     '#ffffff',
+        accent:      '#25d078',
+        fallbackBg1: '#e2e8f0',
+        fallbackBg2: '#f1f5f9',
+    },
+    bold: {
+        gradStart:   'rgba(4,0,24,0.93)',
+        gradMid:     'rgba(4,0,24,0.5)',
+        headColor:   '#FFFFFF',
+        subColor:    'rgba(255,255,255,0.78)',
+        ctaBg:       '#EF4444',
+        ctaText:     '#ffffff',
+        accent:      '#EF4444',
+        fallbackBg1: '#1a0020',
+        fallbackBg2: '#060012',
+    },
+    natural: {
+        gradStart:   'rgba(16,24,8,0.89)',
+        gradMid:     'rgba(16,24,8,0.44)',
+        headColor:   '#F0FDF4',
+        subColor:    'rgba(240,253,244,0.78)',
+        ctaBg:       '#65A30D',
+        ctaText:     '#ffffff',
+        accent:      '#86EFAC',
+        fallbackBg1: '#1a2a0a',
+        fallbackBg2: '#0d1a06',
+    },
+};
+
+// Keep old P_STYLES as alias so nothing else breaks
+const P_STYLES = POSTER_THEMES;
+
+// ═══════════════════════════════════════════════════════════
+// pComposePoster — main entry point called by pGenerate()
+// Wraps pCompose with the right theme lookup
+// ═══════════════════════════════════════════════════════════
+async function pComposePoster(data) {
+    return await pCompose(data, pState.style || 'vibrant');
+}
+
+// ═══════════════════════════════════════════════════════════
+// pCompose — Canvas compositor v3
+//
+// LAYERS (bottom → top):
+//  1. Background scene (FLUX generated or gradient fallback)
+//  2. Left gradient overlay  (text readability)
+//  3. Bottom vignette        (CTA area depth)
+//  4. Product glow blob      (depth behind product)
+//  5. Product image          (rounded clip + blur shadow + contrast boost)
+//  6. Product inner ring     (subtle white border)
+//  7. Business name + accent line (top left)
+//  8. Headline               (bold, left center, text shadow)
+//  9. Subtext                (below headline)
+// 10. Price badge            (dark pill, if set)
+// 11. CTA pill               (bottom left, branded color)
+// 12. LinkaMarket watermark  (bottom right, subtle)
+// ═══════════════════════════════════════════════════════════
+async function pCompose(apiData, style) {
+    const canvas = document.getElementById('poster-canvas');
+    if (!canvas) return null;
+
+    const S   = 1080;
+    canvas.width  = S;
+    canvas.height = S;
+    const ctx   = canvas.getContext('2d');
+    const theme = POSTER_THEMES[style] || POSTER_THEMES.vibrant;
+    const copy  = apiData.copy || {};
+    const hasProduct = !!(apiData.productBase64 || apiData.productUrl);
+
+    // ── LAYER 1: Background scene ──────────────────────────────────
+    const sceneSrc = apiData.sceneBase64 || apiData.sceneUrl;
+    if (sceneSrc) {
+        await pDrawImage(ctx, sceneSrc, 0, 0, S, S);
+    } else {
+        // Rich gradient fallback — matches theme colors
+        const fbg = ctx.createLinearGradient(0, 0, S, S);
+        fbg.addColorStop(0, theme.fallbackBg1);
+        fbg.addColorStop(1, theme.fallbackBg2);
+        ctx.fillStyle = fbg;
+        ctx.fillRect(0, 0, S, S);
+    }
+
+    // ── LAYER 2: Deep gradient overlay — left side for text ────────
+    // Stronger at left, fades to transparent right — like Image 1 reference
+    const grad = ctx.createLinearGradient(0, 0, S * 0.75, 0);
+    grad.addColorStop(0,   theme.gradStart);
+    grad.addColorStop(0.5, theme.gradMid);
+    grad.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, S, S);
+
+    // ── LAYER 3: Bottom vignette — depth for CTA area ──────────────
+    const bv = ctx.createLinearGradient(0, S * 0.65, 0, S);
+    bv.addColorStop(0, 'rgba(0,0,0,0)');
+    bv.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.fillStyle = bv;
+    ctx.fillRect(0, S * 0.65, S, S * 0.35);
+
+    // ── LAYER 4-6: Product image (right side) ──────────────────────
+    if (hasProduct) {
+        await pDrawProductFramed(ctx, apiData.productBase64 || apiData.productUrl, S, theme);
+    }
+
+    // ── LAYER 7: Category / style tag (top right, like reference posters) ─
+    if (pState.biz && hasProduct) {
+        const tagText = pBizLabel(pState.biz).toUpperCase();
+        const tagFs   = Math.round(S * 0.022);
+        ctx.save();
+        ctx.font = `700 ${tagFs}px 'Plus Jakarta Sans', Arial, sans-serif`;
+        const tagW  = ctx.measureText(tagText).width + S * 0.04;
+        const tagH  = tagFs + S * 0.022;
+        const tagX  = S - tagW - S * 0.04;
+        const tagY  = S * 0.04;
+        ctx.fillStyle = theme.accent;
+        ctx.globalAlpha = 0.92;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 8;
+        pRoundRect(ctx, tagX, tagY, tagW, tagH, tagH / 2);
+        ctx.fill();
+        ctx.shadowColor   = 'transparent';
+        ctx.globalAlpha   = 1;
+        ctx.fillStyle     = style === 'luxury' ? '#0a0802' : '#ffffff';
+        ctx.fillText(tagText, tagX + S * 0.02, tagY + tagH / 2 + tagFs * 0.36);
+        ctx.restore();
+    }
+
+    // ── LAYER 8: Business name (top left, with accent bar) ─────────
+    const bizName = (copy.businessName || pState.businessName || '').toUpperCase();
+    if (bizName) {
+        ctx.save();
+        // Accent bar
+        ctx.fillStyle   = theme.accent;
+        ctx.globalAlpha = 0.95;
+        ctx.fillRect(S * 0.058, S * 0.056, S * 0.026, 3);
+        // Business name text
+        ctx.font      = `700 ${Math.round(S * 0.027)}px 'Plus Jakarta Sans', Arial, sans-serif`;
+        ctx.fillStyle = theme.accent;
+        ctx.fillText(bizName, S * 0.095, S * 0.074);
+        ctx.restore();
+    }
+
+    // ── LAYER 9: Headline — big bold left center ───────────────────
+    const headline = (copy.headline || '').toUpperCase();
+    if (headline) {
+        const maxW = S * 0.44;
+        const fs   = pFitFontSize(ctx, headline, maxW,
+                        Math.round(S * 0.105), Math.round(S * 0.07), '900');
+        ctx.save();
+        ctx.font          = `900 ${fs}px 'Plus Jakarta Sans', Arial Black, sans-serif`;
+        ctx.fillStyle     = theme.headColor;
+        ctx.shadowColor   = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur    = 14;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 5;
+        const lines  = pWrapText(ctx, headline, maxW);
+        const lineH  = fs * 1.1;
+        const startY = S * 0.42 - (lines.length * lineH * 0.5);
+        lines.forEach((line, i) => ctx.fillText(line, S * 0.058, startY + i * lineH));
+        ctx.restore();
+    }
+
+    // ── LAYER 10: Italic subtext — like "Start your day with sunshine" ──
+    const subtext = copy.subtext || '';
+    if (subtext) {
+        const subFs = Math.round(S * 0.033);
+        ctx.save();
+        ctx.font      = `400 italic ${subFs}px 'Plus Jakarta Sans', Arial, sans-serif`;
+        ctx.fillStyle = theme.subColor;
+        ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 8;
+        const lines  = pWrapText(ctx, subtext, S * 0.42);
+        const startY = S * 0.565;
+        lines.slice(0, 2).forEach((line, i) =>
+            ctx.fillText(line, S * 0.058, startY + i * subFs * 1.5));
+        ctx.restore();
+    }
+
+    // ── LAYER 11: Price badge ──────────────────────────────────────
+    const price = pState.price || '';
+    if (price) {
+        const priceFs   = Math.round(S * 0.034);
+        const priceText = /^(TZS|Tsh|tzs)/i.test(price) ? price : `TZS ${price}`;
+        ctx.save();
+        ctx.font = `800 ${priceFs}px 'Plus Jakarta Sans', Arial, sans-serif`;
+        const tw = ctx.measureText(priceText).width;
+        const bpx = S * 0.03, bpy = S * 0.018;
+        const bw = tw + bpx * 2, bh = priceFs + bpy * 2;
+        const bx = S * 0.058,    by = S * 0.66;
+
+        // Accent colored badge — not plain black
+        ctx.fillStyle   = theme.accent;
+        ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 12;
+        pRoundRect(ctx, bx, by, bw, bh, bh / 2);
+        ctx.fill();
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle   = style === 'luxury' ? '#0a0802' : '#ffffff';
+        ctx.fillText(priceText, bx + bpx, by + bh / 2 + priceFs * 0.36);
+        ctx.restore();
+    }
+
+    // ── LAYER 12: Decorative divider line above CTA ────────────────
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(S * 0.058, S * 0.80);
+    ctx.lineTo(S * 0.50, S * 0.80);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── LAYER 13: CTA pill button ──────────────────────────────────
+    const ctaText = (copy.cta || 'Order Now').toUpperCase() + '  →';
+    const ctaFs   = Math.round(S * 0.034);
+    ctx.save();
+    ctx.font = `800 ${ctaFs}px 'Plus Jakarta Sans', Arial, sans-serif`;
+    const ctaW  = Math.min(ctx.measureText(ctaText).width + S * 0.1, S * 0.52);
+    const ctaH  = ctaFs + S * 0.05;
+    const ctaX  = S * 0.058, ctaY = S * 0.822;
+
+    // Multi-layer shadow for premium look
+    ctx.shadowColor   = `rgba(0,0,0,0.4)`;
+    ctx.shadowBlur    = 24;
+    ctx.shadowOffsetY = 10;
+    ctx.fillStyle     = theme.ctaBg;
+    pRoundRect(ctx, ctaX, ctaY, ctaW, ctaH, ctaH / 2);
+    ctx.fill();
+
+    // Subtle white shine on top of pill
+    const shine = ctx.createLinearGradient(ctaX, ctaY, ctaX, ctaY + ctaH / 2);
+    shine.addColorStop(0, 'rgba(255,255,255,0.18)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle   = shine;
+    pRoundRect(ctx, ctaX, ctaY, ctaW, ctaH / 2, ctaH / 2);
+    ctx.fill();
+
+    // CTA text
+    ctx.fillStyle = theme.ctaText;
+    ctx.fillText(ctaText, ctaX + S * 0.05, ctaY + ctaH / 2 + ctaFs * 0.36);
+    ctx.restore();
+
+    // ── LAYER 14: Social handle / watermark (bottom right) ─────────
+    ctx.save();
+    ctx.font      = `500 ${Math.round(S * 0.017)}px 'Plus Jakarta Sans', Arial, sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText('via LinkaMarket', S * 0.72, S * 0.967);
+    ctx.restore();
+
+    return canvas.toDataURL('image/png', 0.95);
+}
+
+// ═══════════════════════════════════════════════════════════
+// pDrawProductFramed
+// Draws product with:
+//  - Soft glow blob behind it   (depth)
+//  - Blur glow shadow layer     (your requested blur mask)
+//  - Rounded rect clip          (clean edges, no bg removal needed)
+//  - Contrast + saturation boost (your requested pop effect)
+//  - Hard drop shadow           (crisp shadow under product)
+//  - Subtle white inner ring    (premium frame)
+//  - Floor reflection           (polish)
+// ═══════════════════════════════════════════════════════════
+async function pDrawProductFramed(ctx, productSrc, S, theme) {
+    const img = await pLoadImg(productSrc);
+    if (!img) return;
+
+    // Calculate product position — right side, vertically centered
+    const maxW  = S * 0.52;
+    const maxH  = S * 0.72;
+    const scale = Math.min(maxW / img.width, maxH / img.height);
+    const pw    = img.width  * scale;
+    const ph    = img.height * scale;
+    const px    = S - pw - S * 0.022;
+    const py    = (S - ph) / 2 + S * 0.02;
+    const r     = Math.min(pw, ph) * 0.06; // corner radius
+
+    // ── SUB-LAYER A: Soft ambient glow blob behind product ─
+    // Paints a large radial gradient in the accent color behind
+    // the product area — gives a natural light-source feel
+    ctx.save();
+    const glowX = px + pw * 0.5;
+    const glowY = py + ph * 0.5;
+    const glowR = Math.max(pw, ph) * 0.72;
+    const glow  = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowR);
+    glow.addColorStop(0,   'rgba(255,255,255,0.08)');
+    glow.addColorStop(0.5, 'rgba(255,255,255,0.03)');
+    glow.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(px - glowR * 0.3, py - glowR * 0.3,
+                 pw + glowR * 0.6, ph + glowR * 0.6);
+    ctx.restore();
+
+    // ── SUB-LAYER B: Blur glow shadow (your requested feature) ─
+    // Draws a blurred, slightly transparent copy of the product
+    // behind the real product — creates a premium soft shadow/glow
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.filter      = 'blur(38px)';
+    ctx.drawImage(img, px + 6, py + 14, pw, ph);
+    ctx.filter      = 'none';
+    ctx.restore();
+
+    // ── SUB-LAYER C: Clip to rounded rect + draw product ──
+    // Hard drop shadow on the clip container
+    ctx.save();
+    ctx.shadowColor   = 'rgba(0,0,0,0.52)';
+    ctx.shadowBlur    = 55;
+    ctx.shadowOffsetX = -6;
+    ctx.shadowOffsetY = 22;
+
+    // Draw the clip path shadow rectangle (invisible, just for shadow)
+    ctx.beginPath();
+    pRoundRect(ctx, px, py, pw, ph, r);
+    ctx.fillStyle = 'rgba(0,0,0,0)'; // transparent fill — shadow only
+    ctx.fill();
+    ctx.restore();
+
+    // Now clip and draw product with contrast boost
+    ctx.save();
+    ctx.beginPath();
+    pRoundRect(ctx, px, py, pw, ph, r);
+    ctx.clip();
+
+    // ── SUB-LAYER D: Contrast + saturation boost (your requested feature) ─
+    // Makes the product colors pop against the background
+    ctx.filter = 'contrast(1.12) saturate(1.15) brightness(1.02)';
+    ctx.drawImage(img, px, py, pw, ph);
+    ctx.filter  = 'none';
+
+    ctx.restore();
+
+    // ── SUB-LAYER E: Subtle white inner ring ───────────────
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+    ctx.lineWidth   = 2.5;
+    ctx.beginPath();
+    pRoundRect(ctx, px + 1, py + 1, pw - 2, ph - 2, r);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── SUB-LAYER F: Floor reflection ──────────────────────
+    pDrawReflection(ctx, img, px, py, pw, ph, S);
+}
+
+// ── Floor reflection ───────────────────────────────────────
+function pDrawReflection(ctx, img, px, py, pw, ph, S) {
+    const reflY = py + ph;
+    const reflH = ph * 0.13;
+    if (reflY + reflH > S) return;
+    ctx.save();
+    ctx.globalAlpha = 0.10;
+    ctx.translate(0, reflY * 2 + reflH);
+    ctx.scale(1, -1);
+    ctx.drawImage(img, px, py + reflH * 0.4, pw, reflH);
+    ctx.restore();
+    // Fade the reflection out
+    ctx.save();
+    const fade = ctx.createLinearGradient(0, reflY, 0, reflY + reflH);
+    fade.addColorStop(0, 'rgba(0,0,0,0)');
+    fade.addColorStop(1, 'rgba(0,0,0,0.9)');
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle   = fade;
+    ctx.fillRect(px, reflY, pw, reflH);
+    ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CANVAS UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+// Draw image from base64/URL onto canvas at position
+function pDrawImage(ctx, src, x, y, w, h) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload  = () => { ctx.drawImage(img, x, y, w, h); resolve(); };
+        img.onerror = () => { console.warn('pDrawImage failed:', src?.slice(0,80)); resolve(); };
+        img.src = src;
+    });
+}
+
+// Load image and return HTMLImageElement
+function pLoadImg(src) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload  = () => resolve(img);
+        img.onerror = () => { console.warn('pLoadImg failed:', src?.slice(0,80)); resolve(null); };
+        img.src = src;
+    });
+}
+
+// Wrap text into lines that fit within maxWidth
+function pWrapText(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let cur = '';
+    for (const word of words) {
+        const test = cur ? cur + ' ' + word : word;
+        if (ctx.measureText(test).width > maxWidth && cur) {
+            lines.push(cur); cur = word;
+        } else {
+            cur = test;
+        }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+}
+
+// Find largest font size where the longest word fits in maxWidth
+function pFitFontSize(ctx, text, maxWidth, maxSize, minSize, weight) {
+    let size = maxSize;
+    const longest = text.split(' ').reduce((a, b) => a.length > b.length ? a : b, '');
+    while (size > minSize) {
+        ctx.font = `${weight} ${size}px 'Plus Jakarta Sans', Arial Black, sans-serif`;
+        if (ctx.measureText(longest).width <= maxWidth) break;
+        size -= 3;
+    }
+    return size;
+}
+
+// Legacy alias used in a few places
+function pCalcFontSize(ctx, text, maxW, maxSz, minSz) {
+    return pFitFontSize(ctx, text, maxW, maxSz, minSz, '900');
+}
+
+// Draw rounded rectangle path (does NOT stroke or fill — caller does that)
+function pRoundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);     ctx.quadraticCurveTo(x + w, y,     x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);     ctx.quadraticCurveTo(x,     y + h, x,     y + h - r);
+    ctx.lineTo(x, y + r);         ctx.quadraticCurveTo(x,     y,     x + r, y);
+    ctx.closePath();
+}
+
+// ── Business type → display label ─────────────────────────────────────────
+function pBizLabel(biz) {
+    const map = {
+        clothing:'Fashion', food:'Chakula', electronics:'Tech',
+        beauty:'Beauty', shoes:'Viatu', furniture:'Samani',
+        groceries:'Bidhaa', other:'Biashara'
+    };
+    return map[biz] || biz || '';
+}
+
+
+// ── Show result on screen ─────────────────────────────────
+function pShowResult(data, dataUrl) {
+    document.getElementById('poster-form').style.display    = 'none';
+    document.getElementById('p-btn-wrap').style.display     = 'none';
+    document.getElementById('poster-result').style.display  = 'block';
+    document.getElementById('poster-history').style.display = 'none';
+
+    // The canvas is already rendered — just show it
+    const copyCard = document.getElementById('poster-copy-card');
+    const copy = data.copy || {};
+    if (copy.headline || copy.subtext) {
+        if (copyCard) copyCard.style.display = 'block';
+        const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val || ''; };
+        set('rc-headline', copy.headline);
+        set('rc-subtext',  copy.subtext);
+        set('rc-cta',      copy.cta);
+        set('rc-prompt',   (data.scenePrompt || '').slice(0, 120) + (data.scenePrompt?.length > 120 ? '…' : ''));
+    }
+
+    const scroll = document.getElementById('poster-scroll');
+    if (scroll) scroll.scrollTop = 0;
+}
+
+// ── Download ───────────────────────────────────────────────
+function pDownload() {
+    if (!pState.lastResult?.dataUrl) return;
+    const a = document.createElement('a');
+    a.href     = pState.lastResult.dataUrl;
+    a.download = `poster-linkamarket-${Date.now()}.png`;
+    a.click();
+}
+
+// ── WhatsApp share ─────────────────────────────────────────
+function pShareWhatsApp() {
+    // Share the cloud-saved URL if available, otherwise instruct to download
+    const url = pState.lastResult?.apiData?.sceneUrl || '';
+    const msg = url
+        ? encodeURIComponent('Angalia poster yangu ya biashara! ' + url)
+        : encodeURIComponent('Angalia poster yangu ya biashara!');
+    window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+// ── Save to Supabase storage ───────────────────────────────
+async function pSaveToCloud(dataUrl, apiData) {
+    if (!pState.merchantId) return null;
+    try {
+        // Convert data URL to blob
+        const res  = await fetch(dataUrl);
+        const blob = await res.blob();
+
+        const mid      = pState.merchantId;
+        const safeName = (pState.product || 'poster').replace(/[^a-z0-9]/gi, '-').slice(0, 40);
+        const path     = `${mid}/${Date.now()}_${safeName}.png`;
+
+        const { error: upErr } = await sb.storage
+            .from('merchant-images')
+            .upload(path, blob, { contentType: 'image/png', upsert: false });
+
+        if (upErr) throw new Error(upErr.message);
+
+        const { data: { publicUrl } } = sb.storage
+            .from('merchant-images')
+            .getPublicUrl(path);
+
+        // Save to poster_history
+        try {
+            await sb.from('poster_history').insert({
+                merchant_id:   mid,
+                image_url:     publicUrl,
+                product_name:  pState.product || '',
+                business_type: pState.biz || '',
+                style:         pState.style || '',
+                cta:           pState.cta || '',
+                prompt:        apiData?.scenePrompt || '',
+                storage_path:  path,
+            });
+        } catch (insertErr) {
+            console.warn('History insert failed:', insertErr.message);
+        }
+
+        return publicUrl;
+    } catch(e) {
+        console.warn('pSaveToCloud failed:', e.message);
+        return null;
+    }
+}
+
+// ── Save to gallery button ─────────────────────────────────
+async function pSaveToGallery() {
+    if (!pState.lastResult?.dataUrl) return;
+    showToastMsg('Inahifadhi... ⏳', 'info');
+    const url = await pSaveToCloud(pState.lastResult.dataUrl, pState.lastResult.apiData);
+    if (url) showToastMsg('✅ Imehifadhiwa kwenye Gallery yako!', 'success');
+    else     showToastMsg('Imeshindwa kuhifadhi — jaribu tena', 'warn');
+}
+
+// ── History ────────────────────────────────────────────────
+async function pLoadHistory() {
+    if (!pState.merchantId) return;
+    try {
+        const { data, error } = await sb.from('poster_history')
+            .select('*').eq('merchant_id', pState.merchantId)
+            .order('created_at', { ascending: false }).limit(20);
+        if (error || !data) return;
+
+        const el = document.getElementById('poster-hist-list');
+        if (!el) return;
+
+        if (data.length === 0) {
+            el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#9ca3af;"><div style="font-size:40px;margin-bottom:10px;">🖼️</div><div style="font-size:14px;font-weight:700;">Bado hakuna posters</div><div style="font-size:12px;margin-top:4px;">Unda poster yako ya kwanza!</div></div>';
+            return;
+        }
+
+        el.innerHTML = data.map(p => `
+            <div style="background:white;border-radius:14px;overflow:hidden;border:1.5px solid #f1f5f9;display:flex;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:10px;">
+                <img src="${p.image_url}" alt="" style="width:88px;height:88px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">
+                <div style="padding:12px;flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.product_name || 'Poster'}</div>
+                    <div style="font-size:10px;color:#9ca3af;margin-bottom:8px;">${new Date(p.created_at).toLocaleDateString('sw-TZ',{day:'numeric',month:'short',year:'numeric'})}</div>
+                    <div style="display:flex;gap:6px;">
+                        <a href="${p.image_url}" download="poster.png" style="background:rgba(37,208,120,0.1);border:1px solid #25d078;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;color:#16a34a;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">⬇️ Pakua</a>
+                        <a href="https://wa.me/?text=${encodeURIComponent('Poster yangu: ' + p.image_url)}" target="_blank" style="background:rgba(37,211,102,0.1);border:1px solid #25D366;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;color:#16a34a;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">💬 Share</a>
+                    </div>
+                </div>
+            </div>`).join('');
+    } catch(e) {}
+}
+
+function pShowHistory() {
+    document.getElementById('poster-result').style.display  = 'none';
+    document.getElementById('poster-form').style.display    = 'none';
+    document.getElementById('p-btn-wrap').style.display     = 'none';
+    document.getElementById('poster-history').style.display = 'block';
+    pLoadHistory();
+}
+function pHideHistory() {
+    document.getElementById('poster-history').style.display = 'none';
+    document.getElementById('poster-result').style.display  = 'block';
+}
+
+// ── Reset everything ──────────────────────────────────────
+function pReset() {
+    pState.photo = null; pState.photoB64 = null; pState.photoSkipped = false;
+    pState.biz = null; pState.product = ''; pState.price = ''; pState.style = 'vibrant'; pState.cta = null;
+
+    document.getElementById('poster-form').style.display    = 'block';
+    document.getElementById('poster-result').style.display  = 'none';
+    document.getElementById('poster-history').style.display = 'none';
+    document.getElementById('p-btn-wrap').style.display     = 'block';
+
+    ['p-product','p-price','p-custom-biz'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.value = ''; if (id === 'p-custom-biz') el.style.display = 'none'; }
+    });
+    document.querySelectorAll('.pchip,.p-style-opt,.pcta').forEach(el => el.classList.remove('on'));
+    pResetPhoto();
+
+    // Reset upload placeholder text
+    const ph = document.getElementById('p-upload-ph');
+    if (ph) ph.innerHTML = '<div style="font-size:2.2rem;margin-bottom:8px;">📷</div><div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:3px;">Gusa kupakia picha</div><div style="font-size:12px;color:#9ca3af;">JPG · PNG · hadi 10MB</div>';
+    const zone = document.getElementById('p-upload-zone');
+    if (zone) { zone.style.borderColor = ''; zone.style.background = ''; }
+    const sw = document.getElementById('p-skip-wrap');
+    if (sw) sw.style.display = 'block';
+
+    // Redraw blank canvas
+    const canvas = document.getElementById('poster-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    pDots();
+    const scroll = document.getElementById('poster-scroll');
+    if (scroll) scroll.scrollTop = 0;
+}
+</script>
+
 </body>
-</html>  
+</html>
