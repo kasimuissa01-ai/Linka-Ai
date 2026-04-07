@@ -1,10 +1,11 @@
-import { Router }                from 'express'
-import { createClient }          from '@supabase/supabase-js'
+import { Router } from 'express'
+import { createClient } from '@supabase/supabase-js'
 import { buildMarketingContent } from './marketingAgent.js'
 import { removeBackground, generateScene } from './imageGen.js'
 
 const router = Router()
 
+// Supabase Initialization
 const sb = createClient(
   process.env.SUPABASE_URL || '',
   process.env.SUPABASE_KEY || '',
@@ -12,6 +13,8 @@ const sb = createClient(
 )
 
 const FREE_DAILY_LIMIT = 20
+
+// ── UTILITIES ─────────────────────────────────────────────────
 
 function todayDate() {
   return new Date().toISOString().split('T')[0]
@@ -28,7 +31,6 @@ async function getDailyUsage(merchantId) {
     if (error || !data) return 0
     return data.count
   } catch(e) {
-    console.warn('[Marketing] getDailyUsage error:', e.message)
     return 0
   }
 }
@@ -36,7 +38,7 @@ async function getDailyUsage(merchantId) {
 async function incrementDailyUsage(merchantId) {
   try {
     const current = await getDailyUsage(merchantId)
-    const { error } = await sb.from('image_usage').upsert(
+    await sb.from('image_usage').upsert(
       {
         merchant_id: merchantId,
         date:        todayDate(),
@@ -45,37 +47,35 @@ async function incrementDailyUsage(merchantId) {
       },
       { onConflict: 'merchant_id,date' }
     )
-    if (error) console.warn('[Marketing] incrementDailyUsage error:', error.message)
   } catch(e) {
-    console.warn('[Marketing] incrementDailyUsage exception:', e.message)
+    console.warn('[Marketing] incrementDailyUsage error:', e.message)
   }
 }
 
-// ✅ FIX: uploadToStorage — no .catch(), uses try/catch
 async function uploadToStorage(base64, merchantId, suffix) {
   try {
-    const fileName   = `marketing/${merchantId}/${Date.now()}-${suffix}.png`
-    const imageBytes = Buffer.from(base64, 'base64')
-    const { error }  = await sb.storage
+    if (!base64) return null
+    const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, '')
+    const fileName = `marketing/${merchantId}/${Date.now()}-${suffix}.png`
+    const imageBytes = Buffer.from(cleanBase64, 'base64')
+    
+    const { error } = await sb.storage
       .from('merchant-images')
       .upload(fileName, imageBytes, { contentType: 'image/png', upsert: false })
-    if (error) {
-      console.warn('[Marketing] Upload failed:', error.message)
-      return null
-    }
+    
+    if (error) throw error
+    
     const { data } = sb.storage.from('merchant-images').getPublicUrl(fileName)
     return data?.publicUrl || null
   } catch (e) {
-    console.warn('[Marketing] Upload exception:', e.message)
+    console.warn('[Marketing] Upload failed:', e.message)
     return null
   }
 }
 
-// ✅ FIX: saveToHistory — completely non-blocking, never crashes pipeline
-// If image_history table doesn't exist yet, just logs and continues
 async function saveToHistory(merchantId, scenePrompt, sceneUrl, businessName, product) {
   try {
-    const { error } = await sb.from('image_history').insert({
+    await sb.from('image_history').insert({
       merchant_id:   merchantId,
       prompt:        scenePrompt,
       image_url:     sceneUrl,
@@ -83,20 +83,14 @@ async function saveToHistory(merchantId, scenePrompt, sceneUrl, businessName, pr
       product:       product,
       created_at:    new Date().toISOString(),
     })
-    if (error) {
-      // Table might not exist yet — log but NEVER crash the pipeline
-      console.warn('[Marketing] image_history insert failed:', error.message)
-      console.warn('[Marketing] → Create image_history table in Supabase if it does not exist')
-    }
   } catch(e) {
-    // Absolutely never propagate — this is purely optional tracking
-    console.warn('[Marketing] image_history exception:', e.message)
+    console.warn('[Marketing] History log failed (Optional table missing?)')
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/marketing/generate-poster  ← Main endpoint
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// POST /api/marketing/generate-poster
+// ─────────────────────────────────────────────────────────────
 router.post('/generate-poster', async (req, res) => {
   try {
     const {
@@ -104,186 +98,106 @@ router.post('/generate-poster', async (req, res) => {
       tone, targetAudience, cta, productImageBase64,
     } = req.body
 
-    if (!merchantId || !businessName || !businessType || !product) {
-      return res.status(400).json({
-        success: false,
-        error: 'Required: merchantId, businessName, businessType, product',
-      })
+    // 1. Validation
+    if (!merchantId || !businessName || !product) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' })
     }
 
+    // 2. Usage Check
     const usageToday = await getDailyUsage(merchantId)
     if (usageToday >= FREE_DAILY_LIMIT) {
       return res.status(429).json({
         success: false,
-        error:   `Daily limit reached (${FREE_DAILY_LIMIT}/day). Resets at midnight.`,
-        usage:   { used: usageToday, limit: FREE_DAILY_LIMIT, remaining: 0 },
+        error: `Daily limit of ${FREE_DAILY_LIMIT} reached.`,
+        usage: { used: usageToday, limit: FREE_DAILY_LIMIT, remaining: 0 }
       })
     }
 
-    console.log(`[Marketing] Poster pipeline: ${businessName} | ${merchantId}`)
+    console.log(`[Poster AI] Pipeline started for: ${businessName}`)
 
-    // ── Step 1: Groq generates structured content ──────────
-    console.log('[Marketing] Step 1: Groq...')
+    // 3. STEP 1: Groq AI - Professional Copy & Scene Prompt
     const content = await buildMarketingContent({
-      businessName, businessType, product, tone, targetAudience, cta,
+      businessName, businessType, product, tone, targetAudience, cta
     })
-    console.log('[Marketing] Content:', JSON.stringify(content))
 
-    // ── Step 2: Background removal (if product image provided) ──
-    let transparentProductBase64 = null
-    if (productImageBase64) {
-      console.log('[Marketing] Step 2: Removing background...')
+    // 4. STEP 2: Background Removal (RAM-Optimized Fallback)
+    let finalProductB64 = productImageBase64
+    
+    // Logic: If frontend already sent a PNG (transparent), don't waste RAM processing it again
+    const isAlreadyProcessed = productImageBase64?.includes('image/png')
+    
+    if (productImageBase64 && !isAlreadyProcessed) {
+      console.log('[Poster AI] Server-side BG removal fallback...')
       try {
-        const cleanBase64 = productImageBase64.replace(/^data:image\/\w+;base64,/, '')
-        transparentProductBase64 = await removeBackground(cleanBase64)
-        if (transparentProductBase64) {
-          console.log('[Marketing] Background removed!')
-        } else {
-          console.warn('[Marketing] BG removal returned null — using original image')
-          transparentProductBase64 = cleanBase64
-        }
+        const result = await removeBackground(productImageBase64)
+        if (result) finalProductB64 = `data:image/png;base64,${result}`
       } catch (e) {
-        console.warn('[Marketing] BG removal failed (continuing):', e.message)
-        transparentProductBase64 = productImageBase64.replace(/^data:image\/\w+;base64,/, '')
+        console.warn('[Poster AI] BG removal failed, using original.')
       }
     }
 
-    // ── Step 3: Generate background scene ──────────────────
-    console.log('[Marketing] Step 3: Generating scene...')
-    const sceneBase64 = await generateScene(content.scenePrompt)
-    console.log('[Marketing] Scene generated!')
+    // 5. STEP 3: FLUX - Professional Background Generation
+    const sceneB64 = await generateScene(content.scenePrompt)
+    const formattedSceneB64 = `data:image/png;base64,${sceneB64}`
 
-    // ── Step 4: Upload to Supabase Storage ─────────────────
-    console.log('[Marketing] Step 4: Uploading...')
+    // 6. STEP 4: Upload Assets in Parallel (Speed Improvement)
     const [sceneUrl, productUrl] = await Promise.all([
-      uploadToStorage(sceneBase64, merchantId, 'scene'),
-      transparentProductBase64
-        ? uploadToStorage(transparentProductBase64, merchantId, 'product')
-        : Promise.resolve(null),
+      uploadToStorage(sceneB64, merchantId, 'scene'),
+      finalProductB64 ? uploadToStorage(finalProductB64, merchantId, 'product') : Promise.resolve(null)
     ])
 
-    // ── Step 5: Track usage ─────────────────────────────────
+    // 7. STEP 5: Finalize
     await incrementDailyUsage(merchantId)
     const newUsage = usageToday + 1
 
-    // ── Step 6: Save to history — NON-BLOCKING, never crashes ──
-    // ✅ KEY FIX: saveToHistory is wrapped in its own try/catch internally
-    // If image_history table doesn't exist → logs warning, pipeline continues
-    saveToHistory(merchantId, content.scenePrompt, sceneUrl, businessName, product)
-      .catch(e => console.warn('[Marketing] saveToHistory unhandled:', e.message))
+    // Non-blocking history save
+    saveToHistory(merchantId, content.scenePrompt, sceneUrl, businessName, product).catch(() => {})
 
-    console.log(`[Marketing] Done! ${newUsage}/${FREE_DAILY_LIMIT} today`)
-
-    // ── Return all assets to frontend canvas ───────────────
-    return res.status(200).json({
+    // 8. Return to Frontend Canvas
+    return res.json({
       success: true,
       data: {
-        sceneBase64:   `data:image/png;base64,${sceneBase64}`,
+        sceneBase64: formattedSceneB64,
         sceneUrl,
-        productBase64: transparentProductBase64
-          ? `data:image/png;base64,${transparentProductBase64}`
-          : null,
+        productBase64: finalProductB64,
         productUrl,
         copy: {
-          headline:     content.headline,
-          subtext:      content.subtext,
-          cta:          content.cta,
-          businessName: businessName,
+          headline: content.headline,
+          subtext: content.subtext,
+          cta: content.cta,
+          businessName
         },
-        scenePrompt: content.scenePrompt,
+        canvasSettings: content.canvasSettings, // Crucial for frontend coloring
         usage: {
-          used:      newUsage,
-          limit:     FREE_DAILY_LIMIT,
-          remaining: FREE_DAILY_LIMIT - newUsage,
-        },
-      },
+          used: newUsage,
+          limit: FREE_DAILY_LIMIT,
+          remaining: FREE_DAILY_LIMIT - newUsage
+        }
+      }
     })
 
   } catch (error) {
-    console.error('[Marketing] Pipeline error:', error.message)
-    return res.status(500).json({
-      success: false,
-      error:   error.message || 'Poster generation failed.',
-    })
+    console.error('[Poster AI] Fatal Error:', error.message)
+    res.status(500).json({ success: false, error: 'Pipeline failed: ' + error.message })
   }
 })
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/marketing/generate-image  ← Legacy endpoint kept
-// ─────────────────────────────────────────────────────────────────────────────
-router.post('/generate-image', async (req, res) => {
-  try {
-    const { merchantId, businessName, businessType, product, tone, targetAudience } = req.body
-    if (!merchantId || !businessName || !businessType || !product) {
-      return res.status(400).json({ success: false, error: 'Required fields missing' })
-    }
-    const usageToday = await getDailyUsage(merchantId)
-    if (usageToday >= FREE_DAILY_LIMIT) {
-      return res.status(429).json({
-        success: false,
-        error: 'Daily limit reached',
-        usage: { used: usageToday, limit: FREE_DAILY_LIMIT, remaining: 0 },
-      })
-    }
-    const content   = await buildMarketingContent({ businessName, businessType, product, tone, targetAudience })
-    const base64    = await generateScene(content.scenePrompt)
-    const publicUrl = await uploadToStorage(base64, merchantId, 'scene')
-    await incrementDailyUsage(merchantId)
-    const newUsage = usageToday + 1
-    // ✅ FIX: non-blocking history save
-    saveToHistory(merchantId, content.scenePrompt, publicUrl, businessName, product)
-      .catch(() => {})
-    return res.status(200).json({
-      success: true,
-      data: {
-        imageUrl:    publicUrl,
-        imageBase64: `data:image/png;base64,${base64}`,
-        prompt:      content.scenePrompt,
-        copy:        content,
-        usage:       { used: newUsage, limit: FREE_DAILY_LIMIT, remaining: FREE_DAILY_LIMIT - newUsage },
-      },
-    })
-  } catch (error) {
-    console.error('[Marketing] Error:', error.message)
-    return res.status(500).json({ success: false, error: error.message })
-  }
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // GET /api/marketing/usage/:merchantId
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 router.get('/usage/:merchantId', async (req, res) => {
   try {
     const used = await getDailyUsage(req.params.merchantId)
-    return res.status(200).json({
+    res.json({
       success: true,
       data: {
         used,
-        limit:     FREE_DAILY_LIMIT,
-        remaining: Math.max(0, FREE_DAILY_LIMIT - used),
-        resetsAt:  'midnight UTC',
-      },
+        limit: FREE_DAILY_LIMIT,
+        remaining: Math.max(0, FREE_DAILY_LIMIT - used)
+      }
     })
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message })
-  }
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GET /api/marketing/history/:merchantId
-// ─────────────────────────────────────────────────────────────────────────────
-router.get('/history/:merchantId', async (req, res) => {
-  try {
-    const { data, error } = await sb
-      .from('image_history')
-      .select('*')
-      .eq('merchant_id', req.params.merchantId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-    if (error) throw error
-    return res.status(200).json({ success: true, data })
-  } catch (error) {
-    return res.status(500).json({ success: false, error: error.message })
+    res.status(500).json({ success: false, error: error.message })
   }
 })
 
