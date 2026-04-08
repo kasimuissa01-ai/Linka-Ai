@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { buildPhotoshootPrompt } from './marketingAgent.js';
 import { generatePhotoshoot } from './imageGen.js';
+import { createClient } from '@supabase/supabase-js';
 
 const router = Router();
+const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 router.post('/generate-poster', async (req, res) => {
   try {
@@ -10,16 +12,29 @@ router.post('/generate-poster', async (req, res) => {
 
     if (!productImageBase64) return res.status(400).json({ error: "Photo required" });
 
-    // 1. Ask Groq to design the photoshoot scene
+    // --- STEP 1: Upload to Supabase to get a Public URL ---
+    // AI models need a URL to "see" your image
+    const fileName = `temp/${merchantId}/${Date.now()}.jpg`;
+    const buffer = Buffer.from(productImageBase64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+    
+    const { error: upError } = await sb.storage
+      .from('merchant-images')
+      .upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
+
+    if (upError) throw upError;
+
+    const { data: { publicUrl } } = sb.storage.from('merchant-images').getPublicUrl(fileName);
+
+    // --- STEP 2: Get the Pro Prompt from Groq ---
     const aiPrompt = await buildPhotoshootPrompt({ businessType, product, style });
 
-    // 2. Ask Cloudflare to transform the image
-    const resultB64 = await generatePhotoshoot(productImageBase64, aiPrompt);
+    // --- STEP 3: Generate high-end image using Flux-1 (via Pollinations) ---
+    const finalImageUrl = await generatePhotoshoot(publicUrl, aiPrompt);
 
     res.json({
       success: true,
       data: {
-        photoshootUrl: `data:image/png;base64,${resultB64}`,
+        photoshootUrl: finalImageUrl,
         description: aiPrompt
       }
     });
