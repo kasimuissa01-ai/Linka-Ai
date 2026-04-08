@@ -1,46 +1,32 @@
-import { Router } from 'express'
-import { createClient } from '@supabase/supabase-js'
+import { Router } from 'express';
+import { buildPhotoshootPrompt } from './marketingAgent.js';
+import { generatePhotoshoot } from './imageGen.js';
 
-// ✅ FIXED: Relative imports for the same folder
-import { buildMarketingContent } from './marketingAgent.js'
-import { generateScene } from './imageGen.js'
+const router = Router();
 
-const router = Router()
-const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
-const FREE_DAILY_LIMIT = 20
-
-// POST /api/marketing/generate-poster
 router.post('/generate-poster', async (req, res) => {
   try {
-    const { merchantId, businessName, businessType, product, tone, cta, productImageBase64 } = req.body
+    const { merchantId, businessType, product, style, productImageBase64 } = req.body;
 
-    if (!merchantId || !businessName || !product) {
-      return res.status(400).json({ success: false, error: 'Missing data' })
-    }
+    if (!productImageBase64) return res.status(400).json({ error: "Photo required" });
 
-    // 1. Groq Content
-    const content = await buildMarketingContent({ businessName, businessType, product, tone, cta })
+    // 1. Ask Groq to design the photoshoot scene
+    const aiPrompt = await buildPhotoshootPrompt({ businessType, product, style });
 
-    // 2. RAM Optimization: If frontend already removed BG, finalProduct is just the input
-    // We assume frontend @imgly returns a PNG.
-    let finalProduct = productImageBase64; 
-
-    // 3. Generate Background
-    const sceneB64 = await generateScene(content.scenePrompt)
+    // 2. Ask Cloudflare to transform the image
+    const resultB64 = await generatePhotoshoot(productImageBase64, aiPrompt);
 
     res.json({
       success: true,
       data: {
-        copy: content,
-        canvasSettings: content.canvasSettings,
-        sceneBase64: `data:image/png;base64,${sceneB64}`,
-        productBase64: finalProduct
+        photoshootUrl: `data:image/png;base64,${resultB64}`,
+        description: aiPrompt
       }
-    })
+    });
   } catch (error) {
-    console.error('Poster Error:', error.message)
-    res.status(500).json({ success: false, error: error.message })
+    console.error('Photoshoot Error:', error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
-})
+});
 
-export default router
+export default router;
