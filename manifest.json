@@ -1,14 +1,14 @@
 {
-  "name": "Linka",
-  "short_name": "Linka",
-  "description": "share,learn,educate",
-  "start_url": "/index.html",
+  "name": "LinkaMarket",
+  "short_name": "LinkaMarket",
+  "description": "Unda duka lako la mtandaoni na mabango ya biashara kwa dakika moja.",
+  "start_url": "/index.html?utm_source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "theme_color": "#25d078",
   "orientation": "portrait-primary",
-  "gcm_sender_id": "412783922087",
+  "categories": ["business", "shopping", "productivity"],
   "icons": [
     {
       "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
@@ -23,34 +23,29 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["social", "education"],
-  "screenshots": [],
   "shortcuts": [
     {
-      "name": "Feed",
-      "short_name": "Feed",
-      "description": "View your feed",
-      "url": "/index.html#feed",
-      "icons": [
-        {
-          "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "name": "Ongeza Bidhaa",
+      "short_name": "Ongeza",
+      "description": "Ongeza bidhaa mpya dukani",
+      "url": "/index.html?step=add-product",
+      "icons": [{ "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png", "sizes": "192x192" }]
     },
     {
-      "name": "Discover",
-      "short_name": "Discover",
-      "description": "Discover new skills",
-      "url": "/index.html#home",
-      "icons": [
-        {
-          "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "name": "Unda Poster AI",
+      "short_name": "Poster AI",
+      "description": "Tengeneza bango la biashara",
+      "url": "/index.html#poster",
+      "icons": [{ "src": "https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://i.postimg.cc/qR4TC1NW/IMG-20250518-122228.png",
+      "type": "image/png",
+      "sizes": "1080x1920",
+      "form_factor": "narrow",
+      "label": "LinkaMarket Dashboard"
     }
   ]
 }
