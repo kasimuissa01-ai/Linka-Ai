@@ -1,178 +1,140 @@
-const APP_VERSION = '3.1.8';
+const APP_VERSION = '3.2.0'; // Updated version
 
-const CACHE_NAME = `linkamarket-static-v${APP_VERSION}`;
+const CACHE_STATIC = `linkamarket-static-v${APP_VERSION}`;
 const CACHE_RUNTIME = `linkamarket-runtime-v${APP_VERSION}`;
 const CACHE_IMAGES = `linkamarket-images-v${APP_VERSION}`;
+const CACHE_MODELS = `linkamarket-ai-models-v1`; // Dedicated AI Cache
 
 const STATIC_ASSETS = [
+  '/',
   '/index.html',
   '/manifest.json',
   '/sw.js',
-  'https://fonts.googleapis.com/icon?family=Material+Icons+Round',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
+  // Fonts CSS
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+  'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap'
 ];
 
-const MAX_IMAGES = 50;
+// Limits to prevent filling up user's phone storage
+const MAX_IMAGES = 100; 
 const MAX_RUNTIME = 50;
 
 self.addEventListener('install', event => {
-  console.log(`[SW] Installing LinkaMarket version ${APP_VERSION}`);
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_STATIC).then(cache => cache.addAll(STATIC_ASSETS))
   );
 });
 
 self.addEventListener('activate', event => {
-  console.log(`[SW] Activating LinkaMarket version ${APP_VERSION}`);
   event.waitUntil(
     Promise.all([
-      caches.keys().then(cacheNames =>
-        Promise.all(
-          cacheNames
-            .filter(name =>
-              name.startsWith('linkamarket-') &&
-              ![CACHE_NAME, CACHE_RUNTIME, CACHE_IMAGES].includes(name)
-            )
-            .map(name => caches.delete(name))
-        )
-      ),
+      // Clean up old caches
+      caches.keys().then(keys => Promise.all(
+        keys.map(key => {
+          if (key.startsWith('linkamarket-') && 
+              ![CACHE_STATIC, CACHE_RUNTIME, CACHE_IMAGES, CACHE_MODELS].includes(key)) {
+            return caches.delete(key);
+          }
+        })
+      )),
       self.clients.claim()
     ])
   );
 });
 
 self.addEventListener('fetch', event => {
-  const request = event.request;
+  const { request } = event;
   const url = new URL(request.url);
 
   if (request.method !== 'GET') return;
 
+  // 1. STRATEGY: AI MODELS & WASM (Aggressive Cache First)
+  // These are the ~80MB files from jsdelivr. Once we have them, we NEVER ask the network again.
+  if (url.hostname.includes('cdn.jsdelivr.net') || url.pathname.endsWith('.wasm') || url.pathname.endsWith('.bin')) {
+    event.respondWith(cacheFirstStrategy(request, CACHE_MODELS));
+    return;
+  }
+
+  // 2. STRATEGY: SUPABASE API (Network First)
+  // We want real-time prices/stock, but fallback to cache if the SME has no data.
   if (url.origin.includes('supabase.co')) {
-    event.respondWith(networkWithCacheFallbackStrategy(request));
+    event.respondWith(networkFirstStrategy(request, CACHE_RUNTIME));
     return;
   }
 
-  if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(cacheFirstWithNetworkFallback(request));
-    return;
-  }
-
-  if (request.headers.get('accept')?.includes('application/json')) {
-    event.respondWith(staleWhileRevalidateStrategy(request, CACHE_RUNTIME, MAX_RUNTIME));
-    return;
-  }
-
-  if (url.pathname.match(/\.(js|css|woff2?|ttf|eot|otf)$/)) {
-    event.respondWith(cacheFirstStrategy(request, CACHE_NAME));
-    return;
-  }
-
+  // 3. STRATEGY: IMAGES (Stale While Revalidate)
+  // Show the old product photo immediately, update in background if changed.
   if (request.headers.get('accept')?.includes('image')) {
     event.respondWith(staleWhileRevalidateStrategy(request, CACHE_IMAGES, MAX_IMAGES));
     return;
   }
 
-  event.respondWith(networkWithCacheFallbackStrategy(request));
+  // 4. STRATEGY: GOOGLE FONTS (Files)
+  if (url.hostname.includes('fonts.gstatic.com')) {
+    event.respondWith(cacheFirstStrategy(request, CACHE_STATIC));
+    return;
+  }
+
+  // 5. STRATEGY: Navigation (HTML)
+  // For Single Page Apps, always return index.html if offline
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Default: Stale While Revalidate for JS/CSS
+  event.respondWith(staleWhileRevalidateStrategy(request, CACHE_STATIC, MAX_RUNTIME));
 });
 
-async function cacheFirstWithNetworkFallback(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
+// ── STRATEGIES ──────────────────────────────────────────────────────────────
 
-  try {
-    const network = await fetch(request);
-    const cache = await caches.open(CACHE_RUNTIME);
-    cache.put(request, network.clone());
-    return network;
-  } catch {
-    return new Response('Offline', { status: 503 });
-  }
-}
-
+// Cache First: Used for AI Models and Fonts. Very fast.
 async function cacheFirstStrategy(request, cacheName) {
-  const cached = await caches.match(request);
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
   if (cached) return cached;
 
   const network = await fetch(request);
-  const cache = await caches.open(cacheName);
   cache.put(request, network.clone());
   return network;
 }
 
+// Network First: Used for Supabase (Real-time data).
+async function networkFirstStrategy(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const network = await fetch(request);
+    cache.put(request, network.clone());
+    return network;
+  } catch {
+    return cache.match(request);
+  }
+}
+
+// Stale While Revalidate: Best for UI assets and Product images.
 async function staleWhileRevalidateStrategy(request, cacheName, maxItems) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
 
   const fetchPromise = fetch(request).then(network => {
     cache.put(request, network.clone());
-    cleanCache(cacheName, maxItems);
+    limitCacheSize(cacheName, maxItems);
     return network;
-  });
+  }).catch(() => cached); // If network fails, return cached
 
   return cached || fetchPromise;
 }
 
-async function networkWithCacheFallbackStrategy(request) {
-  try {
-    const network = await fetch(request);
-    const cache = await caches.open(CACHE_RUNTIME);
-    cache.put(request, network.clone());
-    return network;
-  } catch {
-    return caches.match(request);
-  }
-}
-
-async function cleanCache(cacheName, maxItems) {
+// Helper to keep storage clean
+async function limitCacheSize(cacheName, maxItems) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys();
   if (keys.length > maxItems) {
-    cache.delete(keys[0]);
+    await cache.delete(keys[0]);
   }
 }
 
-/* ===============================
-   PUSH NOTIFICATIONS
-=============================== */
-
-self.addEventListener('push', event => {
-  if (!event.data) return;
-
-  const data = event.data.json();
-
-  const title = data.notification?.title || 'LinkaMarket';
-  const options = {
-    body: data.notification?.body || 'New update available',
-    icon: 'https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png',
-    badge: 'https://i.postimg.cc/CKj013xj/IMG-20250518-121907.png',
-    data: {
-      url: data.data?.url || '/'
-    }
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-
-  const url = event.notification.data?.url || '/';
-
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(clients => {
-        for (const client of clients) {
-          if (client.url === url && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        return self.clients.openWindow(url);
-      })
-  );
-});
-
-console.log(`LinkaMarket Service Worker v${APP_VERSION} loaded`);
+// ... (Keep your existing Push Notification listeners here) ...
