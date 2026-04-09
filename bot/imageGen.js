@@ -1,7 +1,13 @@
 export async function generatePhotoshoot(originalImageUrl, photoshootPrompt) {
-    const finalPrompt = `A professional commercial photoshoot, ${photoshootPrompt}. The product must look exactly like the one in this reference image: ${originalImageUrl}. high-end photography, sharp focus, 8k, highly detailed textures, masterpiece.`;
-    const encodedPrompt = encodeURIComponent(finalPrompt);
+    // We add specific quality tokens to the end of every prompt
+    const qualityBoost = "commercial graphic design, high-quality typography, sharp text rendering, 8k, masterpiece, fashion photography";
+    
+    // If an image is provided, we tell the AI to use it as a reference
+    const reference = originalImageUrl ? `Inspired by the style and item in this image: ${originalImageUrl}.` : "";
+    
+    const finalPrompt = encodeURIComponent(`${reference} ${photoshootPrompt}, ${qualityBoost}`);
     const seed = Math.floor(Math.random() * 1000000);
     
-    return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}`;
+    // We use the image subdomain for direct JPG delivery
+    return `https://image.pollinations.ai/prompt/${finalPrompt}?width=1024&height=1024&model=flux&nologo=true&seed=${seed}`;
 }
