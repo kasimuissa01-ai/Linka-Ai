@@ -2,24 +2,34 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export async function buildPhotoshootPrompt(merchantInfo) {
-  const { businessType, product, style } = merchantInfo;
+  const { businessType, product, style, businessName } = merchantInfo;
 
-  const systemPrompt = `You are a world-class fashion photographer.
-  
-  Your job: Write a short, powerful visual description of a professional commercial photoshoot.
-  
-  STYLE GUIDE:
-  - If style is "Luxury": Describe a high-end studio with marble floors and soft golden lighting.
-  - If style is "Natural": Describe a sun-drenched outdoor garden or Balinese villa.
-  - If style is "Bold": Describe a vibrant urban street in Dar es Salaam with neon lights.
-  
-  MANDATORY:
-  - A professional African model is wearing/presenting the product.
-  - Lighting must be "cinematic" and "commercial studio quality".
-  - Mention "extremely detailed textures" and "high fashion magazine style".
-  - DO NOT include any text or talking. Output only the description.`;
+  const systemPrompt = `You are a Senior Creative Director for a luxury African advertising agency.
+Your job is to write a highly detailed English prompt for an AI Image Generator (Flux-1) to create a FINISHED social media marketing poster.
 
-  const userMessage = `Product: ${product}. Business: ${businessType}. Style: ${style}.`;
+STRICT DESIGN RULES:
+1. THEME: Use high-end commercial photography lighting.
+2. TEXT RENDERING: You must instruct the AI to include specific SWAHILI text. Swahili text is more relatable for Tanzanian SMEs.
+3. COMPOSITION: Describe a square 1:1 layout. The product should be central and heroic.
+4. MODEL: Use professional, attractive African models that represent the target merchant's audience.
+5. NO HALLUCINATION: Ensure the description of the product stays true to: ${product}.
+
+LOCALIZATION (SWAHILI FOCUS):
+- Use phrases like "OFA KABAMBE" (Great Offer), "PUNGUZO" (Discount), "MZIGO MPYA" (New Arrival), or "BEI POA" (Good Price).
+- Always include the Business Name: "${businessName}" at the top or bottom as a logo/text.
+
+STYLE GUIDE:
+- Luxury: High-fashion studio, gold/black accents, soft bokeh.
+- Natural: Outdoor tropical sunlight, Balinese or Swahili coastal vibes, organic textures.
+- Bold: Vibrant "Kariakoo" street style, neon lights, high energy.
+
+OUTPUT: Only the visual prompt paragraph. No conversational filler.`;
+
+  const userMessage = `Create a professional poster for:
+  Business: ${businessName} (${businessType}). 
+  Product: ${product}. 
+  Style: ${style}. 
+  Swahili Phrase to include: Choose the most fitting one (e.g., MZIGO MPYA or OFA KABAMBE).`;
 
   const response = await fetch(GROQ_URL, {
     method: 'POST',
@@ -27,7 +37,7 @@ export async function buildPhotoshootPrompt(merchantInfo) {
     body: JSON.stringify({
       model: 'llama-3.1-8b-instant',
       messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMessage }],
-      temperature: 0.8,
+      temperature: 0.7,
     }),
   });
 
