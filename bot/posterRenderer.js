@@ -1,5 +1,4 @@
 import sharp from 'sharp';
-import fetch from 'node-fetch';
 import { TEMPLATES, FONT_REGISTRY } from '../templates/index.js';
 
 // ─── Font cache: loaded once, stored as base64 ───────────────────────────────
