@@ -1,12 +1,10 @@
-import { normalizeMerchant, STYLE_TO_TEMPLATE } from '../lib/normalize.js';
-import { buildPhotoshootPrompt } from '../lib/marketingAgent.js';
-import { renderPoster } from '../lib/posterRenderer.js';
+import { normalizeMerchant, STYLE_TO_TEMPLATE } from './normalize.js';
+import { buildPhotoshootPrompt } from './marketingAgent.js';
+import { renderPoster } from './posterRenderer.js';
 
 // ─── Style → template fallback chain ─────────────────────────────────────────
 function resolveTemplate(data) {
-  // Primary: from normalizeMerchant
   if (STYLE_TO_TEMPLATE[data.style]) return STYLE_TO_TEMPLATE[data.style];
-  // Ultimate fallback
   return 'kariakoo_bold';
 }
 
@@ -17,10 +15,8 @@ function validateRequest(body) {
     errors.push('Request body must be JSON');
     return errors;
   }
-  // At minimum need a product or bidhaa
   const hasProduct = body.product || body.bidhaa || body.item;
   if (!hasProduct) errors.push('Missing required field: product (or bidhaa)');
-
   return errors;
 }
 
@@ -29,13 +25,11 @@ export async function createPoster(req, res) {
   const startTime = Date.now();
 
   try {
-    // 1. Validate
     const errors = validateRequest(req.body);
     if (errors.length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    // 2. Normalize messy Swahili/mixed input
     const data = normalizeMerchant(req.body);
     console.log(`[posterController] Normalized data:`, {
       businessName: data.businessName,
@@ -46,27 +40,22 @@ export async function createPoster(req, res) {
       discount: data.discount
     });
 
-    // 3. Resolve template
     const templateId = resolveTemplate(data);
 
-    // 4. Build AI image prompt via Groq
     let prompt;
     try {
       prompt = await buildPhotoshootPrompt(data);
       console.log(`[posterController] Prompt built (${prompt.length} chars)`);
     } catch (err) {
       console.error('[posterController] Groq prompt failed, using fallback:', err.message);
-      // Graceful fallback prompt — still safe to send to Pollinations
-      prompt = `Professional commercial product photo of ${data.product}, ${data.style} style, Tanzanian setting, no text, no watermark, 8k quality, dramatic lighting, dark bottom third`;
+      prompt = `Professional commercial product photo of ${data.product}, ${data.style} style, Tanzanian setting, no text, no watermark, dramatic lighting`;
     }
 
-    // 5. Render poster
     const pngBuffer = await renderPoster({ prompt, templateId, data });
 
     const elapsed = Date.now() - startTime;
     console.log(`[posterController] Poster rendered in ${elapsed}ms`);
 
-    // 6. Return PNG
     res
       .set('Content-Type', 'image/png')
       .set('X-Render-Ms', String(elapsed))
