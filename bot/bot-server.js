@@ -2,10 +2,10 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import pino from 'pino'
-import { normalizeMerchant } from './lib/normalize.js'
-import { buildPhotoshootPrompt } from './lib/marketingAgent.js'
-import { renderPoster, preloadFonts } from './lib/posterRenderer.js'   // ✅ fixed: was loadFonts
-import { TEMPLATES } from './templates/index.js'
+import { normalizeMerchant } from './normalize.js'
+import { buildPhotoshootPrompt } from './marketingAgent.js'
+import { renderPoster, preloadFonts } from './posterRenderer.js'
+import { TEMPLATES } from './index.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
