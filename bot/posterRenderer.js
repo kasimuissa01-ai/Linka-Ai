@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { TEMPLATES, FONT_REGISTRY } from '../templates/index.js';
+import { TEMPLATES, FONT_REGISTRY } from './index.js';
 
 // ─── Font cache: loaded once, stored as base64 ───────────────────────────────
 const fontCache = new Map();
