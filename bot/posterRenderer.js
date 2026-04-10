@@ -11,8 +11,8 @@ async function loadFont(url, family, weight) {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Font fetch failed: ${url}`);
-    const buf = await res.buffer();
-    const b64 = buf.toString('base64');
+    const arrayBuf = await res.arrayBuffer();
+    const b64 = Buffer.from(arrayBuf).toString('base64');
     fontCache.set(key, b64);
     return b64;
   } catch (err) {
@@ -60,7 +60,6 @@ function shouldRenderLayer(layer, data) {
   if (!layer.condition) return true;
   const val = data[layer.condition];
   const interpolated = interpolate(layer.text, data);
-  // Skip if condition key is missing/null OR interpolated text is empty
   return val && interpolated.trim() !== '';
 }
 
@@ -81,10 +80,8 @@ function buildSVG(template, data) {
 
   let svg = `<svg width="${canvas.w}" height="${canvas.h}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`;
 
-  // Embed fonts
   svg += `<defs><style>${fontCSS}</style>`;
 
-  // Define gradients
   let gradientIndex = 0;
   const gradientIds = [];
   for (const ov of overlays) {
@@ -97,7 +94,7 @@ function buildSVG(template, data) {
         const rad = (angle * Math.PI) / 180;
         const x2 = 50 + 50 * Math.sin(rad);
         const y2 = 50 + 50 * Math.cos(rad);
-        svg += `<linearGradient id="${id}" x1="50%" y1="${100-y2}%" x2="${x2}%" y2="${y2}%">
+        svg += `<linearGradient id="${id}" x1="50%" y1="${100 - y2}%" x2="${x2}%" y2="${y2}%">
           <stop offset="0%" stop-color="${g.from}"/>
           <stop offset="100%" stop-color="${g.to}"/>
         </linearGradient>`;
@@ -109,7 +106,6 @@ function buildSVG(template, data) {
 
   svg += `</defs>`;
 
-  // Render overlays
   let gIdx = 0;
   for (const ov of overlays) {
     switch (ov.type) {
@@ -128,7 +124,6 @@ function buildSVG(template, data) {
     gIdx++;
   }
 
-  // Render layers
   for (const layer of layers) {
     if (!shouldRenderLayer(layer, data)) continue;
     const text = escapeXML(interpolate(layer.text || '', data));
@@ -165,7 +160,6 @@ function buildSVG(template, data) {
 
       case 'badge': {
         const badgeText = escapeXML(interpolate(layer.text, data).toUpperCase());
-        // Multi-line badge support: split on newline
         svg += `<circle cx="${layer.cx}" cy="${layer.cy}" r="${layer.r}" fill="${layer.bg}"/>`;
         svg += `<text
           x="${layer.cx}" y="${layer.cy + layer.size * 0.35}"
@@ -188,9 +182,10 @@ function buildSVG(template, data) {
 async function fetchImageWithRetry(url, retries = 2) {
   for (let i = 0; i <= retries; i++) {
     try {
-      const res = await fetch(url, { timeout: 30000 });
+      const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.buffer();
+      const arrayBuf = await res.arrayBuffer();
+      return Buffer.from(arrayBuf);
     } catch (err) {
       if (i === retries) throw err;
       console.warn(`[posterRenderer] Image fetch retry ${i + 1}...`);
@@ -206,7 +201,6 @@ export async function renderPoster({ prompt, templateId, data }) {
 
   const { w, h } = template.canvas;
 
-  // Build Pollinations URL — gptimage model for best quality
   const negativePrompt = encodeURIComponent('text, letters, words, watermark, logo, sign, banner, typography');
   const encodedPrompt = encodeURIComponent(prompt);
   const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=gptimage&width=${w}&height=${h}&nologo=true&negative=${negativePrompt}&seed=${Date.now()}`;
@@ -217,17 +211,14 @@ export async function renderPoster({ prompt, templateId, data }) {
   try {
     baseBuffer = await fetchImageWithRetry(imgUrl);
   } catch (err) {
-    console.error('[posterRenderer] Image fetch failed:', err.message);
-    // Fallback: generate a solid dark background
+    console.error('[posterRenderer] Image fetch failed, using dark fallback:', err.message);
     baseBuffer = await sharp({
       create: { width: w, height: h, channels: 4, background: { r: 20, g: 20, b: 20, alpha: 1 } }
     }).png().toBuffer();
   }
 
-  // Build SVG overlay
   const svgOverlay = buildSVG(template, data);
 
-  // Composite: base image + SVG overlay
   const result = await sharp(baseBuffer)
     .resize(w, h, { fit: 'cover', position: 'centre' })
     .composite([{ input: svgOverlay, top: 0, left: 0 }])
