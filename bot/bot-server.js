@@ -28,11 +28,12 @@ const logger = {
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors())
-app.use(express.json({ limit: '2mb' }))
-app.use(express.urlencoded({ extended: true, limit: '2mb' }))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
-// ─── POST /api/create-poster ──────────────────────────────────────────────────
-app.post('/api/create-poster', async (req, res) => {
+// ─── POST /api/marketing/generate-poster ─────────────────────────────────────
+// Matches what the frontend calls. Returns JSON with sceneUrl (base64 PNG).
+app.post('/api/marketing/generate-poster', async (req, res) => {
   const start = Date.now()
 
   try {
@@ -49,15 +50,23 @@ app.post('/api/create-poster', async (req, res) => {
     const duration = Date.now() - start
     logger.info(`✅ Poster done in ${duration}ms for "${merchantData.businessName}"`)
 
-    res
-      .set('Content-Type', 'image/png')
-      .set('X-Generation-Time', String(duration))
-      .set('X-Template-Id', templateId)
-      .send(posterBuffer)
+    // Return JSON with base64 image — matches what frontend expects
+    const base64 = posterBuffer.toString('base64')
+    res.json({
+      success: true,
+      data: {
+        photoshootUrl: `data:image/png;base64,${base64}`,
+        sceneUrl:      `data:image/png;base64,${base64}`,
+        scenePrompt:   prompt,
+        templateId,
+        usage: null
+      }
+    })
 
   } catch (err) {
     logger.error('Poster generation failed:', err.message)
     res.status(500).json({
+      success: false,
       error: 'Tumeshindwa kutengeneza tangazo. Jaribu tena.',
       details: process.env.NODE_ENV !== 'production' ? err.message : undefined
     })
