@@ -1,404 +1,139 @@
 /**
- * LinkaMarket Poster Templates
+ * LinkaMarket Poster Templates — v3
+ * Inspired by real brand references: clean studio, product hero, text top/bottom
  * Canvas: 1080×1350 (4:5 Instagram Portrait)
- *
- * Layer types:
- *   headline   — large display text
- *   sub        — supporting text line
- *   business   — business name (always bottom)
- *   badge      — circular badge (NEW, SALE, etc.)
- *   price      — price display block
- *   divider    — horizontal rule
- *
- * Template variables (replaced at render):
- *   {{offerPhrase}}   — e.g. OFA KABAMBE
- *   {{businessName}}  — merchant name
- *   {{discount}}      — numeric, e.g. 50
- *   {{price}}         — formatted, e.g. TZS 25,000
- *   {{tagline}}       — optional short phrase
  */
 
 export const TEMPLATES = {
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // 1. KARIAKOO BOLD — street energy, high contrast, vibrant
-  // ──────────────────────────────────────────────────────────────────────────
+  // ── 1. STUDIO BOLD ───────────────────────────────────────────────────────────
+  // Ref: Image 5 (Feature Labor Day Sale) — text top, product centre, info bottom
+  // Clean grey studio, big headline at top, discount info at bottom strip
   kariakoo_bold: {
-    name: 'Kariakoo Bold',
+    name: 'Studio Bold',
     canvas: { w: 1080, h: 1350 },
-    background: null, // uses AI image
 
     overlays: [
-      // Full-bottom gradient scrim
-      {
-        type: 'gradient',
-        x: 0, y: 600, w: 1080, h: 750,
-        gradient: { type: 'linear', from: 'rgba(0,0,0,0)', to: 'rgba(0,0,0,0.88)', angle: 180 }
-      },
-      // Accent stripe
+      // Top white strip for headline
       {
         type: 'rect',
-        x: 0, y: 1260, w: 1080, h: 8,
-        fill: '#FF3B30'
+        x: 0, y: 0, w: 1080, h: 220,
+        fill: '#FFFFFF'
+      },
+      // Bottom white strip for price/business
+      {
+        type: 'rect',
+        x: 0, y: 1080, w: 1080, h: 270,
+        fill: '#FFFFFF'
+      },
+      // Thin top border accent
+      {
+        type: 'rect',
+        x: 0, y: 0, w: 1080, h: 6,
+        fill: '#111111'
+      },
+      // Thin bottom border accent
+      {
+        type: 'rect',
+        x: 0, y: 1344, w: 1080, h: 6,
+        fill: '#111111'
       }
     ],
 
     layers: [
-      {
-        type: 'headline',
-        text: '{{offerPhrase}}',
-        x: 540, y: 960,
-        size: 178,
-        font: 'Anton',
-        color: '#FFFFFF',
-        anchor: 'middle',
-        letterSpacing: 4
-      },
-      {
-        type: 'sub',
-        text: 'Punguzo hadi {{discount}}%',
-        x: 540, y: 1050,
-        size: 62,
-        font: 'Poppins',
-        weight: '700',
-        color: '#FF3B30',
-        anchor: 'middle'
-      },
-      {
-        type: 'divider',
-        x: 340, y: 1090,
-        w: 400, h: 3,
-        fill: 'rgba(255,255,255,0.4)'
-      },
-      {
-        type: 'price',
-        text: '{{price}}',
-        x: 540, y: 1170,
-        size: 52,
-        font: 'Poppins',
-        weight: '600',
-        color: '#FFD700',
-        anchor: 'middle',
-        condition: 'price' // only render if {{price}} exists
-      },
+      // Business name — top center, small caps
       {
         type: 'business',
         text: '{{businessName}}',
-        x: 540, y: 1310,
-        size: 38,
-        font: 'Poppins',
-        weight: '400',
-        color: 'rgba(255,255,255,0.85)',
-        anchor: 'middle',
-        uppercase: true,
-        letterSpacing: 6
-      }
-    ]
-  },
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // 2. LUXURY GOLD — fashion-forward, aspirational, dark elegance
-  // ──────────────────────────────────────────────────────────────────────────
-  luxury_gold: {
-    name: 'Luxury Gold',
-    canvas: { w: 1080, h: 1350 },
-    background: null,
-
-    overlays: [
-      // Bottom dark panel
-      {
-        type: 'rect',
-        x: 0, y: 880, w: 1080, h: 470,
-        fill: 'rgba(8,6,6,0.82)'
-      },
-      // Gold top line accent on panel
-      {
-        type: 'rect',
-        x: 80, y: 880, w: 920, h: 2,
-        fill: '#D4AF37'
-      },
-      // Gold bottom line accent
-      {
-        type: 'rect',
-        x: 80, y: 1348, w: 920, h: 2,
-        fill: '#D4AF37'
-      }
-    ],
-
-    layers: [
-      // Top corner wordmark
-      {
-        type: 'business',
-        text: '{{businessName}}',
-        x: 80, y: 80,
-        size: 32,
-        font: 'Montserrat',
-        weight: '700',
-        color: '#D4AF37',
-        anchor: 'start',
-        uppercase: true,
-        letterSpacing: 8
-      },
-      // Decorative em dash above headline
-      {
-        type: 'sub',
-        text: '— — —',
-        x: 540, y: 970,
+        x: 540, y: 60,
         size: 28,
         font: 'Montserrat',
-        weight: '300',
-        color: '#D4AF37',
-        anchor: 'middle',
-        letterSpacing: 12
-      },
-      {
-        type: 'headline',
-        text: '{{offerPhrase}}',
-        x: 540, y: 1080,
-        size: 130,
-        font: 'Playfair Display',
         weight: '700',
-        color: '#D4AF37',
+        color: '#111111',
         anchor: 'middle',
-        italic: true
-      },
-      {
-        type: 'sub',
-        text: 'Exclusive • {{discount}}% OFF',
-        x: 540, y: 1150,
-        size: 36,
-        font: 'Montserrat',
-        weight: '300',
-        color: '#FFFFFF',
-        anchor: 'middle',
-        letterSpacing: 4
-      },
-      {
-        type: 'price',
-        text: '{{price}}',
-        x: 540, y: 1220,
-        size: 44,
-        font: 'Montserrat',
-        weight: '600',
-        color: '#D4AF37',
-        anchor: 'middle',
-        condition: 'price'
-      },
-      {
-        type: 'sub',
-        text: 'linkamarket.co.tz',
-        x: 540, y: 1318,
-        size: 26,
-        font: 'Montserrat',
-        weight: '300',
-        color: 'rgba(212,175,55,0.6)',
-        anchor: 'middle',
-        letterSpacing: 2
-      }
-    ]
-  },
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // 3. COASTAL NATURAL — Swahili coast warmth, organic, lifestyle feel
-  // ──────────────────────────────────────────────────────────────────────────
-  coastal_natural: {
-    name: 'Swahili Coast',
-    canvas: { w: 1080, h: 1350 },
-    background: null,
-
-    overlays: [
-      // Soft vignette bottom
-      {
-        type: 'gradient',
-        x: 0, y: 750, w: 1080, h: 600,
-        gradient: { type: 'linear', from: 'rgba(0,0,0,0)', to: 'rgba(20,14,10,0.75)', angle: 180 }
-      },
-      // Semi-transparent pill behind headline
-      {
-        type: 'rounded-rect',
-        x: 120, y: 1040, w: 840, h: 160,
-        fill: 'rgba(255,255,255,0.12)',
-        rx: 80
-      }
-    ],
-
-    layers: [
-      {
-        type: 'business',
-        text: '{{businessName}}',
-        x: 80, y: 80,
-        size: 34,
-        font: 'Poppins',
-        weight: '600',
-        color: '#FFFFFF',
-        anchor: 'start',
-        shadow: true
-      },
-      {
-        type: 'headline',
-        text: '{{offerPhrase}}',
-        x: 540, y: 1140,
-        size: 118,
-        font: 'Amatic SC',
-        weight: '700',
-        color: '#FFFFFF',
-        anchor: 'middle',
-        shadow: true
-      },
-      {
-        type: 'sub',
-        text: 'Punguzo {{discount}}%  •  Haraka Haraka!',
-        x: 540, y: 1215,
-        size: 40,
-        font: 'Poppins',
-        weight: '400',
-        color: 'rgba(255,220,100,0.9)',
-        anchor: 'middle',
-        shadow: true
-      },
-      {
-        type: 'price',
-        text: '{{price}}',
-        x: 540, y: 1290,
-        size: 46,
-        font: 'Poppins',
-        weight: '700',
-        color: '#FFFFFF',
-        anchor: 'middle',
-        shadow: true,
-        condition: 'price'
-      }
-    ]
-  },
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // 4. SALE BLASTER — flash sale energy, high visibility, WhatsApp share
-  // ──────────────────────────────────────────────────────────────────────────
-  sale_blaster: {
-    name: 'Flash Sale',
-    canvas: { w: 1080, h: 1350 },
-    background: null,
-
-    overlays: [
-      // White card at bottom
-      {
-        type: 'rounded-rect',
-        x: 40, y: 700, w: 1000, h: 590,
-        fill: '#FFFFFF',
-        rx: 32
-      },
-      // Red accent bar at very top of card
-      {
-        type: 'rect',
-        x: 40, y: 700, w: 1000, h: 14,
-        fill: '#FF0000'
-      },
-      // Red accent bar at bottom of card
-      {
-        type: 'rect',
-        x: 40, y: 1276, w: 1000, h: 14,
-        fill: '#FF0000'
-      }
-    ],
-
-    layers: [
-      // Badge top-left
-      {
-        type: 'badge',
-        text: 'SALE',
-        cx: 148, cy: 148, r: 100,
-        bg: '#FF0000',
-        color: '#FFFFFF',
-        font: 'Anton',
-        size: 44
-      },
-      // Percent badge top-right
-      {
-        type: 'badge',
-        text: '-{{discount}}%',
-        cx: 932, cy: 148, r: 100,
-        bg: '#FF0000',
-        color: '#FFFFFF',
-        font: 'Anton',
-        size: 38
-      },
-      {
-        type: 'headline',
-        text: 'FLASH',
-        x: 540, y: 870,
-        size: 200,
-        font: 'Anton',
-        weight: '400',
-        color: '#FF0000',
-        anchor: 'middle',
+        uppercase: true,
         letterSpacing: 10
       },
+      // Main offer headline
       {
         type: 'headline',
         text: '{{offerPhrase}}',
-        x: 540, y: 990,
-        size: 68,
-        font: 'Poppins',
+        x: 540, y: 175,
+        size: 108,
+        font: 'Anton',
+        weight: '400',
+        color: '#111111',
+        anchor: 'middle',
+        letterSpacing: 2
+      },
+      // Discount line
+      {
+        type: 'sub',
+        text: 'Punguzo hadi {{discount}}% OFF',
+        x: 540, y: 1160,
+        size: 52,
+        font: 'Montserrat',
         weight: '800',
         color: '#111111',
         anchor: 'middle'
       },
+      // Divider
       {
         type: 'divider',
-        x: 200, y: 1020, w: 680, h: 2,
+        x: 200, y: 1195, w: 680, h: 2,
         fill: '#EEEEEE'
       },
+      // Price
       {
         type: 'price',
         text: '{{price}}',
-        x: 540, y: 1100,
-        size: 58,
-        font: 'Poppins',
-        weight: '700',
-        color: '#FF0000',
+        x: 540, y: 1260,
+        size: 44,
+        font: 'Montserrat',
+        weight: '600',
+        color: '#111111',
         anchor: 'middle',
         condition: 'price'
       },
+      // Tagline
       {
-        type: 'business',
-        text: '{{businessName}}',
-        x: 540, y: 1230,
-        size: 40,
-        font: 'Poppins',
-        weight: '600',
-        color: '#333333',
+        type: 'sub',
+        text: 'linkamarket.co.tz',
+        x: 540, y: 1318,
+        size: 24,
+        font: 'Montserrat',
+        weight: '300',
+        color: '#999999',
         anchor: 'middle',
-        uppercase: true,
-        letterSpacing: 4
+        letterSpacing: 3
       }
     ]
   },
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // 5. MINIMAL CHIC — clean, modern, premium retail feel
-  // ──────────────────────────────────────────────────────────────────────────
-  minimal_chic: {
-    name: 'Minimal Chic',
+  // ── 2. LUXURY GOLD ───────────────────────────────────────────────────────────
+  // Ref: Image 1 (SALE pink studio) — product bleeds full, text overlays bottom
+  // Soft pastel background from AI, large SALE word overlaid on product
+  luxury_gold: {
+    name: 'Luxury Gold',
     canvas: { w: 1080, h: 1350 },
-    background: null,
 
     overlays: [
-      // Clean white bottom panel
+      // Gradient scrim — bottom half only, subtle
       {
-        type: 'rect',
-        x: 0, y: 1020, w: 1080, h: 330,
-        fill: 'rgba(255,255,255,0.96)'
+        type: 'gradient',
+        x: 0, y: 600, w: 1080, h: 750,
+        gradient: { type: 'linear', from: 'rgba(0,0,0,0)', to: 'rgba(0,0,0,0.72)', angle: 180 }
       },
-      // Single thin black top border on panel
+      // Gold accent line
       {
         type: 'rect',
-        x: 60, y: 1020, w: 960, h: 1,
-        fill: 'rgba(0,0,0,0.15)'
+        x: 80, y: 1340, w: 920, h: 4,
+        fill: '#D4AF37'
       }
     ],
 
     layers: [
-      // Business name top-left (small wordmark style)
+      // Business name top-left
       {
         type: 'business',
         text: '{{businessName}}',
@@ -409,84 +144,316 @@ export const TEMPLATES = {
         color: '#FFFFFF',
         anchor: 'start',
         uppercase: true,
-        letterSpacing: 6,
+        letterSpacing: 8,
         shadow: true
       },
+      // Big SALE word overlaid on product — like reference image 1
       {
         type: 'headline',
         text: '{{offerPhrase}}',
-        x: 60, y: 1130,
-        size: 88,
-        font: 'Montserrat',
-        weight: '900',
-        color: '#111111',
-        anchor: 'start',
-        uppercase: true
+        x: 540, y: 1000,
+        size: 160,
+        font: 'Anton',
+        weight: '400',
+        color: '#FFFFFF',
+        anchor: 'middle',
+        shadow: true
       },
+      // Discount sub
       {
         type: 'sub',
-        text: '{{discount}}% OFF  ·  {{tagline}}',
-        x: 60, y: 1195,
-        size: 34,
+        text: 'Hadi {{discount}}% OFF',
+        x: 540, y: 1090,
+        size: 54,
+        font: 'Montserrat',
+        weight: '700',
+        color: '#D4AF37',
+        anchor: 'middle',
+        shadow: true
+      },
+      // Price
+      {
+        type: 'price',
+        text: '{{price}}',
+        x: 540, y: 1180,
+        size: 48,
+        font: 'Montserrat',
+        weight: '600',
+        color: '#FFFFFF',
+        anchor: 'middle',
+        shadow: true,
+        condition: 'price'
+      },
+      // Tagline bottom
+      {
+        type: 'sub',
+        text: 'linkamarket.co.tz',
+        x: 540, y: 1310,
+        size: 26,
+        font: 'Montserrat',
+        weight: '300',
+        color: 'rgba(212,175,55,0.8)',
+        anchor: 'middle',
+        letterSpacing: 3
+      }
+    ]
+  },
+
+  // ── 3. COASTAL NATURAL ───────────────────────────────────────────────────────
+  // Ref: Image 2 (Ramadan Sale) — split layout, big text top-left, image bottom-right
+  // White top half with big text, product image dominates bottom
+  coastal_natural: {
+    name: 'Swahili Coast',
+    canvas: { w: 1080, h: 1350 },
+
+    overlays: [
+      // White header block — top 35%
+      {
+        type: 'rect',
+        x: 0, y: 0, w: 1080, h: 460,
+        fill: '#FFFFFF'
+      },
+      // Accent colour block — right side middle (like Ramadan Sale ref)
+      {
+        type: 'rect',
+        x: 600, y: 380, w: 480, h: 300,
+        fill: '#F5EFE6'
+      },
+      // Bottom info strip
+      {
+        type: 'rect',
+        x: 0, y: 1220, w: 1080, h: 130,
+        fill: 'rgba(0,0,0,0.55)'
+      }
+    ],
+
+    layers: [
+      // Large offer text top-left — like "RAMADAN SALE"
+      {
+        type: 'headline',
+        text: '{{offerPhrase}}',
+        x: 60, y: 220,
+        size: 130,
+        font: 'Anton',
+        weight: '400',
+        color: '#1a1a1a',
+        anchor: 'start'
+      },
+      // Sub — second line
+      {
+        type: 'sub',
+        text: 'Punguzo {{discount}}%',
+        x: 60, y: 370,
+        size: 52,
         font: 'Montserrat',
         weight: '300',
         color: '#555555',
         anchor: 'start',
-        letterSpacing: 1
+        letterSpacing: 2
       },
+      // Price bottom strip
       {
         type: 'price',
         text: '{{price}}',
-        x: 60, y: 1270,
-        size: 42,
+        x: 540, y: 1290,
+        size: 44,
         font: 'Montserrat',
-        weight: '600',
-        color: '#000000',
-        anchor: 'start',
+        weight: '700',
+        color: '#FFFFFF',
+        anchor: 'middle',
         condition: 'price'
       },
-      // Right-side arrow decoration
+      // Business name bottom strip
+      {
+        type: 'business',
+        text: '{{businessName}}',
+        x: 540, y: 1330,
+        size: 28,
+        font: 'Montserrat',
+        weight: '400',
+        color: 'rgba(255,255,255,0.8)',
+        anchor: 'middle',
+        uppercase: true,
+        letterSpacing: 6
+      }
+    ]
+  },
+
+  // ── 4. SALE BLASTER ───────────────────────────────────────────────────────────
+  // Ref: Image 4 (Bold coral studio) — solid colour background, product on pedestal
+  // Bright solid background, clean product, headline top, brand bottom
+  sale_blaster: {
+    name: 'Flash Sale',
+    canvas: { w: 1080, h: 1350 },
+
+    overlays: [
+      // Top text zone — white
+      {
+        type: 'rect',
+        x: 0, y: 0, w: 1080, h: 180,
+        fill: '#FFFFFF'
+      },
+      // Bottom info zone — white
+      {
+        type: 'rect',
+        x: 0, y: 1130, w: 1080, h: 220,
+        fill: '#FFFFFF'
+      },
+      // Left yellow accent bar — like reference image 4
+      {
+        type: 'rect',
+        x: 0, y: 0, w: 12, h: 1350,
+        fill: '#FFD600'
+      },
+      // Bottom yellow accent bar
+      {
+        type: 'rect',
+        x: 0, y: 1338, w: 1080, h: 12,
+        fill: '#FFD600'
+      }
+    ],
+
+    layers: [
+      // Business name top
+      {
+        type: 'business',
+        text: '{{businessName}}',
+        x: 540, y: 58,
+        size: 26,
+        font: 'Montserrat',
+        weight: '700',
+        color: '#111111',
+        anchor: 'middle',
+        uppercase: true,
+        letterSpacing: 8
+      },
+      // Offer phrase
+      {
+        type: 'headline',
+        text: '{{offerPhrase}}',
+        x: 540, y: 148,
+        size: 96,
+        font: 'Anton',
+        weight: '400',
+        color: '#111111',
+        anchor: 'middle'
+      },
+      // Discount
       {
         type: 'sub',
-        text: '→',
-        x: 1000, y: 1270,
-        size: 60,
+        text: '{{discount}}% OFF — LEO TU!',
+        x: 540, y: 1210,
+        size: 52,
+        font: 'Montserrat',
+        weight: '800',
+        color: '#111111',
+        anchor: 'middle'
+      },
+      // Price
+      {
+        type: 'price',
+        text: '{{price}}',
+        x: 540, y: 1295,
+        size: 46,
+        font: 'Montserrat',
+        weight: '600',
+        color: '#111111',
+        anchor: 'middle',
+        condition: 'price'
+      }
+    ]
+  },
+
+  // ── 5. MINIMAL CHIC ───────────────────────────────────────────────────────────
+  // Ref: Image 6 (TrunkClub) — pure white/grey bg, text top, brand bottom, airy
+  // Most minimal: clean grey studio, headline top, business bottom, lots of space
+  minimal_chic: {
+    name: 'Minimal Chic',
+    canvas: { w: 1080, h: 1350 },
+
+    overlays: [
+      // Subtle top text zone
+      {
+        type: 'rect',
+        x: 0, y: 0, w: 1080, h: 160,
+        fill: 'rgba(255,255,255,0.95)'
+      },
+      // Clean bottom strip
+      {
+        type: 'rect',
+        x: 0, y: 1240, w: 1080, h: 110,
+        fill: 'rgba(255,255,255,0.95)'
+      },
+      // Single thin line top
+      {
+        type: 'rect',
+        x: 60, y: 155, w: 960, h: 1,
+        fill: 'rgba(0,0,0,0.1)'
+      }
+    ],
+
+    layers: [
+      // Headline top — like "Spring Style Trend"
+      {
+        type: 'headline',
+        text: '{{offerPhrase}}',
+        x: 540, y: 80,
+        size: 72,
+        font: 'Montserrat',
+        weight: '900',
+        color: '#111111',
+        anchor: 'middle',
+        uppercase: true,
+        letterSpacing: 2
+      },
+      // Sub top
+      {
+        type: 'sub',
+        text: 'Punguzo hadi {{discount}}%',
+        x: 540, y: 132,
+        size: 34,
         font: 'Montserrat',
         weight: '300',
-        color: '#CCCCCC',
-        anchor: 'middle'
+        color: '#666666',
+        anchor: 'middle',
+        letterSpacing: 4,
+        uppercase: true
+      },
+      // Price bottom
+      {
+        type: 'price',
+        text: '{{price}}',
+        x: 540, y: 1272,
+        size: 38,
+        font: 'Montserrat',
+        weight: '600',
+        color: '#111111',
+        anchor: 'middle',
+        condition: 'price'
+      },
+      // Business name bottom — like "TRUNKCLUB.COM"
+      {
+        type: 'business',
+        text: '{{businessName}}',
+        x: 540, y: 1320,
+        size: 26,
+        font: 'Montserrat',
+        weight: '700',
+        color: '#333333',
+        anchor: 'middle',
+        uppercase: true,
+        letterSpacing: 8
       }
     ]
   }
 };
 
-// ─── Font registry ───────────────────────────────────────────────────────────
-// These must be loaded once at server startup via posterRenderer.js
+// ─── Font registry ────────────────────────────────────────────────────────────
 export const FONT_REGISTRY = [
   {
     family: 'Anton',
     weight: '400',
     url: 'https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8CSKlv.woff2'
-  },
-  {
-    family: 'Poppins',
-    weight: '400',
-    url: 'https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2'
-  },
-  {
-    family: 'Poppins',
-    weight: '600',
-    url: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2'
-  },
-  {
-    family: 'Poppins',
-    weight: '700',
-    url: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2'
-  },
-  {
-    family: 'Poppins',
-    weight: '800',
-    url: 'https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLDD4Z1xlFQ.woff2'
   },
   {
     family: 'Montserrat',
@@ -495,22 +462,27 @@ export const FONT_REGISTRY = [
   },
   {
     family: 'Montserrat',
+    weight: '400',
+    url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM70w-.woff2'
+  },
+  {
+    family: 'Montserrat',
+    weight: '600',
+    url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu173w-.woff2'
+  },
+  {
+    family: 'Montserrat',
     weight: '700',
     url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu170w-.woff2'
   },
   {
     family: 'Montserrat',
+    weight: '800',
+    url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuV73w-.woff2'
+  },
+  {
+    family: 'Montserrat',
     weight: '900',
     url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCvr6Ew-.woff2'
-  },
-  {
-    family: 'Playfair Display',
-    weight: '700',
-    url: 'https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvUDQ.woff2'
-  },
-  {
-    family: 'Amatic SC',
-    weight: '700',
-    url: 'https://fonts.gstatic.com/s/amaticsc/v26/TUZyzwprpvBS1izr_vO0De6ecZQf1A.woff2'
   }
 ];
