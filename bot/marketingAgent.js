@@ -1,23 +1,28 @@
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
+// ── Style → studio photography brief ─────────────────────────────────────────
+// All styles use CLEAN STUDIO. No markets, no streets, no busy backgrounds.
 const STYLE_BRIEFS = {
-  bold: 'vibrant Kariakoo street market energy, saturated colors, dynamic lighting, urban Dar es Salaam backdrop',
-  luxury: 'high-fashion editorial, soft bokeh, gold and black studio, moody directional lighting, aspirational affluence',
-  natural: 'golden hour Swahili coast, warm tropical light, organic textures, turquoise Indian Ocean backdrop',
-  minimal: 'clean white studio, soft shadows, contemporary Scandinavian minimalism, pure negative space',
-  festive: 'celebration mood, confetti, warm festive lighting, joyful African setting'
+  bold:    'clean light grey studio background, bright directional lighting, product hero shot, flat lay or standing product, e-commerce style',
+  luxury:  'soft beige or blush pink studio background, elegant mood lighting, luxury fashion editorial, minimal props, aspirational',
+  natural: 'warm white studio, soft natural daylight from window, clean shadows, organic linen or wood surface, lifestyle product',
+  minimal: 'pure white seamless background, soft box lighting, no shadows, clean Scandinavian product photography, lots of empty space',
+  festive: 'warm coral or vibrant solid color studio backdrop, bright even lighting, cheerful product display, celebration mood'
 };
 
+// ── Product visual hints ──────────────────────────────────────────────────────
 const PRODUCT_VISUAL_HINTS = {
-  dress: 'flowing fabric catching light, elegant drape',
-  kitenge: 'bold wax print patterns, vivid fabric detail close-up',
-  shoes: 'glamour shot on reflective surface, dramatic side lighting',
-  phone: 'product on minimal surface, clean tech aesthetic',
-  food: 'steam rising, fresh ingredients surrounding, overhead flat lay',
-  jewelry: 'macro close-up, sparkle and reflection, velvet background',
-  cosmetics: 'dewy texture, pastel surface, beauty editorial',
-  default: 'hero product centred, commercial studio quality'
+  dress:     'garment on a clean mannequin or flat lay on white surface, fabric texture visible',
+  kitenge:   'folded or displayed kitenge fabric, bold wax print detail close-up, flat lay',
+  shoes:     'single shoe or pair on white pedestal or floating, dramatic side lighting, sharp detail',
+  phone:     'smartphone standing upright on minimal white surface, screen facing forward, clean tech shot',
+  food:      'overhead flat lay, fresh ingredients, steam rising, white ceramic plate, natural light',
+  jewelry:   'close-up macro on velvet surface, sparkle and reflections, clean background',
+  cosmetics: 'beauty products arranged neatly, pastel surface, soft light, dewy textures',
+  bag:       'handbag standing upright on white surface, structured shape, clean studio',
+  watch:     'wristwatch on white or dark pedestal, dramatic macro lighting, sharp detail',
+  default:   'product centred on clean studio surface, professional e-commerce lighting, sharp focus'
 };
 
 function getProductHint(product) {
@@ -29,23 +34,24 @@ function getProductHint(product) {
 }
 
 export async function buildPhotoshootPrompt(merchantInfo) {
-  const { product, style } = merchantInfo; // ✅ businessName intentionally excluded — prevents text hallucination
+  const { product, style } = merchantInfo;
   const styleBrief = STYLE_BRIEFS[style] || STYLE_BRIEFS.bold;
   const productHint = getProductHint(product);
 
-  const systemPrompt = `You are a Creative Director at a Tanzanian advertising agency.
+  const systemPrompt = `You are a product photography director for a Tanzanian e-commerce brand.
 Write ONE concise visual prompt (max 70 words) for an AI image generator.
 
 ABSOLUTE RULES:
-1. NO text, letters, words, numbers, logos, watermarks, or signage anywhere.
-2. NO artificial boxes, banners, or graphic elements. Real photo only.
-3. Composition: Place main subject in top 70 percent of frame. Leave bottom 30 percent as clean, uncluttered negative space with simple background.
-4. Product accuracy: ${product}. Tanzanian setting. Professional African models if people shown.
-5. Output ONLY the visual description. No quotes, no explanation.`;
+1. NO text, letters, words, numbers, logos, watermarks anywhere in the image.
+2. STUDIO ONLY — no markets, no streets, no busy outdoor scenes.
+3. Clean simple background — white, grey, beige, or solid color only.
+4. Product must be clearly visible and sharp — this is an e-commerce photo.
+5. Top 70% of frame: product. Bottom 30%: clean simple background with no clutter — text will be added here.
+6. Output ONLY the visual description. No quotes, no explanation.`;
 
   const userMessage = `Product: ${product}
-Style: ${styleBrief}
-Tip: ${productHint}`;
+Studio style: ${styleBrief}
+Composition tip: ${productHint}`;
 
   const res = await fetch(GROQ_URL, {
     method: 'POST',
@@ -59,8 +65,8 @@ Tip: ${productHint}`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      temperature: 0.2,   // ✅ tight — prevents creative drift and hallucinated text
-      max_tokens: 120     // ✅ short enough to stay on brief
+      temperature: 0.2,
+      max_tokens: 120
     })
   });
 
@@ -71,9 +77,7 @@ Tip: ${productHint}`;
 
   const data = await res.json();
   const rawPrompt = data.choices?.[0]?.message?.content?.trim();
-
   if (!rawPrompt) throw new Error('Empty prompt from Groq');
 
-  // Append hard negatives — short, no redundancy with system prompt
-  return `${rawPrompt}, no text, no watermark, photorealistic`;
+  return `${rawPrompt}, no text, no watermark, studio photography, white background, photorealistic`;
 }
